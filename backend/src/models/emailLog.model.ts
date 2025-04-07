@@ -1,0 +1,1 @@
+// emailLog.model.ts

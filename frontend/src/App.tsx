@@ -3,7 +3,9 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import PrivateRoute from "./utils/PrivateRoute";
-import Confirm from './pages/ConfirmationMail'; // 👈 ya importado
+import ConfirmationMail from "./pages/ConfirmationMail";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 function App() {
   return (
@@ -11,7 +13,8 @@ function App() {
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-        <Route path="/confirm/:token" element={<Confirm />} /> {/* 👈 AÑADIDO */}
+        <Route path="/confirm/:token" element={<ConfirmationMail />} />{" "}
+        {/* 👈 AÑADIDO */}
         <Route
           path="/dashboard"
           element={
@@ -21,6 +24,7 @@ function App() {
           }
         />
       </Routes>
+          <ToastContainer position="top-right" autoClose={3000} />
     </Router>
   );
 }

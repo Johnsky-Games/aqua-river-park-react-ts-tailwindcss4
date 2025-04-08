@@ -66,6 +66,20 @@ export const login = async (req: Request, res: Response): Promise<void> => {
 
     const user = rows[0];
 
+    // 💡 Aquí validamos si el usuario no ha confirmado su cuenta
+    if (!user.is_confirmed) {
+      const tokenExpired =
+        !user.confirmation_token ||
+        !user.confirmation_expires ||
+        new Date(user.confirmation_expires) < new Date();
+
+      res.status(401).json({
+        message: "Debes confirmar tu cuenta",
+        tokenExpired,
+      });
+      return;
+    }
+
     const isMatch = await bcrypt.compare(password, user.password_hash);
     if (!isMatch) {
       res.status(401).json({ message: "Contraseña incorrecta" });

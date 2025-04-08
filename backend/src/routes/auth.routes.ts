@@ -1,10 +1,12 @@
 // backend/src/routes/auth.routes.ts
-import { Router, RequestHandler } from 'express';
+import { Router } from 'express';
 import { login, register } from '../controllers/auth.controller';
 import { confirmUser } from '../controllers/confirm.controller';
-import { authMiddleware } from '../middlewares/auth.middleware'; // 👈 importa el middleware
+import { resendConfirmation } from '../controllers/resendConfirmation.controller';
+import { authMiddleware } from '../middlewares/auth.middleware';
 import { getDashboard } from '../controllers/dashboard.controller';
 import { checkRole } from '../middlewares/role.middleware';
+import { checkTokenStatus } from '../controllers/tokenStatus.controller';
 
 const router = Router();
 
@@ -12,6 +14,9 @@ const router = Router();
 router.post('/register', register);
 router.post('/login', login);
 router.get('/confirm/:token', confirmUser);
+router.post('/resend-confirmation', resendConfirmation);
+router.post('/check-token-status', checkTokenStatus);
+
 
 // Rutas protegidas
 router.get('/admin/dashboard', authMiddleware, checkRole(['admin']), getDashboard);

@@ -1,16 +1,16 @@
 // role.middleware.ts
-import { Request, Response, NextFunction } from 'express';
-import { TokenPayload } from '../config/jwt';
+import { Response, NextFunction } from 'express';
+import { AuthenticatedRequest } from '../types/express'; // Solo importa esto si usas req.user
 
 export const checkRole = (allowedRoles: string[]) => {
-    return (req: Request, res: Response, next: NextFunction): void => {
-        const user = req.user as TokenPayload;
+  return (req: AuthenticatedRequest, res: Response, next: NextFunction): void => {
+    const user = req.user;
 
-        if (!req.user || !allowedRoles.includes(req.user.role)) {
-            res.status(403).json({ message: 'Acceso denegado: rol insuficiente' });
-            return;
-        }
+    if (!user || !allowedRoles.includes(user.role)) {
+      res.status(403).json({ message: 'Acceso denegado: rol insuficiente' });
+      return;
+    }
 
-        next();
-    };
+    next();
+  };
 };

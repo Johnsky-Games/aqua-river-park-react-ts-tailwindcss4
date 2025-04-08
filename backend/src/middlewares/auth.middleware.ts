@@ -1,6 +1,6 @@
-// auth.middleware.ts
 import { Request, Response, NextFunction } from "express";
 import { verifyToken, TokenPayload } from "../config/jwt";
+import { AuthenticatedRequest } from "../types/express";
 
 export const authMiddleware = (
   req: Request,
@@ -18,7 +18,7 @@ export const authMiddleware = (
 
   try {
     const decoded = verifyToken(token) as TokenPayload;
-    req.user = decoded;
+    (req as AuthenticatedRequest).user = decoded;
     next();
   } catch {
     res.status(401).json({ message: "Token inválido o expirado" });

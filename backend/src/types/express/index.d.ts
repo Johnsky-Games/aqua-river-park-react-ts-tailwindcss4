@@ -1,9 +1,6 @@
-import { TokenPayload } from '../../config/jwt';
+import { Request } from "express";
+import { TokenPayload } from "../config/jwt";
 
-declare global {
-    namespace Express {
-        interface Request {
-            user?: TokenPayload;
-        }
-    }
+export interface AuthenticatedRequest extends Request {
+  user?: TokenPayload;
 }

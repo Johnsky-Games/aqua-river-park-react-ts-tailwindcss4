@@ -1,7 +1,6 @@
 import Sidebar from "../layout/navigation/Sidebar";
 import HeaderMobile from "../layout/navigation/HeaderMobile";
 import { ReactNode, useState } from "react";
-
 interface Props {
   children: ReactNode;
 }

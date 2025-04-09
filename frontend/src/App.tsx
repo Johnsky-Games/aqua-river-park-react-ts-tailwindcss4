@@ -1,9 +1,13 @@
+// src/App.tsx
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
-import Dashboard from "./pages/Dashboard";
-import PrivateRoute from "./utils/PrivateRoute";
 import ConfirmationMail from "./pages/ConfirmationMail";
+import Dashboard from "./pages/Dashboard";
+import PublicLayout from "./layout/PublicLayout";
+import DashboardLayout from "./layout/DashboardLayout";
+import PrivateRoute from "./utils/PrivateRoute";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -11,20 +15,56 @@ function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/confirm/:token" element={<ConfirmationMail />} />{" "}
-        {/* 👈 AÑADIDO */}
+        {/* Página de inicio pública */}
+        <Route
+          path="/"
+          element={
+            <PublicLayout>
+              <Home />
+            </PublicLayout>
+          }
+        />
+
+        {/* Otras páginas públicas */}
+        <Route
+          path="/login"
+          element={
+            <PublicLayout>
+              <Login />
+            </PublicLayout>
+          }
+        />
+        <Route
+          path="/register"
+          element={
+            <PublicLayout>
+              <Register />
+            </PublicLayout>
+          }
+        />
+        <Route
+          path="/confirm/:token"
+          element={
+            <PublicLayout>
+              <ConfirmationMail />
+            </PublicLayout>
+          }
+        />
+
+        {/* Página del dashboard protegida */}
         <Route
           path="/dashboard"
           element={
             <PrivateRoute>
-              <Dashboard />
+              <DashboardLayout>
+                <Dashboard />
+              </DashboardLayout>
             </PrivateRoute>
           }
         />
       </Routes>
-          <ToastContainer position="top-right" autoClose={3000} />
+
+      <ToastContainer position="top-right" autoClose={3000} />
     </Router>
   );
 }

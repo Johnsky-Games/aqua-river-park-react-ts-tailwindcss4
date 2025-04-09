@@ -1,26 +1,28 @@
 import { Link, useLocation } from "react-router-dom";
-import { FaMoon, FaSun, FaUserCircle, FaBars } from "react-icons/fa";
-import { useTheme } from "../../context/useTheme";
+import { FaUserCircle, FaBars } from "react-icons/fa";
 import { useAuth } from "../../hooks/useAuth";
 import { Menu, MenuButton, MenuItem } from "@headlessui/react";
 import { AnimatePresence, motion } from "framer-motion";
-import { useEffect, useState } from "react";
+import { ThemeToggle } from "../../components/ThemeToggle"; // ✅ Usando componente limpio
+import { useEffect } from "react";
 
 interface HeaderProps {
   onToggleSidebar?: () => void;
 }
 
 const Header: React.FC<HeaderProps> = ({ onToggleSidebar }) => {
-  const { darkMode, toggleDarkMode } = useTheme();
   const { isLoggedIn, logout, userRole } = useAuth();
   const location = useLocation();
-  const [showMenu, setShowMenu] = useState(false);
 
+  // Si cambiaras algún estado visual por ruta, aquí podrías reiniciarlo
   useEffect(() => {
-    setShowMenu(false);
+    // Placeholder por si necesitas limpiar algo al navegar
   }, [location]);
 
-  const dropdownItems = {
+  const dropdownItems: Record<
+    string,
+    { label: string; path: string }[]
+  > = {
     client: [
       { label: "Perfil", path: "/perfil" },
       { label: "Ajustes", path: "/ajustes" },
@@ -48,7 +50,7 @@ const Header: React.FC<HeaderProps> = ({ onToggleSidebar }) => {
 
       <Link to="/" className="flex items-center gap-2">
         <img
-          src="/ARP logo.png"
+          src="../../../public/ARP logo.png"
           alt="Logo"
           className="h-10 w-auto drop-shadow"
         />
@@ -56,14 +58,10 @@ const Header: React.FC<HeaderProps> = ({ onToggleSidebar }) => {
       </Link>
 
       <div className="flex items-center gap-4">
-        <button
-          onClick={toggleDarkMode}
-          className="bg-white/20 p-2 rounded-full text-white hover:bg-white/30 transition"
-          title={darkMode ? "Modo claro" : "Modo oscuro"}
-        >
-          {darkMode ? <FaSun /> : <FaMoon />}
-        </button>
+        {/* Theme toggle */}
+        <ThemeToggle />
 
+        {/* Si está logueado, mostrar menú de usuario */}
         {isLoggedIn ? (
           <Menu as="div" className="relative">
             <MenuButton className="flex items-center">
@@ -78,26 +76,28 @@ const Header: React.FC<HeaderProps> = ({ onToggleSidebar }) => {
                 className="absolute right-0 mt-2 w-48 bg-white dark:bg-bgDark rounded-md shadow-lg z-50 ring-1 ring-black/10 divide-y divide-gray-200 dark:divide-gray-700"
               >
                 <div className="py-1">
-                  {(dropdownItems[userRole] || []).map((item, idx) => (
-                    <MenuItem key={idx}>
-                      {({ active }) => (
-                        <Link
-                          to={item.path}
-                          className={`block px-4 py-2 text-sm ${
-                            active
-                              ? "bg-gray-100 dark:bg-gray-700 text-primary"
-                              : "text-gray-700 dark:text-white"
-                          }`}
-                        >
-                          {item.label}
-                        </Link>
-                      )}
-                    </MenuItem>
-                  ))}
+                  {(dropdownItems[userRole] || []).map(
+                    (item, idx: number) => (
+                      <MenuItem key={idx}>
+                        {({ active }: { active: boolean }) => (
+                          <Link
+                            to={item.path}
+                            className={`block px-4 py-2 text-sm ${
+                              active
+                                ? "bg-gray-100 dark:bg-gray-700 text-primary"
+                                : "text-gray-700 dark:text-white"
+                            }`}
+                          >
+                            {item.label}
+                          </Link>
+                        )}
+                      </MenuItem>
+                    )
+                  )}
                 </div>
                 <div className="py-1">
                   <MenuItem>
-                    {({ active }) => (
+                    {({ active }: { active: boolean }) => (
                       <button
                         onClick={logout}
                         className={`block w-full text-left px-4 py-2 text-sm ${

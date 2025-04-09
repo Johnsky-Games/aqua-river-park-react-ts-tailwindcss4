@@ -91,7 +91,7 @@ const Login = () => {
 
   return (
     <>
-      <div className="max-w-sm mx-auto mt-20">
+      <div className="max-w-sm mx-auto mt-8">
         <h1 className="text-2xl font-bold mb-4">Iniciar sesión</h1>
         <form onSubmit={handleSubmit} className="space-y-4">
           <input

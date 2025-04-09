@@ -11,7 +11,7 @@ import {
   
   const Footer = () => {
     return (
-      <footer className="bg-accent2 text-white py-16">
+      <footer className="bg-accent2 text-white py-16 mt-8">
         <div className="container mx-auto px-4 grid grid-cols-1 md:grid-cols-4 gap-8 text-center md:text-left transition-all duration-300">
           {/* Logo + Descripción */}
           <div className="flex flex-col items-center md:items-start">

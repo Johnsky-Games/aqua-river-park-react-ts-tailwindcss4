@@ -10,48 +10,19 @@ import DashboardLayout from "./layout/DashboardLayout";
 import PrivateRoute from "./utils/PrivateRoute";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import AuthModal from "./components/authModal";
+import { useAuthModal } from "./store/useAuthModal";
 
 function App() {
+  const { isOpen } = useAuthModal();
+
   return (
     <Router>
       <Routes>
-        {/* Página de inicio pública */}
-        <Route
-          path="/"
-          element={
-            <PublicLayout>
-              <Home />
-            </PublicLayout>
-          }
-        />
-
-        {/* Otras páginas públicas */}
-        <Route
-          path="/login"
-          element={
-            <PublicLayout>
-              <Login />
-            </PublicLayout>
-          }
-        />
-        <Route
-          path="/register"
-          element={
-            <PublicLayout>
-              <Register />
-            </PublicLayout>
-          }
-        />
-        <Route
-          path="/confirm/:token"
-          element={
-            <PublicLayout>
-              <ConfirmationMail />
-            </PublicLayout>
-          }
-        />
-
-        {/* Página del dashboard protegida */}
+        <Route path="/" element={<PublicLayout><Home /></PublicLayout>} />
+        <Route path="/login" element={<PublicLayout><Login /></PublicLayout>} />
+        <Route path="/register" element={<PublicLayout><Register /></PublicLayout>} />
+        <Route path="/confirm/:token" element={<PublicLayout><ConfirmationMail /></PublicLayout>} />
         <Route
           path="/dashboard"
           element={
@@ -65,6 +36,9 @@ function App() {
       </Routes>
 
       <ToastContainer position="top-right" autoClose={3000} />
+
+      {/* Modal global */}
+      {isOpen && <AuthModal/>}
     </Router>
   );
 }

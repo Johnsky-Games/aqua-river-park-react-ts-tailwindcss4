@@ -66,7 +66,6 @@ export const login = async (req: Request, res: Response): Promise<void> => {
 
     const user = rows[0];
 
-    // 💡 Aquí validamos si el usuario no ha confirmado su cuenta
     if (!user.is_confirmed) {
       const tokenExpired =
         !user.confirmation_token ||
@@ -93,12 +92,19 @@ export const login = async (req: Request, res: Response): Promise<void> => {
       role: user.role_name || "client",
     });
 
-    res.json({ token });
+    res.json({
+      token,
+      user: {
+        email: user.email,
+        isConfirmed: Boolean(user.is_confirmed), // ✅ ESTA ES LA CORRECCIÓN
+      },
+    });
   } catch (error) {
     console.error("Error al iniciar sesión:", error);
     res.status(500).json({ message: "Error en el servidor" });
   }
 };
+
 
 export const logout = async (req: Request, res: Response): Promise<void> => {
   // Aquí puedes manejar el cierre de sesión si es necesario

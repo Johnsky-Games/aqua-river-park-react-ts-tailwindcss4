@@ -12,6 +12,8 @@ import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import AuthModal from "./components/authModal";
 import { useAuthModal } from "./store/useAuthModal";
+import 'react-toastify/dist/ReactToastify.css';
+
 
 function App() {
   const { isOpen } = useAuthModal();

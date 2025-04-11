@@ -10,7 +10,7 @@ import DashboardLayout from "./layout/DashboardLayout";
 import PrivateRoute from "./utils/PrivateRoute";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import AuthModal from "./components/authModal";
+import AuthModal from "./components/auth/authModal";
 import { useAuthModal } from "./store/useAuthModal";
 import 'react-toastify/dist/ReactToastify.css';
 

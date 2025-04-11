@@ -138,16 +138,26 @@ export default function AuthForm({
   const handleResend = async (e: React.FormEvent) => {
     e.preventDefault();
     setResendMsg("");
-
+  
+    const endpoint =
+      modalType === "recover"
+        ? "/send-recovery"
+        : "/resend-confirmation";
+  
     try {
-      const res = await api.post("/resend-confirmation", {
+      const res = await api.post(endpoint, {
         email: formData.email,
       });
+  
       setResendMsg(res.data.message);
       setModalStep("success");
-
+  
       setTimeout(() => {
-        toast.success("¡Correo reenviado!, Revisa tu bandeja...");
+        toast.success(
+          modalType === "recover"
+            ? "¡Enlace de recuperación enviado!"
+            : "¡Correo de confirmación reenviado!"
+        );
         setShowModal(false);
         setResendMsg("");
         setFormData((prev) => ({ ...prev, email: "", password: "" }));
@@ -155,15 +165,16 @@ export default function AuthForm({
     } catch (err) {
       const error = err as AxiosError<{ message: string }>;
       const msg = error.response?.data?.message;
-
+  
       if (msg === "La cuenta ya está confirmada") {
         toast.info("La cuenta ya ha sido confirmada.");
         setShowModal(false);
       } else {
-        setResendMsg("Error al reenviar el enlace.");
+        setResendMsg("Error al enviar el enlace.");
       }
     }
   };
+  
 
   return (
     <>

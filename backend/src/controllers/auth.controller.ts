@@ -1,113 +1,78 @@
-// backend/src/controllers/auth.controller.ts
 import { Request, Response } from "express";
-import db from "../config/db";
-import bcrypt from "bcryptjs";
-import { generateToken } from "../config/jwt";
-import { RowDataPacket } from "mysql2";
-import crypto from "crypto";
-import sendConfirmationEmail from "../utils/mailerConfirmation";
+import * as authService from "../services/auth.service";
 
-export const register = async (req: Request, res: Response): Promise<void> => {
-  const { name, email, password, phone } = req.body;
-
+// ✅ REGISTRO
+export const register = async (req: Request, res: Response) => {
   try {
-    const [rows] = await db.query<RowDataPacket[]>(
-      "SELECT id FROM users WHERE email = ?",
-      [email]
-    );
-
-    if (rows.length > 0) {
-      res.status(400).json({ message: "El correo ya está registrado" });
-      return;
-    }
-
-    const password_hash = await bcrypt.hash(password, 10);
-    const confirmation_token = crypto.randomBytes(32).toString("hex");
-    const confirmation_expires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24h
-
-    await db.query(
-      `INSERT INTO users (name, email, password_hash, phone, role_id, confirmation_token, confirmation_expires)
-       VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      [
-        name,
-        email,
-        password_hash,
-        phone,
-        4,
-        confirmation_token,
-        confirmation_expires,
-      ]
-    );
-
-    await sendConfirmationEmail(email, confirmation_token);
-
+    await authService.registerUser(req.body);
     res.status(201).json({
       message: "Registro exitoso. Revisa tu correo para confirmar tu cuenta.",
     });
   } catch (error: any) {
-    console.error("❌ Error al registrar:", error.message || error);
-    res.status(500).json({ message: "Error en el servidor" });
+    console.error("❌ Registro:", error.message);
+    res.status(400).json({ message: error.message || "Error al registrar" });
   }
 };
 
-export const login = async (req: Request, res: Response): Promise<void> => {
+// ✅ LOGIN
+export const login = async (req: Request, res: Response) => {
   const { email, password } = req.body;
 
   try {
-    const [rows] = await db.query<RowDataPacket[]>(
-      "SELECT u.*, r.name as role_name FROM users u LEFT JOIN roles r ON u.role_id = r.id WHERE u.email = ?",
-      [email]
-    );
-
-    if (rows.length === 0) {
-      res.status(401).json({ message: "Correo no registrado" });
-      return;
-    }
-
-    const user = rows[0];
-
-    if (!user.is_confirmed) {
-      const tokenExpired =
-        !user.confirmation_token ||
-        !user.confirmation_expires ||
-        new Date(user.confirmation_expires) < new Date();
-
+    const data = await authService.loginUser(email, password);
+    res.json(data);
+  } catch (error: any) {
+    if (error.message === "Debes confirmar tu cuenta") {
       res.status(401).json({
-        message: "Debes confirmar tu cuenta",
-        tokenExpired,
+        message: error.message,
+        tokenExpired: error.tokenExpired || false,
       });
-      return;
+    } else {
+      res.status(401).json({ message: error.message || "Error al iniciar sesión" });
     }
-
-    const isMatch = await bcrypt.compare(password, user.password_hash);
-    if (!isMatch) {
-      res.status(401).json({ message: "Contraseña incorrecta" });
-      return;
-    }
-
-    const token = generateToken({
-      id: user.id,
-      email: user.email,
-      name: user.name,
-      role: user.role_name || "client",
-    });
-
-    res.json({
-      token,
-      user: {
-        email: user.email,
-        isConfirmed: Boolean(user.is_confirmed), // ✅ ESTA ES LA CORRECCIÓN
-      },
-    });
-  } catch (error) {
-    console.error("Error al iniciar sesión:", error);
-    res.status(500).json({ message: "Error en el servidor" });
   }
 };
 
-
-export const logout = async (req: Request, res: Response): Promise<void> => {
-  // Aquí puedes manejar el cierre de sesión si es necesario
+// ✅ LOGOUT (placeholder si usas JWT)
+export const logout = async (_req: Request, res: Response) => {
   res.json({ message: "Sesión cerrada" });
 };
 
+// ✅ REENVIAR CONFIRMACIÓN
+export const resendConfirmation = async (req: Request, res: Response) => {
+  const { email } = req.body;
+
+  try {
+    await authService.resendConfirmation(email);
+    res.json({ message: "Correo de confirmación reenviado." });
+  } catch (error: any) {
+    console.error("❌ Reenviar confirmación:", error.message);
+    res.status(400).json({ message: error.message });
+  }
+};
+
+// ✅ SOLICITAR RECUPERACIÓN DE CONTRASEÑA
+export const sendRecovery = async (req: Request, res: Response) => {
+  const { email } = req.body;
+
+  try {
+    await authService.sendResetPassword(email);
+    res.json({ message: "Correo de recuperación enviado." });
+  } catch (error: any) {
+    console.error("❌ Enviar recuperación:", error.message);
+    res.status(400).json({ message: error.message });
+  }
+};
+
+// ✅ CAMBIAR CONTRASEÑA
+export const resetPassword = async (req: Request, res: Response) => {
+  const { token, password } = req.body;
+
+  try {
+    await authService.resetPassword(token, password);
+    res.json({ message: "Contraseña actualizada con éxito." });
+  } catch (error: any) {
+    console.error("❌ Reset password:", error.message);
+    res.status(400).json({ message: error.message });
+  }
+};

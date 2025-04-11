@@ -59,7 +59,7 @@ export default function AuthModal() {
     setResendMsg("");
 
     const endpoint =
-      modalType === "recover" ? "/recover-password" : "/resend-confirmation";
+      modalType === "recover" ? "/send-recovery" : "/resend-confirmation";
 
     try {
       const res = await api.post(endpoint, { email: formEmail });

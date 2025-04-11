@@ -3,10 +3,12 @@ import { useParams, useNavigate } from "react-router-dom";
 import api from "../api/axios";
 import { AxiosError } from "axios";
 import { FaCheckCircle, FaTimesCircle, FaInfoCircle } from "react-icons/fa";
+import { useAuthModal } from "../store/useAuthModal";
 
 const ConfirmationMail = () => {
   const { token } = useParams();
   const navigate = useNavigate();
+  const { openModal } = useAuthModal();
 
   const queryParams = new URLSearchParams(window.location.search);
   const emailFromQuery = queryParams.get("email");
@@ -17,6 +19,7 @@ const ConfirmationMail = () => {
   const [email, setEmail] = useState(emailFromQuery || "");
   const [resendMsg, setResendMsg] = useState("");
   const [resendSuccess, setResendSuccess] = useState(false);
+  const [isSending, setIsSending] = useState(false); // 👈 NUEVO
 
   useEffect(() => {
     const confirmAccount = async () => {
@@ -31,8 +34,9 @@ const ConfirmationMail = () => {
         ) {
           setTimeout(() => {
             sessionStorage.setItem("toastSuccess", "¡Cuenta confirmada correctamente!");
-            navigate("/login");
-          }, 5000);
+            navigate("/");
+            openModal("login"); // 👈 abre modal login al volver al home
+          }, 2500);
         }
       } catch (err) {
         const error = err as AxiosError<{ message: string }>;
@@ -50,9 +54,11 @@ const ConfirmationMail = () => {
     };
 
     confirmAccount();
-  }, [token, emailFromQuery, navigate]);
+  }, [token, emailFromQuery, navigate, openModal]);
 
   const handleResend = async (e: React.FormEvent) => {
+    if (isSending) return; // 👈 Evita spam de clics
+    setIsSending(true);
     e.preventDefault();
     setResendMsg("");
     try {
@@ -66,14 +72,16 @@ const ConfirmationMail = () => {
         setResendMsg("");
         setEmail("");
         setResendSuccess(false);
-        navigate("/login");
-      }, 5000);
+        navigate("/");
+        openModal("login"); // 👈 después del reenvío exitoso, abrimos modal login
+      }, 3000);
     } catch (err) {
       const error = err as AxiosError<{ message: string }>;
       setResendMsg(
-        error.response?.data?.message ||
-          "Ocurrió un error al reenviar el enlace."
+        error.response?.data?.message || "Ocurrió un error al reenviar el enlace."
       );
+    } finally {
+      setIsSending(false);
     }
   };
 

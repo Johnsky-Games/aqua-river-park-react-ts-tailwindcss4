@@ -1,0 +1,183 @@
+{
+  "backend": {
+    "jest.config.ts": null,
+    "package-lock.json": null,
+    "package.json": null,
+    "src": {
+      "app.ts": null,
+      "config": {
+        "db.ts": null,
+        "jwt.ts": null,
+        "mailer.ts": null
+      },
+      "controllers": {
+        "admin.controller.ts": null,
+        "auth.controller.ts": null,
+        "cart.controller.ts": null,
+        "cart_items.controller.ts": null,
+        "confirm.controller.ts": null,
+        "dashboard.controller.ts": null,
+        "emailLog.controller.ts": null,
+        "freePass.controller.ts": null,
+        "invoice.controller.ts": null,
+        "permission.controller.ts": null,
+        "qrScan.controller.ts": null,
+        "resendConfirmation.controller.ts": null,
+        "role.controller.ts": null,
+        "rolePermission.controller.ts": null,
+        "service.controller.ts": null,
+        "tokenStatus.controller.ts": null,
+        "user.controller.ts": null,
+        "userPermissions.controller.ts": null
+      },
+      "index.ts": null,
+      "middlewares": {
+        "auth.middleware.ts": null,
+        "errorHandler.middleware.ts": null,
+        "notFound.middleware.ts": null,
+        "role.middleware.ts": null,
+        "validation.middleware.ts": null
+      },
+      "models": {
+        "cart.model.ts": null,
+        "emailLog.model.ts": null,
+        "freePass.model.ts": null,
+        "index.ts": null,
+        "invoice.model.ts": null,
+        "permission.model.ts": null,
+        "qrScan.model.ts": null,
+        "role.model.ts": null,
+        "service.model.ts": null,
+        "user.model.ts": null
+      },
+      "routes": {
+        "admin.routes.ts": null,
+        "auth.routes.ts": null,
+        "cart.routes.ts": null,
+        "cart_items.routes.ts": null,
+        "clients.routes.ts": null,
+        "dashboard.routes.ts": null,
+        "emailLog.routes.ts": null,
+        "freePass.routes.ts": null,
+        "index.ts": null,
+        "invoices.routes.ts": null,
+        "permission.routes.ts": null,
+        "qrScan.routes.ts": null,
+        "role.routes.ts": null,
+        "rolePermissions.routes.ts": null,
+        "services.routes.ts": null,
+        "userPermissions.routes.ts": null,
+        "users.routes.ts": null
+      },
+      "types": {
+        "express": {
+          "index.d.ts": null
+        }
+      },
+      "utils": {
+        "mailerConfirmation.ts": null
+      }
+    },
+    "tsconfig.json": null
+  },
+  "frontend": {
+    "eslint.config.js": null,
+    "index.html": null,
+    "package-lock.json": null,
+    "package.json": null,
+    "public": {
+      "ARP logo.png": null,
+      "vite.svg": null
+    },
+    "README.md": null,
+    "src": {
+      "api": {
+        "axios.ts": null
+      },
+      "App.css": null,
+      "App.tsx": null,
+      "assets": {
+        "react.svg": null
+      },
+      "auth": {
+        "ConfirmMessage.tsx": null,
+        "LoginForm.tsx": null,
+        "RegisterForm.tsx": null,
+        "ResendConfirmationForm.tsx": null
+      },
+      "components": {
+        "auth": {
+          "AuthForm.tsx": null,
+          "AuthModal.tsx": null,
+          "AuthResendModal.tsx": null,
+          "AuthSidePanel.tsx": null
+        },
+        "authModal.tsx": null,
+        "common": {
+          "Alert.tsx": null,
+          "Avatar.tsx": null,
+          "Breadcrumb.tsx": null,
+          "Button.tsx": null,
+          "Card.tsx": null,
+          "CardGrid.tsx": null,
+          "DropdownMenu.tsx": null,
+          "FormField.tsx": null,
+          "Input.tsx": null,
+          "Modal.tsx": null,
+          "PasswordField.tsx": null,
+          "Spinner.tsx": null,
+          "ToastNotification.tsx": null
+        },
+        "NavMenu.tsx": null,
+        "ThemeToggle.tsx": null
+      },
+      "context": {
+        "AuthContext.tsx": null,
+        "ThemeContext.tsx": null,
+        "ThemeProvider.tsx": null
+      },
+      "hooks": {
+        "useAuth.ts": null,
+        "useTheme.ts": null
+      },
+      "index.css": null,
+      "layout": {
+        "Container.tsx": null,
+        "DashboardLayout.tsx": null,
+        "navigation": {
+          "Footer.tsx": null,
+          "Header.tsx": null,
+          "HeaderMobile.tsx": null,
+          "MiniFooter.tsx": null,
+          "Sidebar.tsx": null
+        },
+        "PublicLayout.tsx": null
+      },
+      "main.tsx": null,
+      "pages": {
+        "ConfirmationMail.tsx": null,
+        "Dashboard.tsx": null,
+        "Home.tsx": null,
+        "Login.tsx": null,
+        "Register.tsx": null
+      },
+      "routes": {
+        "AppRouter.tsx": null
+      },
+      "store": {
+        "useAuthModal.ts": null
+      },
+      "utils": {
+        "auth.ts": null,
+        "helpers.ts": null,
+        "PrivateRoute.tsx": null
+      },
+      "vite-env.d.ts": null
+    },
+    "tsconfig.app.json": null,
+    "tsconfig.json": null,
+    "tsconfig.node.json": null,
+    "vite.config.ts": null
+  },
+  "getFullProjectInfo.js": null
+}

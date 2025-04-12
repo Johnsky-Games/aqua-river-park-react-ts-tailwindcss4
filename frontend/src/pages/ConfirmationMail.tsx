@@ -4,6 +4,7 @@ import api from "../api/axios";
 import { AxiosError } from "axios";
 import { FaCheckCircle, FaTimesCircle, FaInfoCircle } from "react-icons/fa";
 import { useAuthModal } from "../store/useAuthModal";
+import { toast } from "react-toastify";
 
 const ConfirmationMail = () => {
   const { token } = useParams();
@@ -19,7 +20,7 @@ const ConfirmationMail = () => {
   const [email, setEmail] = useState(emailFromQuery || "");
   const [resendMsg, setResendMsg] = useState("");
   const [resendSuccess, setResendSuccess] = useState(false);
-  const [isSending, setIsSending] = useState(false); // 👈 NUEVO
+  const [isSending, setIsSending] = useState(false); // ✅ Bloqueo de clics
 
   useEffect(() => {
     const confirmAccount = async () => {
@@ -32,10 +33,10 @@ const ConfirmationMail = () => {
           res.data.message.includes("ya ha sido confirmada") ||
           res.data.message.includes("Cuenta confirmada exitosamente")
         ) {
+          toast.success("¡Cuenta confirmada correctamente!");
           setTimeout(() => {
-            sessionStorage.setItem("toastSuccess", "¡Cuenta confirmada correctamente!");
             navigate("/");
-            openModal("login"); // 👈 abre modal login al volver al home
+            openModal("login");
           }, 2500);
         }
       } catch (err) {
@@ -57,29 +58,31 @@ const ConfirmationMail = () => {
   }, [token, emailFromQuery, navigate, openModal]);
 
   const handleResend = async (e: React.FormEvent) => {
-    if (isSending) return; // 👈 Evita spam de clics
-    setIsSending(true);
     e.preventDefault();
+    if (isSending) return;
+
+    setIsSending(true);
     setResendMsg("");
+
     try {
       const res = await api.post("/resend-confirmation", { email });
+      toast.success("¡Correo reenviado correctamente!");
       setResendMsg(res.data.message);
       setResendSuccess(true);
 
       setTimeout(() => {
-        sessionStorage.setItem("toastSuccess", "¡Enlace reenviado correctamente!");
         setShowModal(false);
         setResendMsg("");
         setEmail("");
         setResendSuccess(false);
         navigate("/");
-        openModal("login"); // 👈 después del reenvío exitoso, abrimos modal login
+        openModal("login");
       }, 3000);
     } catch (err) {
       const error = err as AxiosError<{ message: string }>;
-      setResendMsg(
-        error.response?.data?.message || "Ocurrió un error al reenviar el enlace."
-      );
+      const msg = error.response?.data?.message || "Error al reenviar el correo";
+      setResendMsg(msg);
+      toast.error(msg);
     } finally {
       setIsSending(false);
     }
@@ -130,8 +133,7 @@ const ConfirmationMail = () => {
             {!resendSuccess ? (
               <>
                 <p className="text-sm text-gray-600 text-center mb-4">
-                  Ingresa tu correo para recibir un nuevo enlace de
-                  confirmación:
+                  Ingresa tu correo para recibir un nuevo enlace de confirmación:
                 </p>
                 <form onSubmit={handleResend} className="space-y-4">
                   <input
@@ -144,9 +146,12 @@ const ConfirmationMail = () => {
                   />
                   <button
                     type="submit"
-                    className="w-full bg-sky-600 text-white py-2 rounded-md hover:bg-sky-700 transition"
+                    disabled={isSending}
+                    className={`w-full bg-sky-600 text-white py-2 rounded-md hover:bg-sky-700 transition ${
+                      isSending ? "opacity-50 cursor-not-allowed" : ""
+                    }`}
                   >
-                    Reenviar enlace
+                    {isSending ? "Enviando..." : "Reenviar enlace"}
                   </button>
                   {resendMsg && (
                     <p className="text-sm text-center text-red-500 mt-2">

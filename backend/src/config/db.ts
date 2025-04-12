@@ -13,8 +13,8 @@ export const db = mysql.createPool({
   queueLimit: 0
 });
 
-console.log('Conectando a la DB con usuario:', process.env.DB_USER);
-console.log('Contraseña:', process.env.DB_PASSWORD);
+// console.log('Conectando a la DB con usuario:', process.env.DB_USER);
+// console.log('Contraseña:', process.env.DB_PASSWORD);
 
 
 

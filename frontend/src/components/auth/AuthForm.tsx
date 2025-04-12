@@ -42,6 +42,7 @@ export default function AuthForm({
   const [passwordStrength, setPasswordStrength] = useState(0);
   const [showPassword, setShowPassword] = useState(false);
   const [resendMsg, setResendMsg] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -85,6 +86,9 @@ export default function AuthForm({
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (isSubmitting) return; // Evita múltiples envíos
+    setIsSubmitting(true);
+
     if (!validate()) return;
 
     try {
@@ -132,11 +136,15 @@ export default function AuthForm({
       } else {
         toast.error("Ocurrió un error inesperado.");
       }
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   const handleResend = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSubmitting) return; // Evita múltiples envíos
+    setIsSubmitting(true);
     setResendMsg("");
   
     const endpoint =
@@ -172,6 +180,8 @@ export default function AuthForm({
       } else {
         setResendMsg("Error al enviar el enlace.");
       }
+    } finally {
+      setIsSubmitting(false);
     }
   };
   
@@ -288,9 +298,12 @@ export default function AuthForm({
           <button
             type="button"
             onClick={toggleView}
-            className="text-blue-600 font-semibold hover:underline"
+            disabled={isSubmitting}
+            className={`text-blue-600 font-semibold hover:underline ${
+              isSubmitting ? "opacity-50 cursor-not-allowed" : ""
+            }`}
           >
-            {isLogin ? "Sign Up" : "Sign In"}
+            {isSubmitting ? "Conectando..." : isLogin ? "Sign Up" : "Sign In"}
           </button>
         </p>
       </form>

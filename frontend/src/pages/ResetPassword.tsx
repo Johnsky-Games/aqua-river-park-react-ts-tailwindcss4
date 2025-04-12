@@ -2,14 +2,14 @@ import { useEffect, useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import api from "../api/axios";
-import { useAuthModal } from "../store/useAuthModal"; // 👈 NUEVO
+import { useAuthModal } from "../store/useAuthModal";
 
 export default function ResetPassword() {
   const [searchParams] = useSearchParams();
   const token = searchParams.get("token") || "";
   const email = searchParams.get("email") || "";
   const navigate = useNavigate();
-  const { openModal } = useAuthModal(); // 👈 NUEVO
+  const { openModal } = useAuthModal();
 
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -17,18 +17,14 @@ export default function ResetPassword() {
   const [valid, setValid] = useState(false);
   const [error, setError] = useState("");
   const [resend, setResend] = useState(false);
-  const [isSending, setIsSending] = useState(false); // 👈 NUEVO
-
+  const [isSending, setIsSending] = useState(false);
 
   useEffect(() => {
     const validateToken = async () => {
       try {
         const res = await api.post("/check-token-status", { token });
-        if (res.data.valid) {
-          setValid(true);
-        } else {
-          setError("El enlace ha expirado o es inválido.");
-        }
+        setValid(res.data.valid);
+        if (!res.data.valid) setError("El enlace ha expirado o es inválido.");
       } catch {
         setError("Error al validar el enlace.");
       } finally {
@@ -45,14 +41,18 @@ export default function ResetPassword() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSending) return;
+    setIsSending(true);
 
     if (password.length < 8) {
       toast.warning("La contraseña debe tener al menos 8 caracteres");
+      setIsSending(false);
       return;
     }
 
     if (password !== confirmPassword) {
       toast.error("Las contraseñas no coinciden");
+      setIsSending(false);
       return;
     }
 
@@ -61,17 +61,20 @@ export default function ResetPassword() {
       toast.success("Contraseña actualizada correctamente");
 
       setTimeout(() => {
-        navigate("/");     // 👈 Regresa a home
-        openModal("login"); // 👈 Abre el modal de login
+        navigate("/");
+        openModal("login");
+        setIsSending(false); // ✅ Aquí se vuelve a habilitar luego del flujo completo
       }, 2000);
     } catch {
       toast.error("Error al actualizar la contraseña");
+      setIsSending(false);
     }
   };
 
   const handleResend = async () => {
-    if (isSending) return; // 👈 Evita spam de clics
+    if (isSending) return;
     setIsSending(true);
+
     try {
       await api.post("/send-recovery", { email });
       toast.success("Se envió un nuevo enlace de recuperación");
@@ -79,7 +82,7 @@ export default function ResetPassword() {
     } catch {
       toast.error("No se pudo reenviar el correo");
     } finally {
-      setIsSending(false); // ✅ Vuelve a habilitar
+      setIsSending(false);
     }
   };
 
@@ -93,23 +96,23 @@ export default function ResetPassword() {
           {!resend && email ? (
             <>
               <p className="text-sm text-gray-600 mb-4">
-                Si deseas puedes reenviar el enlace a: <strong>{email}</strong>
+                Puedes reenviar el enlace a: <strong>{email}</strong>
               </p>
               <button
                 onClick={handleResend}
-                className="bg-sky-600 text-white px-4 py-2 rounded hover:bg-sky-700"
+                disabled={isSending}
+                className={`bg-sky-600 text-white px-4 py-2 rounded hover:bg-sky-700 transition ${
+                  isSending ? "opacity-50 cursor-not-allowed" : ""
+                }`}
               >
-                Reenviar enlace
+                {isSending ? "Enviando..." : "Reenviar enlace"}
               </button>
             </>
           ) : resend ? (
-            <p className="text-green-600">
-              Enlace reenviado. Revisa tu correo.
-            </p>
+            <p className="text-green-600">Enlace reenviado. Revisa tu correo.</p>
           ) : (
             <p className="text-sm text-gray-500">
-              Por favor, solicita un nuevo enlace desde la opción "Olvidé mi
-              contraseña".
+              Solicita un nuevo enlace desde "Olvidé mi contraseña".
             </p>
           )}
         </div>
@@ -126,6 +129,9 @@ export default function ResetPassword() {
         <h2 className="text-2xl font-bold mb-4 text-center text-sky-600">
           Nueva Contraseña
         </h2>
+        <p className="text-sm text-gray-600 mb-4 text-center">
+          Ingresa una nueva contraseña para tu cuenta.
+        </p>
 
         <input
           type="password"
@@ -145,9 +151,12 @@ export default function ResetPassword() {
 
         <button
           type="submit"
-          className="w-full bg-sky-600 text-white py-2 rounded hover:bg-sky-700 transition"
+          disabled={isSending}
+          className={`w-full bg-sky-600 text-white py-2 rounded hover:bg-sky-700 transition ${
+            isSending ? "opacity-50 cursor-not-allowed" : ""
+          }`}
         >
-          Guardar Contraseña
+          {isSending ? "Actualizando..." : "Actualizar contraseña"}
         </button>
       </form>
     </div>

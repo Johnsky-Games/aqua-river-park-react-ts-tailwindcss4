@@ -30,7 +30,6 @@ const ConfirmationMail = () => {
         setType("success");
 
         if (
-          res.data.message.includes("ya ha sido confirmada") ||
           res.data.message.includes("Cuenta confirmada exitosamente")
         ) {
           toast.success("¡Cuenta confirmada correctamente!");
@@ -39,6 +38,15 @@ const ConfirmationMail = () => {
             openModal("login");
           }, 2500);
         }
+
+        if (res.data.message.includes("ya ha sido confirmada")) {       
+          toast.success("¡La cuenta ya ha sido confirmada!");
+          setTimeout(() => {
+            navigate("/");
+            openModal("login");
+          }, 2500);
+        }
+
       } catch (err) {
         const error = err as AxiosError<{ message: string }>;
         const msg = error.response?.data?.message;

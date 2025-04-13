@@ -36,8 +36,8 @@ export default function AuthResendModal({
 
   const isRecover = type === "recover";
   const title = isRecover ? "Recuperar Contraseña" : "Verifica tu cuenta";
-  const formTitle = isRecover ? "Enviar enlace de recuperación" : "Reenviar Enlace";
-  const formDescription = isRecover ? "Ingresa tu correo para recuperar tu contraseña." : "Aún no has confirmado tu cuenta. Revisa tu correo para activarla.";
+  const formTitle = isRecover ? "¿Necesitas un nuevo enlace?" : "Reenviar Enlace";
+  const formDescription = isRecover ? "Ingresa tu correo para recuperar tu contraseña." : "Ingresa tu correo para recibir un nuevo enlace de confirmación:";
   const successMsg =
     resendMsg ||
     (isRecover

@@ -1,5 +1,7 @@
 import { Request, Response } from "express";
 import * as authService from "../services/auth.service";
+import { resendConfirmationService } from "../services/confirm.service";
+
 
 // ✅ REGISTRO
 export const register = async (req: Request, res: Response) => {
@@ -43,7 +45,7 @@ export const resendConfirmation = async (req: Request, res: Response) => {
   const { email } = req.body;
 
   try {
-    await authService.resendConfirmation(email);
+    await resendConfirmationService(email); // 👈 llamado correcto
     res.json({ message: "Correo de confirmación reenviado." });
   } catch (error: any) {
     console.error("❌ Reenviar confirmación:", error.message);

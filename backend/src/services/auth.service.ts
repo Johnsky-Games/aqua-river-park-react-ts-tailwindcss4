@@ -5,7 +5,6 @@ import { generateToken } from "../config/jwt";
 import sendConfirmationEmail from "../utils/mailerConfirmation";
 import {
   createUser,
-  findUserBasicByEmail,
   findUserByEmail,
   findUserByResetToken,
   updateConfirmationToken,
@@ -13,6 +12,7 @@ import {
   updateResetToken,
 } from "../repositories/user.repository";
 
+// ✅ REGISTRO
 export const registerUser = async ({
   name,
   email,
@@ -24,12 +24,12 @@ export const registerUser = async ({
   password: string;
   phone: string;
 }) => {
-  const existingUser = await findUserBasicByEmail(email);
+  const existingUser = await findUserByEmail(email);
   if (existingUser) throw new Error("El correo ya está registrado");
 
   const password_hash = await bcrypt.hash(password, 10);
   const confirmation_token = crypto.randomBytes(32).toString("hex");
-  const confirmation_expires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24h
+  const confirmation_expires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 horas
 
   await createUser({
     name,
@@ -44,6 +44,7 @@ export const registerUser = async ({
   await sendConfirmationEmail(email, confirmation_token);
 };
 
+// ✅ LOGIN
 export const loginUser = async (email: string, password: string) => {
   const user = await findUserByEmail(email);
   if (!user) throw new Error("Correo no registrado");
@@ -79,32 +80,21 @@ export const loginUser = async (email: string, password: string) => {
   };
 };
 
-export const resendConfirmation = async (email: string) => {
-  const user = await findUserByEmail(email);
-  if (!user) throw new Error("Correo no registrado");
-
-  if (user.is_confirmed) throw new Error("La cuenta ya está confirmada");
-
-  const token = crypto.randomBytes(32).toString("hex");
-  const expires = new Date(Date.now() + 24 * 60 * 60 * 1000);
-
-  await updateConfirmationToken(email, token, expires);
-  await sendConfirmationEmail(email, token);
-};
-
+// ✅ ENVIAR ENLACE DE RECUPERACIÓN
 export const sendResetPassword = async (email: string) => {
   const user = await findUserByEmail(email);
   if (!user) throw new Error("Correo no registrado");
 
   const token = crypto.randomBytes(32).toString("hex");
-  const expires = new Date(Date.now() + 1 * 60 * 60 * 1000); // 1h
+  const expires = new Date(Date.now() + 60 * 60 * 1000); // 1 hora
 
   await updateResetToken(email, token, expires);
 
-  // Aquí enviarías un correo real con el link
+  // Enviar el correo (solo console.log por ahora)
   console.log(`📧 Enlace de recuperación: http://localhost:3000/reset-password/${token}`);
 };
 
+// ✅ RESTABLECER CONTRASEÑA
 export const resetPassword = async (token: string, newPassword: string) => {
   const user = await findUserByResetToken(token);
   if (!user) throw new Error("Token inválido o expirado");
@@ -112,3 +102,10 @@ export const resetPassword = async (token: string, newPassword: string) => {
   const password_hash = await bcrypt.hash(newPassword, 10);
   await updatePassword(user.id, password_hash);
 };
+
+// ✅ VERIFICAR token de recuperación
+export const checkResetToken = async (token: string) => {
+  const user = await findUserByResetToken(token);
+  return user && new Date(user.reset_expires) > new Date();
+};
+

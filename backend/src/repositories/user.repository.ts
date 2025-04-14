@@ -10,14 +10,6 @@ export const findUserByEmail = async (email: string) => {
   return rows[0] || null;
 };
 
-export const findUserBasicByEmail = async (email: string) => {
-  const [rows] = await db.query<RowDataPacket[]>(
-    "SELECT id FROM users WHERE email = ?",
-    [email]
-  );
-  return rows[0] || null;
-};
-
 export const createUser = async (user: {
   name: string;
   email: string;
@@ -66,3 +58,46 @@ export const updatePassword = async (userId: number, newPasswordHash: string) =>
     [newPasswordHash, userId]
   );
 };
+
+// Consultas para confrimación de cuenta
+export const findUserByToken = async (token: string) => {
+  const [rows] = await db.query<RowDataPacket[]>(
+    "SELECT * FROM users WHERE confirmation_token = ?",
+    [token]
+  );
+  return rows[0];
+};
+
+export const checkConfirmedByEmail = async (email: string) => {
+  const [rows] = await db.query<RowDataPacket[]>(
+    "SELECT is_confirmed FROM users WHERE email = ?",
+    [email]
+  );
+  return rows[0];
+};
+
+export const confirmUserById = async (id: number) => {
+  await db.query(
+    `UPDATE users 
+     SET is_confirmed = 1, confirmation_token = NULL, confirmation_expires = NULL 
+     WHERE id = ?`,
+    [id]
+  );
+};
+
+export const findUserBasicByEmail = async (email: string) => {
+  const [rows] = await db.query<RowDataPacket[]>(
+    "SELECT id FROM users WHERE email = ?",
+    [email]
+  );
+  return rows[0] || null;
+};
+
+export const getResetTokenExpiration = async (token: string) => {
+  const [rows] = await db.query<RowDataPacket[]>(
+    "SELECT reset_expires FROM users WHERE reset_token = ?",
+    [token]
+  );
+  return rows[0] || null;
+};
+

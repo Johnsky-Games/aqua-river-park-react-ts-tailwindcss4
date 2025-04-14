@@ -26,27 +26,21 @@ const ConfirmationMail = () => {
     const confirmAccount = async () => {
       try {
         const res = await api.get(`/confirm/${token}?email=${emailFromQuery}`);
-        setMessage(res.data.message);
+        const { message } = res.data;
+
+        setMessage(message);
         setType("success");
 
         if (
-          res.data.message.includes("Cuenta confirmada exitosamente")
+          message === "Cuenta confirmada exitosamente." ||
+          message === "La cuenta ya ha sido confirmada."
         ) {
-          toast.success("¡Cuenta confirmada correctamente!");
+          toast.success(message);
           setTimeout(() => {
             navigate("/");
             openModal("login");
           }, 2500);
         }
-
-        if (res.data.message.includes("ya ha sido confirmada")) {       
-          toast.success("¡La cuenta ya ha sido confirmada!");
-          setTimeout(() => {
-            navigate("/");
-            openModal("login");
-          }, 2500);
-        }
-
       } catch (err) {
         const error = err as AxiosError<{ message: string }>;
         const msg = error.response?.data?.message;
@@ -88,7 +82,8 @@ const ConfirmationMail = () => {
       }, 3000);
     } catch (err) {
       const error = err as AxiosError<{ message: string }>;
-      const msg = error.response?.data?.message || "Error al reenviar el correo";
+      const msg =
+        error.response?.data?.message || "Error al reenviar el correo";
       setResendMsg(msg);
       toast.error(msg);
     } finally {
@@ -141,7 +136,8 @@ const ConfirmationMail = () => {
             {!resendSuccess ? (
               <>
                 <p className="text-sm text-gray-600 text-center mb-4">
-                  Ingresa tu correo para recibir un nuevo enlace de confirmación:
+                  Ingresa tu correo para recibir un nuevo enlace de
+                  confirmación:
                 </p>
                 <form onSubmit={handleResend} className="space-y-4">
                   <input

@@ -11,7 +11,9 @@ interface Props {
   showModal: boolean;
   modalType: "confirm" | "recover";
   setFormEmail: React.Dispatch<React.SetStateAction<string>>;
-  setModalStep: React.Dispatch<React.SetStateAction<"notice" | "form" | "success">>;
+  setModalStep: React.Dispatch<
+    React.SetStateAction<"notice" | "form" | "success">
+  >;
   setShowModal: React.Dispatch<React.SetStateAction<boolean>>;
   setModalType: React.Dispatch<React.SetStateAction<"confirm" | "recover">>;
 }
@@ -123,7 +125,10 @@ export default function AuthForm({
         }
       }
     } catch (err) {
-      const error = err as AxiosError<{ message: string; tokenExpired?: boolean }>;
+      const error = err as AxiosError<{
+        message: string;
+        tokenExpired?: boolean;
+      }>;
       const msg = error.response?.data?.message;
 
       if (msg === "Debes confirmar tu cuenta") {
@@ -146,20 +151,18 @@ export default function AuthForm({
     if (isSubmitting) return; // Evita múltiples envíos
     setIsSubmitting(true);
     setResendMsg("");
-  
+
     const endpoint =
-      modalType === "recover"
-        ? "/send-recovery"
-        : "/resend-confirmation";
-  
+      modalType === "recover" ? "/send-recovery" : "/resend-confirmation";
+
     try {
       const res = await api.post(endpoint, {
         email: formData.email,
       });
-  
+
       setResendMsg(res.data.message);
       setModalStep("success");
-  
+
       setTimeout(() => {
         toast.success(
           modalType === "recover"
@@ -173,7 +176,7 @@ export default function AuthForm({
     } catch (err) {
       const error = err as AxiosError<{ message: string }>;
       const msg = error.response?.data?.message;
-  
+
       if (msg === "La cuenta ya está confirmada") {
         toast.info("La cuenta ya ha sido confirmada.");
         setShowModal(false);
@@ -184,7 +187,6 @@ export default function AuthForm({
       setIsSubmitting(false);
     }
   };
-  
 
   return (
     <>
@@ -198,7 +200,9 @@ export default function AuthForm({
               placeholder="Full Name"
               className="input-style"
             />
-            {errors.fullName && <p className="text-red-500 text-sm">{errors.fullName}</p>}
+            {errors.fullName && (
+              <p className="text-red-500 text-sm">{errors.fullName}</p>
+            )}
           </>
         )}
 
@@ -220,7 +224,9 @@ export default function AuthForm({
               placeholder="Phone"
               className="input-style"
             />
-            {errors.phone && <p className="text-red-500 text-sm">{errors.phone}</p>}
+            {errors.phone && (
+              <p className="text-red-500 text-sm">{errors.phone}</p>
+            )}
           </>
         )}
 
@@ -240,13 +246,17 @@ export default function AuthForm({
           >
             {showPassword ? "🙈" : "👁️"}
           </button>
-          {errors.password && <p className="text-red-500 text-sm">{errors.password}</p>}
+          {errors.password && (
+            <p className="text-red-500 text-sm">{errors.password}</p>
+          )}
           {!isLogin && (
             <div className="mt-2 flex gap-1">
               {[...Array(4)].map((_, i) => (
                 <div
                   key={i}
-                  className={`h-2 flex-1 rounded ${i < passwordStrength ? "bg-green-500" : "bg-gray-200"}`}
+                  className={`h-2 flex-1 rounded ${
+                    i < passwordStrength ? "bg-green-500" : "bg-gray-200"
+                  }`}
                 />
               ))}
             </div>
@@ -288,9 +298,12 @@ export default function AuthForm({
 
         <button
           type="submit"
-          className="w-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white py-2 rounded-lg hover:opacity-90 transition-all"
+          disabled={isSubmitting}
+          className={`w-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white py-2 rounded-lg hover:opacity-90 transition-all ${
+            isSubmitting ? "opacity-50 cursor-not-allowed" : ""
+          }`}
         >
-          {isLogin ? "Sign In" : "Sign Up"}
+          {isSubmitting ? "Conectando..." : isLogin ? "Sign In" : "Sign Up"}
         </button>
 
         <p className="text-center text-sm text-gray-600 mt-4">
@@ -298,12 +311,9 @@ export default function AuthForm({
           <button
             type="button"
             onClick={toggleView}
-            disabled={isSubmitting}
-            className={`text-blue-600 font-semibold hover:underline ${
-              isSubmitting ? "opacity-50 cursor-not-allowed" : ""
-            }`}
+            className="text-blue-600 font-semibold hover:underline"
           >
-            {isSubmitting ? "Conectando..." : isLogin ? "Sign Up" : "Sign In"}
+            {isLogin ? "Sign Up" : "Sign In"}
           </button>
         </p>
       </form>

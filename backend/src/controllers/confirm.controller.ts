@@ -1,61 +1,35 @@
-import { Request, Response } from 'express';
-import db from '../config/db';
-import { RowDataPacket } from 'mysql2';
+// src/controllers/confirm.controller.ts
+import { Request, Response } from "express";
+import {
+    confirmAccountService,
+    resendConfirmationService,
+  } from "../services/confirm.service";  
 
 export const confirmUser = async (req: Request, res: Response): Promise<void> => {
     const { token } = req.params;
     const { email } = req.query;
 
     try {
-        // Primero intenta encontrar al usuario por token
-        const [rows] = await db.query<RowDataPacket[]>(
-            'SELECT * FROM users WHERE confirmation_token = ?',
-            [token]
-        );
-
-        const user = rows[0];
-
-        if (!user) {
-            // Si no encuentra por token, busca por email
-            if (email) {
-                const [emailRows] = await db.query<RowDataPacket[]>(
-                    'SELECT is_confirmed FROM users WHERE email = ?',
-                    [email]
-                );
-
-                if (emailRows.length > 0 && emailRows[0].is_confirmed === 1) {
-                    res.status(200).json({ message: 'La cuenta ya ha sido confirmada.' });
-                    return;
-                }
-            }
-
-            res.status(400).json({ message: 'Token inválido o expirado' });
-            return;
-        }
-
-        // Si ya está confirmado
-        if (user.is_confirmed === 1) {
-            res.status(200).json({ message: 'La cuenta ya ha sido confirmada.' });
-            return;
-        }
-
-        // Verifica expiración del token
-        const now = new Date();
-        if (new Date(user.confirmation_expires) < now) {
-            res.status(400).json({ message: 'Token inválido o expirado' });
-            return;
-        }
-
-        // Confirmar cuenta
-        await db.query(
-            'UPDATE users SET is_confirmed = 1, confirmation_token = NULL, confirmation_expires = NULL WHERE id = ?',
-            [user.id]
-        );
-
-        res.status(200).json({ message: 'Cuenta confirmada exitosamente.' });
-    } catch (error) {
-        console.error('❌ Error al confirmar:', error);
-        res.status(500).json({ message: 'Error en el servidor' });
+        const result = await confirmAccountService(token, email as string | undefined);
+        res.status(result.code).json({ message: result.message });
+    } catch (error: any) {
+        console.error("❌ Error al confirmar:", error);
+        res.status(500).json({ message: "Error en el servidor" });
     }
 };
 
+export const resendConfirmation = async (req: Request, res: Response): Promise<void> => {
+    const { email } = req.body;
+
+    try {
+        await resendConfirmationService(email);
+        res.status(200).json({
+            message: "Se envió un nuevo enlace de confirmación a tu correo",
+        });
+    } catch (error: any) {
+        console.error("❌ Error al reenviar confirmación:", error.message || error);
+        res.status(400).json({
+            message: error.message || "Error al reenviar confirmación",
+        });
+    }
+};

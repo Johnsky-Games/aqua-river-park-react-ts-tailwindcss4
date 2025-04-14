@@ -4,8 +4,7 @@ import {
     register,
     logout,
 } from '../controllers/auth.controller';
-import { confirmUser } from '../controllers/confirm.controller';
-import { resendConfirmation } from '../controllers/resendConfirmation.controller';
+import { confirmUser, resendConfirmation } from '../controllers/confirm.controller';
 // import { checkTokenStatus } from '../controllers/tokenStatus.controller';
 import { sendRecovery, checkTokenStatus, resetPassword } from '../controllers/recover.controller'; // 👈 nuevo
 

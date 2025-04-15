@@ -3,6 +3,11 @@ import { useSearchParams, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import api from "../api/axios";
 import { useAuthModal } from "../store/useAuthModal";
+import {
+  validatePasswordSecurity,
+} from "../utils/validationHelpersForm";
+import PasswordWithStrengthInput from "../components/common/PasswordWithStrengthInputForm";
+import InputWithLabel from "../components/common/InputWithLabel";
 
 export default function ResetPassword() {
   const [searchParams] = useSearchParams();
@@ -13,6 +18,8 @@ export default function ResetPassword() {
 
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+  const [confirmPasswordError, setConfirmPasswordError] = useState("");
   const [loading, setLoading] = useState(true);
   const [valid, setValid] = useState(false);
   const [error, setError] = useState("");
@@ -39,13 +46,38 @@ export default function ResetPassword() {
     }
   }, [token]);
 
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newPassword = e.target.value;
+    setPassword(newPassword);
+
+    const errors = validatePasswordSecurity(newPassword, email);
+    setPasswordError(errors.length > 0 ? errors.join(" ") : "");
+
+    if (confirmPassword && confirmPassword !== newPassword) {
+      setConfirmPasswordError("Las contraseñas no coinciden.");
+    } else {
+      setConfirmPasswordError("");
+    }
+  };
+
+  const handleConfirmPasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newConfirm = e.target.value;
+    setConfirmPassword(newConfirm);
+    if (password !== newConfirm) {
+      setConfirmPasswordError("Las contraseñas no coinciden.");
+    } else {
+      setConfirmPasswordError("");
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (isSending) return;
     setIsSending(true);
 
-    if (password.length < 8) {
-      toast.warning("La contraseña debe tener al menos 8 caracteres");
+    const passwordErrors = validatePasswordSecurity(password, email);
+    if (passwordErrors.length > 0) {
+      toast.warning(passwordErrors.join(" "));
       setIsSending(false);
       return;
     }
@@ -63,10 +95,10 @@ export default function ResetPassword() {
       setTimeout(() => {
         navigate("/");
         openModal("login");
-        setIsSending(false); // ✅ Aquí se vuelve a habilitar luego del flujo completo
       }, 2000);
     } catch {
       toast.error("Error al actualizar la contraseña");
+    } finally {
       setIsSending(false);
     }
   };
@@ -86,16 +118,16 @@ export default function ResetPassword() {
     }
   };
 
-  if (loading) return <p className="text-center mt-8">Cargando...</p>;
+  if (loading) return <p className="text-center mt-8 dark:text-white">Cargando...</p>;
 
   if (!valid) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
-        <div className="bg-white shadow-md rounded-lg p-6 w-full max-w-md text-center">
-          <h2 className="text-xl font-semibold text-red-600 mb-4">{error}</h2>
+      <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-bgDark px-4">
+        <div className="bg-white dark:bg-bgLight/10 shadow-md rounded-lg p-6 w-full max-w-md text-center">
+          <h2 className="text-xl font-semibold text-red-600 dark:text-red-400 mb-4">{error}</h2>
           {!resend && email ? (
             <>
-              <p className="text-sm text-gray-600 mb-4">
+              <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
                 Puedes reenviar el enlace a: <strong>{email}</strong>
               </p>
               <button
@@ -109,9 +141,11 @@ export default function ResetPassword() {
               </button>
             </>
           ) : resend ? (
-            <p className="text-green-600">Enlace reenviado. Revisa tu correo.</p>
+            <p className="text-green-600 dark:text-green-400">
+              Enlace reenviado. Revisa tu correo.
+            </p>
           ) : (
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-gray-500 dark:text-gray-300">
               Solicita un nuevo enlace desde "Olvidé mi contraseña".
             </p>
           )}
@@ -121,37 +155,39 @@ export default function ResetPassword() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
+    <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-bgDark px-4">
       <form
         onSubmit={handleSubmit}
-        className="bg-white shadow-md rounded-lg p-6 w-full max-w-md"
+        className="bg-white dark:bg-bgLight/10 shadow-md rounded-lg p-6 w-full max-w-md"
       >
-        <h2 className="text-2xl font-bold mb-4 text-center text-sky-600">
+        <h2 className="text-2xl font-bold mb-4 text-center text-sky-600 dark:text-textLight">
           Nueva Contraseña
         </h2>
-        <p className="text-sm text-gray-600 mb-4 text-center">
+        <p className="text-sm text-gray-600 dark:text-gray-300 mb-4 text-center">
           Ingresa una nueva contraseña para tu cuenta.
         </p>
 
-        <input
-          type="password"
-          placeholder="Nueva contraseña"
-          className="input-style mb-3"
+        <PasswordWithStrengthInput
           value={password}
-          onChange={(e) => setPassword(e.target.value)}
+          onChange={handlePasswordChange}
+          error={passwordError}
+          showTooltip={true}
+          showStrengthBar={true}
         />
 
-        <input
+        <InputWithLabel
+          label="Confirmar contraseña"
+          name="confirmPassword"
           type="password"
-          placeholder="Confirmar contraseña"
-          className="input-style mb-4"
           value={confirmPassword}
-          onChange={(e) => setConfirmPassword(e.target.value)}
+          onChange={handleConfirmPasswordChange}
+          placeholder="Confirma tu contraseña"
+          error={confirmPasswordError}
         />
 
         <button
           type="submit"
-          disabled={isSending}
+          disabled={isSending || passwordError !== "" || confirmPasswordError !== ""}
           className={`w-full bg-sky-600 text-white py-2 rounded hover:bg-sky-700 transition ${
             isSending ? "opacity-50 cursor-not-allowed" : ""
           }`}

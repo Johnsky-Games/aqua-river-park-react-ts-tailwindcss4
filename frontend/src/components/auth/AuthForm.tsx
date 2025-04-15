@@ -5,6 +5,15 @@ import api from "../../api/axios";
 import { toast } from "react-toastify";
 import { useAuthModal } from "../../store/useAuthModal";
 import AuthResendModal from "./AuthResendModal";
+import {
+  getPasswordScore,
+  capitalizeName,
+  validateEmailFormat,
+  validatePasswordSecurity,
+} from "../../utils/validationHelpersForm";
+
+import InputWithLabel from "../common/InputWithLabel";
+import PasswordWithStrengthInput from "../common/PasswordWithStrengthInputForm";
 
 interface Props {
   modalStep: "notice" | "form" | "success";
@@ -42,46 +51,49 @@ export default function AuthForm({
   const [formData, setFormData] = useState(initialForm);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [passwordStrength, setPasswordStrength] = useState(0);
-  const [showPassword, setShowPassword] = useState(false);
   const [resendMsg, setResendMsg] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
 
-    if (name === "password") setPasswordStrength(validatePassword(value));
+    const formattedValue = name === "fullName" ? capitalizeName(value) : value;
+
+    if (name === "password") setPasswordStrength(getPasswordScore(value));
+
+    setFormData((prev) => ({ ...prev, [name]: formattedValue }));
     setErrors((prev) => ({ ...prev, [name]: "" }));
-  };
-
-  const validatePassword = (password: string) => {
-    let score = 0;
-    if (password.length >= 8) score++;
-    if (/[A-Z]/.test(password)) score++;
-    if (/[0-9]/.test(password)) score++;
-    if (/[^A-Za-z0-9]/.test(password)) score++;
-    return score;
   };
 
   const validate = () => {
     const errs: { [key: string]: string } = {};
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      errs.email = "Enter a valid email address";
+
+    if (!validateEmailFormat(formData.email)) {
+      errs.email = "Correo no válido";
     }
-    if (formData.password.length < 8) {
-      errs.password = "Password must be at least 8 characters";
+
+    const passwordErrors = validatePasswordSecurity(
+      formData.password,
+      formData.email
+    );
+    if (passwordErrors.length > 0) {
+      errs.password = passwordErrors.join(" ");
     }
+
     if (!isLogin) {
       if (!formData.fullName || formData.fullName.length < 2) {
-        errs.fullName = "Name must be at least 2 characters";
+        errs.fullName = "El nombre debe tener al menos 2 caracteres.";
       }
+
       if (!/^[0-9]{10}$/.test(formData.phone)) {
-        errs.phone = "Phone must be a valid 10-digit number";
+        errs.phone = "El teléfono debe tener 10 dígitos.";
       }
+
       if (formData.password !== formData.confirmPassword) {
-        errs.confirmPassword = "Passwords do not match";
+        errs.confirmPassword = "Las contraseñas no coinciden.";
       }
     }
+
     setErrors(errs);
     return Object.keys(errs).length === 0;
   };
@@ -91,7 +103,11 @@ export default function AuthForm({
     if (isSubmitting) return; // Evita múltiples envíos
     setIsSubmitting(true);
 
-    if (!validate()) return;
+    const isValid = validate();
+    if (!isValid) {
+      setIsSubmitting(false); // 🔁 Agrega esto para volver a habilitar el botón
+      return;
+    }
 
     try {
       if (isLogin) {
@@ -193,90 +209,55 @@ export default function AuthForm({
       <form onSubmit={handleSubmit} className="space-y-4">
         {!isLogin && (
           <>
-            <input
+            <InputWithLabel
+              label="Nombres"
               name="fullName"
               value={formData.fullName}
               onChange={handleInput}
-              placeholder="Full Name"
-              className="input-style"
+              placeholder="Tu nombre completo"
+              error={errors.fullName}
             />
-            {errors.fullName && (
-              <p className="text-red-500 text-sm">{errors.fullName}</p>
-            )}
-          </>
-        )}
 
-        <input
-          name="email"
-          value={formData.email}
-          onChange={handleInput}
-          placeholder="Email"
-          className="input-style"
-        />
-        {errors.email && <p className="text-red-500 text-sm">{errors.email}</p>}
-
-        {!isLogin && (
-          <>
-            <input
+            <InputWithLabel
+              label="Teléfono"
               name="phone"
               value={formData.phone}
               onChange={handleInput}
-              placeholder="Phone"
-              className="input-style"
+              placeholder="099..."
+              error={errors.phone}
             />
-            {errors.phone && (
-              <p className="text-red-500 text-sm">{errors.phone}</p>
-            )}
           </>
         )}
 
-        <div className="relative">
-          <input
-            type={showPassword ? "text" : "password"}
-            name="password"
-            value={formData.password}
-            onChange={handleInput}
-            placeholder="Password"
-            className="input-style pr-10"
-          />
-          <button
-            type="button"
-            onClick={() => setShowPassword(!showPassword)}
-            className="absolute right-3 top-[10px]"
-          >
-            {showPassword ? "🙈" : "👁️"}
-          </button>
-          {errors.password && (
-            <p className="text-red-500 text-sm">{errors.password}</p>
-          )}
-          {!isLogin && (
-            <div className="mt-2 flex gap-1">
-              {[...Array(4)].map((_, i) => (
-                <div
-                  key={i}
-                  className={`h-2 flex-1 rounded ${
-                    i < passwordStrength ? "bg-green-500" : "bg-gray-200"
-                  }`}
-                />
-              ))}
-            </div>
-          )}
-        </div>
+        <InputWithLabel
+          label="Correo"
+          name="email"
+          type="email"
+          value={formData.email}
+          onChange={handleInput}
+          placeholder="ejemplo@email.com"
+          error={errors.email}
+          autoFocus
+        />
+
+        <PasswordWithStrengthInput
+          value={formData.password}
+          onChange={handleInput}
+          error={errors.password}
+          showTooltip={!isLogin}
+          showStrengthBar={!isLogin}
+        />
 
         {!isLogin && (
-          <>
-            <input
-              type="password"
-              name="confirmPassword"
-              value={formData.confirmPassword}
-              onChange={handleInput}
-              placeholder="Confirm Password"
-              className="input-style"
-            />
-            {errors.confirmPassword && (
-              <p className="text-red-500 text-sm">{errors.confirmPassword}</p>
-            )}
-          </>
+          <InputWithLabel
+            label="Confirmar contraseña"
+            name="confirmPassword"
+            type="password"
+            value={formData.confirmPassword}
+            onChange={handleInput}
+            placeholder="Confirma tu contraseña"
+            error={errors.confirmPassword}
+          />
         )}
 
         {isLogin && (
@@ -298,7 +279,7 @@ export default function AuthForm({
 
         <button
           type="submit"
-          disabled={isSubmitting}
+          disabled={isSubmitting || (!isLogin && passwordStrength < 3)}
           className={`w-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white py-2 rounded-lg hover:opacity-90 transition-all ${
             isSubmitting ? "opacity-50 cursor-not-allowed" : ""
           }`}

@@ -11,6 +11,11 @@ import {
   updatePassword,
   updateResetToken,
 } from "../repositories/user.repository";
+import {
+  validateEmail,
+  validateNewPassword,
+  validatePasswordChange,
+} from "../utils/validators";
 
 // ✅ REGISTRO
 export const registerUser = async ({
@@ -24,6 +29,9 @@ export const registerUser = async ({
   password: string;
   phone: string;
 }) => {
+  validateEmail(email); // Validación robusta del mail
+  validateNewPassword(password); // Validación Robusta del password
+
   const existingUser = await findUserByEmail(email);
   if (existingUser) throw new Error("El correo ya está registrado");
 
@@ -91,13 +99,18 @@ export const sendResetPassword = async (email: string) => {
   await updateResetToken(email, token, expires);
 
   // Enviar el correo (solo console.log por ahora)
-  console.log(`📧 Enlace de recuperación: http://localhost:3000/reset-password/${token}`);
+  console.log(
+    `📧 Enlace de recuperación: http://localhost:3000/reset-password/${token}`
+  );
 };
 
 // ✅ RESTABLECER CONTRASEÑA
 export const resetPassword = async (token: string, newPassword: string) => {
   const user = await findUserByResetToken(token);
   if (!user) throw new Error("Token inválido o expirado");
+
+  //Validación robusta
+  validatePasswordChange(newPassword, user.email, user.password_hash);
 
   const password_hash = await bcrypt.hash(newPassword, 10);
   await updatePassword(user.id, password_hash);
@@ -109,3 +122,4 @@ export const checkResetToken = async (token: string) => {
   return user && new Date(user.reset_expires) > new Date();
 };
 
+// ✅

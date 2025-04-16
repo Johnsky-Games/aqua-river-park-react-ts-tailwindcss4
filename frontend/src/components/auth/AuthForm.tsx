@@ -210,7 +210,7 @@ export default function AuthForm({
         {!isLogin && (
           <>
             <InputWithLabel
-              label="Nombres"
+              label=""
               name="fullName"
               value={formData.fullName}
               onChange={handleInput}
@@ -219,23 +219,23 @@ export default function AuthForm({
             />
 
             <InputWithLabel
-              label="Teléfono"
+              label=""
               name="phone"
               value={formData.phone}
               onChange={handleInput}
-              placeholder="099..."
+              placeholder="Teléfono"
               error={errors.phone}
             />
           </>
         )}
 
         <InputWithLabel
-          label="Correo"
+          label=""
           name="email"
           type="email"
           value={formData.email}
           onChange={handleInput}
-          placeholder="ejemplo@email.com"
+          placeholder="Mail"
           error={errors.email}
           autoFocus
         />
@@ -250,7 +250,7 @@ export default function AuthForm({
 
         {!isLogin && (
           <InputWithLabel
-            label="Confirmar contraseña"
+            label=""
             name="confirmPassword"
             type="password"
             value={formData.confirmPassword}

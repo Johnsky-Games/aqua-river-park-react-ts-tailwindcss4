@@ -91,6 +91,8 @@ export default function AuthModal() {
 
   if (!isOpen) return null;
 
+  const isDesktop = typeof window !== "undefined" && window.innerWidth >= 768;
+
   return (
     <>
       <motion.div
@@ -112,27 +114,29 @@ export default function AuthModal() {
           animate={{ scale: 1, opacity: 1 }}
           exit={{ scale: 0.9, opacity: 0 }}
           transition={{ duration: 0.3 }}
-          className={`bg-white/95 backdrop-blur-md rounded-3xl shadow-2xl w-full max-w-4xl flex flex-col md:flex-row overflow-hidden transition-all ease-in-out duration-700 ${
+          className={`bg-bgLight dark:bg-gray-900 text-gray-800 dark:text-gray-100 backdrop-blur-md rounded-3xl shadow-2xl shadow-bgLight w-full max-w-4xl flex flex-col md:flex-row overflow-hidden transition-all ease-in-out duration-700 ${
             isLogin ? "md:flex-row-reverse" : "md:flex-row"
           }`}
         >
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={view}
-              initial={{ x: isLogin ? 300 : -300, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              exit={{ x: isLogin ? -300 : 300, opacity: 0 }}
-              transition={{ duration: 0.5, ease: "easeInOut" }}
-              className="w-full md:w-1/2 p-6 md:p-8 flex flex-col justify-center text-center space-y-6 bg-white"
-            >
-              <AuthSidePanel
-                title={messages[view].sideTitle}
-                description={messages[view].sideDescription}
-                buttonText={messages[view].sideButton}
-                onToggle={toggleView}
-              />
-            </motion.div>
-          </AnimatePresence>
+          {isDesktop && (
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={view}
+                initial={{ x: isLogin ? 300 : -300, opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                exit={{ x: isLogin ? -300 : 300, opacity: 0 }}
+                transition={{ duration: 0.5, ease: "easeInOut" }}
+                className="hidden md:flex w-full md:w-1/2 p-6 md:p-8 flex-col justify-center text-center space-y-6 bg-white dark:bg-gray-800"
+              >
+                <AuthSidePanel
+                  title={messages[view].sideTitle}
+                  description={messages[view].sideDescription}
+                  buttonText={messages[view].sideButton}
+                  onToggle={toggleView}
+                />
+              </motion.div>
+            </AnimatePresence>
+          )}
 
           <AnimatePresence mode="wait">
             <motion.div
@@ -141,25 +145,24 @@ export default function AuthModal() {
               animate={{ x: 0, opacity: 1 }}
               exit={{ x: isLogin ? 300 : -300, opacity: 0 }}
               transition={{ duration: 0.5, ease: "easeInOut" }}
-              className="w-full md:w-1/2 p-6 md:p-8"
+              className="w-full md:w-1/2 p-6 md:p-8 bg-gray-50 dark:bg-gray-900"
             >
               <h2 className="text-3xl font-bold text-center mb-2 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-transparent bg-clip-text">
                 {messages[view].title}
               </h2>
-              <p className="text-center text-sm text-gray-600 mb-4">
+              <p className="text-center text-sm text-gray-600 dark:text-gray-300 mb-4">
                 {messages[view].description}
               </p>
 
               <AuthForm
-  modalStep={modalStep}
-  showModal={showModal}
-  modalType={modalType}
-  setFormEmail={setFormEmail}
-  setModalStep={setModalStep}
-  setShowModal={setShowModal}
-  setModalType={setModalType}
-/>
-
+                modalStep={modalStep}
+                showModal={showModal}
+                modalType={modalType}
+                setFormEmail={setFormEmail}
+                setModalStep={setModalStep}
+                setShowModal={setShowModal}
+                setModalType={setModalType}
+              />
             </motion.div>
           </AnimatePresence>
         </motion.div>

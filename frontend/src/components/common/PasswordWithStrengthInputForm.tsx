@@ -32,21 +32,19 @@ export default function PasswordWithStrengthInput({
 
   return (
     <div className="relative mb-4">
-      <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 flex items-center gap-2">
-        Contraseña
+      <div className="absolute flex justify-start mb-1 top-[-14px] left-[4px]">
         {showTooltip && (
-          <span className="relative group">
-            <FaInfoCircle className="text-blue-500 cursor-pointer dark:text-blue-400" />
-            <div
-              className="absolute left-6 top-[-8px] w-64 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 text-xs p-2 rounded-md shadow-md
-              opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100 transform transition-all duration-200 ease-out z-10"
-            >
-              Usa mínimo 8 caracteres, una mayúscula, un número y un símbolo
-              especial. No uses tu correo ni contraseñas anteriores.
+          <div className="relative group inline-block">
+            <FaInfoCircle
+              className="text-blue-500 dark:text-blue-400 cursor-pointer p-0.5"
+              tabIndex={0} // para accesibilidad en teclado
+            />
+            <div className="absolute z-30 top-full right-[-260px] mt-2 w-72 md:w-64 text-xs bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-800 dark:text-gray-200 p-2 rounded shadow-md opacity-0 invisible group-hover:opacity-100 group-hover:visible group-focus-within:opacity-100 group-focus-within:visible transition-opacity duration-200 pointer-events-none">
+              Usa mínimo 8 caracteres, una mayúscula, un número y un símbolo especial. No uses tu correo ni contraseñas anteriores.
             </div>
-          </span>
+          </div>
         )}
-      </label>
+      </div>
 
       <input
         type={showPassword ? "text" : "password"}
@@ -61,7 +59,8 @@ export default function PasswordWithStrengthInput({
       <button
         type="button"
         onClick={() => setShowPassword(!showPassword)}
-        className="absolute right-3 top-[38px] text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition"
+        className="absolute right-3 top-[20px] text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition"
+        tabIndex={-1}
       >
         {showPassword ? <FaEyeSlash /> : <FaEye />}
       </button>
@@ -81,9 +80,7 @@ export default function PasswordWithStrengthInput({
             ))}
           </div>
           {score > 0 && (
-            <p className={`text-sm mt-1 ${label.color}`}>
-              Fuerza: {label.text}
-            </p>
+            <p className={`text-sm mt-1 ${label.color}`}>Fuerza: {label.text}</p>
           )}
         </div>
       )}

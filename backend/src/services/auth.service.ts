@@ -16,6 +16,7 @@ import {
   validateNewPassword,
   validatePasswordChange,
 } from "../utils/validators";
+import logger from "../utils/logger";
 
 // ✅ REGISTRO
 export const registerUser = async ({
@@ -99,9 +100,7 @@ export const sendResetPassword = async (email: string) => {
   await updateResetToken(email, token, expires);
 
   // Enviar el correo (solo console.log por ahora)
-  console.log(
-    `📧 Enlace de recuperación: http://localhost:3000/reset-password/${token}`
-  );
+  logger.info(`📧 Enlace de recuperación enviado a ${email}`);
 };
 
 // ✅ RESTABLECER CONTRASEÑA
@@ -121,5 +120,3 @@ export const checkResetToken = async (token: string) => {
   const user = await findUserByResetToken(token);
   return user && new Date(user.reset_expires) > new Date();
 };
-
-// ✅

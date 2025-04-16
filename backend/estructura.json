@@ -1,0 +1,96 @@
+{
+  "src": {
+    "app.ts": null,
+    "config": {
+      "db.ts": null,
+      "jwt.ts": null,
+      "mailer.ts": null,
+      "rateLimit.ts": null
+    },
+    "controllers": {
+      "admin.controller.ts": null,
+      "auth.controller.ts": null,
+      "cart.controller.ts": null,
+      "cart_items.controller.ts": null,
+      "confirm.controller.ts": null,
+      "dashboard.controller.ts": null,
+      "emailLog.controller.ts": null,
+      "freePass.controller.ts": null,
+      "invoice.controller.ts": null,
+      "permission.controller.ts": null,
+      "qrScan.controller.ts": null,
+      "recover.controller.ts": null,
+      "role.controller.ts": null,
+      "rolePermission.controller.ts": null,
+      "service.controller.ts": null,
+      "user.controller.ts": null,
+      "userPermissions.controller.ts": null
+    },
+    "index.ts": null,
+    "middlewares": {
+      "auth.middleware.ts": null,
+      "errorHandler.middleware.ts": null,
+      "limiter.ts": null,
+      "notFound.middleware.ts": null,
+      "role.middleware.ts": null,
+      "validateInput.ts": null,
+      "validation.middleware.ts": null
+    },
+    "models": {
+      "cart.model.ts": null,
+      "emailLog.model.ts": null,
+      "freePass.model.ts": null,
+      "index.ts": null,
+      "invoice.model.ts": null,
+      "permission.model.ts": null,
+      "qrScan.model.ts": null,
+      "role.model.ts": null,
+      "service.model.ts": null,
+      "user.model.ts": null
+    },
+    "repositories": {
+      "user.repository.ts": null
+    },
+    "routes": {
+      "admin.routes.ts": null,
+      "auth.routes.ts": null,
+      "cart.routes.ts": null,
+      "cart_items.routes.ts": null,
+      "clients.routes.ts": null,
+      "dashboard.routes.ts": null,
+      "emailLog.routes.ts": null,
+      "freePass.routes.ts": null,
+      "index.ts": null,
+      "invoices.routes.ts": null,
+      "permission.routes.ts": null,
+      "qrScan.routes.ts": null,
+      "role.routes.ts": null,
+      "rolePermissions.routes.ts": null,
+      "services.routes.ts": null,
+      "userPermissions.routes.ts": null,
+      "users.routes.ts": null
+    },
+    "services": {
+      "auth.service.ts": null,
+      "confirm.service.ts": null,
+      "recovery.service.ts": null
+    },
+    "types": {
+      "express": {
+        "index.d.ts": null
+      },
+      "xss-clean.d.ts": null
+    },
+    "utils": {
+      "hash.ts": null,
+      "logger.ts": null,
+      "mailerConfirmation.ts": null,
+      "mailerRecovery.ts": null,
+      "tokens.ts": null,
+      "validators.ts": null
+    },
+    "validations": {
+      "auth.schema.ts": null
+    }
+  }
+}

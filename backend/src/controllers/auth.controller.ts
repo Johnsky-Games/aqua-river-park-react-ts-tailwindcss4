@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import * as authService from "../services/auth.service";
 import { resendConfirmationService } from "../services/confirm.service";
+import logger from "../utils/logger";
 
 
 // ✅ REGISTRO
@@ -11,7 +12,7 @@ export const register = async (req: Request, res: Response) => {
       message: "Registro exitoso. Revisa tu correo para confirmar tu cuenta.",
     });
   } catch (error: any) {
-    console.error("❌ Registro:", error.message);
+    logger.error("❌ Registro:", error.message);
     res.status(400).json({ message: error.message || "Error al registrar" });
   }
 };
@@ -48,7 +49,7 @@ export const resendConfirmation = async (req: Request, res: Response) => {
     await resendConfirmationService(email); // 👈 llamado correcto
     res.json({ message: "Correo de confirmación reenviado." });
   } catch (error: any) {
-    console.error("❌ Reenviar confirmación:", error.message);
+    logger.error("❌ Reenviar confirmación:", error.message);
     res.status(400).json({ message: error.message });
   }
 };
@@ -61,7 +62,7 @@ export const sendRecovery = async (req: Request, res: Response) => {
     await authService.sendResetPassword(email);
     res.json({ message: "Correo de recuperación enviado." });
   } catch (error: any) {
-    console.error("❌ Enviar recuperación:", error.message);
+    logger.error("❌ Enviar recuperación:", error.message);
     res.status(400).json({ message: error.message });
   }
 };
@@ -74,7 +75,7 @@ export const resetPassword = async (req: Request, res: Response) => {
     await authService.resetPassword(token, password);
     res.json({ message: "Contraseña actualizada con éxito." });
   } catch (error: any) {
-    console.error("❌ Reset password:", error.message);
+    logger.error("❌ Reset password:", error.message);
     res.status(400).json({ message: error.message });
   }
 };

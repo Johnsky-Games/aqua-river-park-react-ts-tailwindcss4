@@ -1,9 +1,10 @@
 // backend/utils/mailerConfirmation.ts
 import { transporter } from "../config/mailer";
+import logger from "../utils/logger";
 
 const sendConfirmationEmail = async (email: string, token: string) => {
   const link = `${process.env.FRONTEND_URL}/confirm/${token}?email=${encodeURIComponent(email)}`;
-  console.log("🔗 Enlace de confirmación generado:", link);
+  logger.info(`📨 Enviando correo de confirmación a ${email}`);
 
   await transporter.sendMail({
     from: '"Aqua River Park" <no-reply@aquariverpark.com>',

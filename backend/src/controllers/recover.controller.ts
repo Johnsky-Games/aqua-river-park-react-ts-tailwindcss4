@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import * as authService from "../services/recovery.service";
+import logger from "../utils/logger";
 
 // ✅ 1. Enviar correo de recuperación
 export const sendRecovery = async (req: Request, res: Response) => {
@@ -9,7 +10,7 @@ export const sendRecovery = async (req: Request, res: Response) => {
     await authService.sendRecoveryService(email);
     res.json({ message: "Correo de recuperación enviado. Revisa tu bandeja." });
   } catch (error: any) {
-    console.error("❌ Error en sendRecovery:", error.message);
+    logger.error("❌ Error en sendRecovery:", error.message);
     res.status(error.status || 500).json({ message: error.message || "Error del servidor" });
   }
 };
@@ -22,7 +23,7 @@ export const checkTokenStatus = async (req: Request, res: Response) => {
     const isValid = await authService.checkTokenStatusService(token);
     res.json({ valid: isValid });
   } catch (error: any) {
-    console.error("❌ Error en checkTokenStatus:", error.message);
+    logger.error("❌ Error en checkTokenStatus:", error.message);
     res.status(500).json({ message: "Error al verificar token" });
   }
 };
@@ -36,7 +37,7 @@ export const resetPassword = async (req: Request, res: Response) => {
     await authService.resetPasswordService(token, password);
     res.json({ message: "Contraseña actualizada correctamente" });
   } catch (error: any) {
-    console.error("❌ Error en resetPassword:", error.message);
+    logger.error("❌ Error en resetPassword:", error.message);
     res.status(500).json({ message: "Error al cambiar contraseña" });
   }
 };

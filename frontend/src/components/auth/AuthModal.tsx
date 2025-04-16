@@ -145,7 +145,7 @@ export default function AuthModal() {
               animate={{ x: 0, opacity: 1 }}
               exit={{ x: isLogin ? 300 : -300, opacity: 0 }}
               transition={{ duration: 0.5, ease: "easeInOut" }}
-              className="w-full md:w-1/2 p-6 md:p-8 bg-gray-50 dark:bg-gray-900"
+              className={`w-full md:w-1/2 p-6 md:p-8 bg-gray-50 dark:bg-gray-900 flex flex-col justify-center`}
             >
               <h2 className="text-3xl font-bold text-center mb-2 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-transparent bg-clip-text">
                 {messages[view].title}

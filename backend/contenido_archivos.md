@@ -1,3 +1,5 @@
+# Contenido de Archivos
+
 ## src\app.ts
 
 ```typescript
@@ -5,6 +7,10 @@ import express from 'express';
 import dashboardRoutes from './routes/dashboard.routes';
 import authRoutes from './routes/auth.routes';
 import cors from 'cors';
+import notFound from "./middlewares/notFound.middleware";
+import errorHandler from "./middlewares/errorHandler.middleware";
+import xss from "xss-clean";
+
 
 const app = express();
 app.use(cors({
@@ -12,10 +18,13 @@ app.use(cors({
     credentials: true
 }));
 app.use(express.json());
+app.use(xss());
 
 // Agrupar rutas protegidas bajo /api
 app.use('/api', dashboardRoutes);
 app.use('/api', authRoutes);
+app.use(notFound);      // 👉 Para rutas no encontradas
+app.use(errorHandler);  // 👉 Para manejar errores de forma centralizada
 
 export default app;
 ```
@@ -95,6 +104,22 @@ export const transporter = nodemailer.createTransport({
 
 ```
 
+## src\config\rateLimit.ts
+
+```typescript
+// config/rateLimit.ts
+import rateLimit from "express-rate-limit";
+
+export const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutos
+  max: 5,
+  message: "Demasiados intentos. Intenta nuevamente en 15 minutos.",
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+```
+
 ## src\controllers\admin.controller.ts
 
 ```typescript
@@ -107,6 +132,7 @@ export const transporter = nodemailer.createTransport({
 import { Request, Response } from "express";
 import * as authService from "../services/auth.service";
 import { resendConfirmationService } from "../services/confirm.service";
+import logger from "../utils/logger";
 
 
 // ✅ REGISTRO
@@ -117,7 +143,7 @@ export const register = async (req: Request, res: Response) => {
       message: "Registro exitoso. Revisa tu correo para confirmar tu cuenta.",
     });
   } catch (error: any) {
-    console.error("❌ Registro:", error.message);
+    logger.error("❌ Registro:", error.message);
     res.status(400).json({ message: error.message || "Error al registrar" });
   }
 };
@@ -154,7 +180,7 @@ export const resendConfirmation = async (req: Request, res: Response) => {
     await resendConfirmationService(email); // 👈 llamado correcto
     res.json({ message: "Correo de confirmación reenviado." });
   } catch (error: any) {
-    console.error("❌ Reenviar confirmación:", error.message);
+    logger.error("❌ Reenviar confirmación:", error.message);
     res.status(400).json({ message: error.message });
   }
 };
@@ -167,7 +193,7 @@ export const sendRecovery = async (req: Request, res: Response) => {
     await authService.sendResetPassword(email);
     res.json({ message: "Correo de recuperación enviado." });
   } catch (error: any) {
-    console.error("❌ Enviar recuperación:", error.message);
+    logger.error("❌ Enviar recuperación:", error.message);
     res.status(400).json({ message: error.message });
   }
 };
@@ -180,7 +206,7 @@ export const resetPassword = async (req: Request, res: Response) => {
     await authService.resetPassword(token, password);
     res.json({ message: "Contraseña actualizada con éxito." });
   } catch (error: any) {
-    console.error("❌ Reset password:", error.message);
+    logger.error("❌ Reset password:", error.message);
     res.status(400).json({ message: error.message });
   }
 };
@@ -294,102 +320,46 @@ export const getDashboard = async (
 ## src\controllers\recover.controller.ts
 
 ```typescript
-// backend/src/controllers/recovery.controller.ts
 import { Request, Response } from "express";
-import db from "../config/db";
-import crypto from "crypto";
-import bcrypt from "bcryptjs";
-import sendRecoveryEmail from "../utils/mailerRecovery";
-import { RowDataPacket } from "mysql2";
+import * as authService from "../services/recovery.service";
 
-// ✅ 1. Enviar enlace de recuperación
-export const sendRecovery = async (req: Request, res: Response): Promise<void> => {
-    const { email } = req.body;
-  
-    try {
-      const [rows] = await db.query<RowDataPacket[]>(
-        "SELECT id FROM users WHERE email = ?",
-        [email]
-      );
-  
-      if (rows.length === 0) {
-        res.status(404).json({ message: "Correo no registrado" });
-        return;
-      }
-  
-      const reset_token = crypto.randomBytes(32).toString("hex");
-      const reset_expires = new Date(Date.now() + 60 * 60 * 1000); // 1 hora
-  
-      await db.query(
-        "UPDATE users SET reset_token = ?, reset_expires = ? WHERE email = ?",
-        [reset_token, reset_expires, email]
-      );
-  
-      // ✅ Confirma en consola el token generado
-      console.log("🔑 Token generado y guardado:", reset_token);
-  
-      await sendRecoveryEmail(email, reset_token);
-  
-      res.json({ message: "Correo de recuperación enviado. Revisa tu bandeja." });
-    } catch (error: any) {
-      console.error("❌ Error en sendRecovery:", error.message || error);
-      res.status(500).json({ message: "Error en el servidor" });
-    }
-  };
-
-// ✅ 2. Validar si el token aún es válido
-export const checkTokenStatus = async (req: Request, res: Response): Promise<void> => {
-  const { token } = req.body;
+// ✅ 1. Enviar correo de recuperación
+export const sendRecovery = async (req: Request, res: Response) => {
+  const { email } = req.body;
 
   try {
-    const [rows] = await db.query<RowDataPacket[]>(
-      "SELECT reset_expires FROM users WHERE reset_token = ?",
-      [token]
-    );
-
-    if (rows.length === 0 || new Date(rows[0].reset_expires) < new Date()) {
-      res.json({ valid: false });
-    } else {
-      res.json({ valid: true });
-    }
-  } catch (error) {
-    console.error("❌ Error al verificar token:", error);
-    res.status(500).json({ message: "Error en el servidor" });
+    await authService.sendRecoveryService(email);
+    res.json({ message: "Correo de recuperación enviado. Revisa tu bandeja." });
+  } catch (error: any) {
+    console.error("❌ Error en sendRecovery:", error.message);
+    res.status(error.status || 500).json({ message: error.message || "Error del servidor" });
   }
 };
 
-// ✅ 3. Restablecer la contraseña
-export const resetPassword = async (req: Request, res: Response): Promise<void> => {
+// ✅ 2. Verificar token
+export const checkTokenStatus = async (req: Request, res: Response) => {
+  const { token } = req.body;
+
+  try {
+    const isValid = await authService.checkTokenStatusService(token);
+    res.json({ valid: isValid });
+  } catch (error: any) {
+    console.error("❌ Error en checkTokenStatus:", error.message);
+    res.status(500).json({ message: "Error al verificar token" });
+  }
+};
+
+// ✅ 3. Cambiar contraseña
+export const resetPassword = async (req: Request, res: Response) => {
   const { token } = req.params;
   const { password } = req.body;
 
   try {
-    const [rows] = await db.query<RowDataPacket[]>(
-      "SELECT id, reset_expires FROM users WHERE reset_token = ?",
-      [token]
-    );
-
-    if (rows.length === 0) {
-      res.status(400).json({ message: "Token inválido" });
-      return;
-    }
-
-    const user = rows[0];
-    if (new Date(user.reset_expires) < new Date()) {
-      res.status(400).json({ message: "Token expirado" });
-      return;
-    }
-
-    const password_hash = await bcrypt.hash(password, 10);
-    await db.query(
-      "UPDATE users SET password_hash = ?, reset_token = NULL, reset_expires = NULL WHERE id = ?",
-      [password_hash, user.id]
-    );
-
+    await authService.resetPasswordService(token, password);
     res.json({ message: "Contraseña actualizada correctamente" });
   } catch (error: any) {
     console.error("❌ Error en resetPassword:", error.message);
-    res.status(500).json({ message: "Error en el servidor" });
+    res.status(500).json({ message: "Error al cambiar contraseña" });
   }
 };
 
@@ -413,45 +383,6 @@ export const resetPassword = async (req: Request, res: Response): Promise<void> 
 // service.controller.ts
 ```
 
-## src\controllers\tokenStatus.controller.ts
-
-```typescript
-// backend/src/controllers/tokenStatus.controller.ts
-import { Request, Response } from 'express';
-import db from '../config/db';
-import { RowDataPacket } from 'mysql2';
-
-export const checkTokenStatus = async (req: Request, res: Response): Promise<void> => {
-  const { email } = req.body;
-
-  try {
-    const [rows] = await db.query<RowDataPacket[]>(
-      'SELECT is_confirmed, confirmation_expires FROM users WHERE email = ?',
-      [email]
-    );
-
-    if (rows.length === 0) {
-      res.status(404).json({ message: 'Correo no encontrado' });
-      return;
-    }
-
-    const user = rows[0];
-    const now = new Date();
-
-    const isExpired = new Date(user.confirmation_expires) < now;
-
-    res.status(200).json({
-      is_confirmed: user.is_confirmed,
-      is_expired: isExpired,
-    });
-  } catch (error) {
-    console.error('❌ Error verificando estado del token:', error);
-    res.status(500).json({ message: 'Error en el servidor' });
-  }
-};
-
-```
-
 ## src\controllers\user.controller.ts
 
 ```typescript
@@ -469,10 +400,12 @@ export const checkTokenStatus = async (req: Request, res: Response): Promise<voi
 ```typescript
 // index.ts
 import app from './app';
+import logger from './utils/logger';
+
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
-  console.log(`✅ Servidor iniciado en http://localhost:${PORT}`);
+  logger.info(`✅ Servidor iniciado en http://localhost:${PORT}`);
 });
 ```
 
@@ -511,13 +444,44 @@ export const authMiddleware = (
 ## src\middlewares\errorHandler.middleware.ts
 
 ```typescript
-// errorHandler.middleware.ts
+// middlewares/errorHandler.middleware.ts
+import { Request, Response, NextFunction } from "express";
+import logger from "../utils/logger";
+
+const errorHandler = (
+  err: any,
+  _req: Request,
+  res: Response,
+  _next: NextFunction
+) => {
+  logger.error(`❌ Error global: ${err.stack || err.message}`);
+  res.status(err.status || 500).json({ message: err.message || "Error interno del servidor" });
+};
+
+export default errorHandler;
+
+```
+
+## src\middlewares\limiter.ts
+
+```typescript
+
 ```
 
 ## src\middlewares\notFound.middleware.ts
 
 ```typescript
-// notFound.middleware.ts
+// middlewares/notFound.middleware.ts
+import { Request, Response } from "express";
+import logger from "../utils/logger";
+
+const notFound = (req: Request, res: Response) => {
+  logger.warn(`🚫 Ruta no encontrada: ${req.method} ${req.originalUrl}`);
+  res.status(404).json({ message: "Ruta no encontrada" });
+};
+
+export default notFound;
+
 ```
 
 ## src\middlewares\role.middleware.ts
@@ -538,6 +502,28 @@ export const checkRole = (allowedRoles: string[]) => {
 
     next();
   };
+};
+
+```
+
+## src\middlewares\validateInput.ts
+
+```typescript
+// middlewares/validateInput.ts
+import { Request, Response, NextFunction } from "express";
+import { ZodSchema } from "zod";
+
+export const validate = (schema: ZodSchema) => async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+) => {
+    try {
+        req.body = await schema.parseAsync(req.body);
+        next();
+    } catch (err: any) {
+        res.status(400).json({ errors: err.errors });
+    }
 };
 
 ```
@@ -632,40 +618,72 @@ export const createUser = async (user: {
   confirmation_token: string;
   confirmation_expires: Date;
 }) => {
-  const { name, email, password_hash, phone, role_id, confirmation_token, confirmation_expires } = user;
+  const {
+    name,
+    email,
+    password_hash,
+    phone,
+    role_id,
+    confirmation_token,
+    confirmation_expires,
+  } = user;
 
   const [result] = await db.query<ResultSetHeader>(
     `INSERT INTO users (name, email, password_hash, phone, role_id, confirmation_token, confirmation_expires)
      VALUES (?, ?, ?, ?, ?, ?, ?)`,
-    [name, email, password_hash, phone, role_id, confirmation_token, confirmation_expires]
+    [
+      name,
+      email,
+      password_hash,
+      phone,
+      role_id,
+      confirmation_token,
+      confirmation_expires,
+    ]
   );
 
   return result.insertId;
 };
 
-export const updateConfirmationToken = async (email: string, token: string, expires: Date) => {
+export const updateConfirmationToken = async (
+  email: string,
+  token: string,
+  expires: Date
+) => {
   await db.query(
     `UPDATE users SET confirmation_token = ?, confirmation_expires = ? WHERE email = ?`,
     [token, expires, email]
   );
 };
 
-export const updateResetToken = async (email: string, token: string, expires: Date) => {
+export const updateResetToken = async (
+  email: string,
+  token: string,
+  expires: Date
+) => {
   await db.query(
     `UPDATE users SET reset_token = ?, reset_expires = ? WHERE email = ?`,
     [token, expires, email]
   );
 };
 
+// src/repositories/user.repository.ts
+
 export const findUserByResetToken = async (token: string) => {
   const [rows] = await db.query<RowDataPacket[]>(
-    "SELECT * FROM users WHERE reset_token = ? AND reset_expires > NOW()",
+    `
+    SELECT id, email, password_hash, reset_expires 
+    FROM users 
+    WHERE reset_token = ? AND reset_expires > NOW()`,
     [token]
   );
   return rows[0] || null;
 };
 
-export const updatePassword = async (userId: number, newPasswordHash: string) => {
+export const updatePassword = async (
+  userId: number,
+  newPasswordHash: string
+) => {
   await db.query(
     `UPDATE users SET password_hash = ?, reset_token = NULL, reset_expires = NULL WHERE id = ?`,
     [newPasswordHash, userId]
@@ -698,6 +716,22 @@ export const confirmUserById = async (id: number) => {
   );
 };
 
+export const findUserBasicByEmail = async (email: string) => {
+  const [rows] = await db.query<RowDataPacket[]>(
+    "SELECT id FROM users WHERE email = ?",
+    [email]
+  );
+  return rows[0] || null;
+};
+
+export const getResetTokenExpiration = async (token: string) => {
+  const [rows] = await db.query<RowDataPacket[]>(
+    "SELECT reset_expires FROM users WHERE reset_token = ?",
+    [token]
+  );
+  return rows[0] || null;
+};
+
 ```
 
 ## src\routes\admin.routes.ts
@@ -722,20 +756,23 @@ import { sendRecovery, checkTokenStatus, resetPassword } from '../controllers/re
 import { authMiddleware } from '../middlewares/auth.middleware';
 import { getDashboard } from '../controllers/dashboard.controller';
 import { checkRole } from '../middlewares/role.middleware';
+import { validate } from "../middlewares/validateInput";
+import { registerSchema, loginSchema } from "../validations/auth.schema";
+import { loginLimiter } from "../config/rateLimit";
 
 const router = Router();
 
 // Auth
-router.post('/register', register);
-router.post('/login', login);
+router.post('/register', validate(registerSchema), register);
+router.post('/login', loginLimiter, validate(loginSchema), login);
 router.post('/logout', logout);
 
 // Confirmación
 router.get('/confirm/:token', confirmUser);
-router.post('/resend-confirmation', resendConfirmation);
+router.post('/resend-confirmation', loginLimiter, resendConfirmation);
 
 // Recuperación de contraseña
-router.post('/send-recovery', sendRecovery);   // 👈 nuevo
+router.post('/send-recovery', loginLimiter, sendRecovery);   // 👈 nuevo
 router.post('/reset-password', resetPassword); // 👈 nuevo
 router.post("/reset-password/:token", resetPassword); // 👈 importante
 router.post('/check-token-status', checkTokenStatus); // 👈 nuevo
@@ -862,6 +899,11 @@ import {
   updatePassword,
   updateResetToken,
 } from "../repositories/user.repository";
+import {
+  validateEmail,
+  validateNewPassword,
+  validatePasswordChange,
+} from "../utils/validators";
 
 // ✅ REGISTRO
 export const registerUser = async ({
@@ -875,6 +917,9 @@ export const registerUser = async ({
   password: string;
   phone: string;
 }) => {
+  validateEmail(email); // Validación robusta del mail
+  validateNewPassword(password); // Validación Robusta del password
+
   const existingUser = await findUserByEmail(email);
   if (existingUser) throw new Error("El correo ya está registrado");
 
@@ -942,7 +987,9 @@ export const sendResetPassword = async (email: string) => {
   await updateResetToken(email, token, expires);
 
   // Enviar el correo (solo console.log por ahora)
-  console.log(`📧 Enlace de recuperación: http://localhost:3000/reset-password/${token}`);
+  console.log(
+    `📧 Enlace de recuperación: http://localhost:3000/reset-password/${token}`
+  );
 };
 
 // ✅ RESTABLECER CONTRASEÑA
@@ -950,9 +997,20 @@ export const resetPassword = async (token: string, newPassword: string) => {
   const user = await findUserByResetToken(token);
   if (!user) throw new Error("Token inválido o expirado");
 
+  //Validación robusta
+  validatePasswordChange(newPassword, user.email, user.password_hash);
+
   const password_hash = await bcrypt.hash(newPassword, 10);
   await updatePassword(user.id, password_hash);
 };
+
+// ✅ VERIFICAR token de recuperación
+export const checkResetToken = async (token: string) => {
+  const user = await findUserByResetToken(token);
+  return user && new Date(user.reset_expires) > new Date();
+};
+
+// ✅
 
 ```
 
@@ -1004,6 +1062,44 @@ export const resendConfirmationService = async (email: string) => {
 
 ```
 
+## src\services\recovery.service.ts
+
+```typescript
+import crypto from "crypto";
+import bcrypt from "bcryptjs";
+import sendRecoveryEmail from "../utils/mailerRecovery";
+import * as userRepo from "../repositories/user.repository";
+
+// ✅ 1. Enviar correo de recuperación
+export const sendRecoveryService = async (email: string) => {
+  const user = await userRepo.findUserBasicByEmail(email);
+  if (!user) throw new Error("Correo no registrado");
+
+  const token = crypto.randomBytes(32).toString("hex");
+  const expires = new Date(Date.now() + 60 * 60 * 1000); // 1 hora
+
+  await userRepo.updateResetToken(email, token, expires);
+  await sendRecoveryEmail(email, token);
+};
+
+// ✅ 2. Verificar token
+export const checkTokenStatusService = async (token: string): Promise<boolean> => {
+  const resetData = await userRepo.getResetTokenExpiration(token);
+  if (!resetData || new Date(resetData.reset_expires) < new Date()) return false;
+  return true;
+};
+
+// ✅ 3. Cambiar contraseña
+export const resetPasswordService = async (token: string, newPassword: string) => {
+  const user = await userRepo.findUserByResetToken(token);
+  if (!user) throw new Error("Token inválido o expirado");
+
+  const password_hash = await bcrypt.hash(newPassword, 10);
+  await userRepo.updatePassword(user.id, password_hash);
+};
+
+```
+
 ## src\types\express\index.d.ts
 
 ```typescript
@@ -1016,15 +1112,56 @@ export interface AuthenticatedRequest extends Request {
 
 ```
 
+## src\types\xss-clean.d.ts
+
+```typescript
+declare module 'xss-clean' {
+    import { RequestHandler } from 'express';
+    const xssClean: () => RequestHandler;
+    export default xssClean;
+  }
+  
+```
+
+## src\utils\hash.ts
+
+```typescript
+// utils/hash.ts
+import bcrypt from "bcryptjs";
+
+export const hashPassword = async (password: string) => await bcrypt.hash(password, 10);
+export const verifyPassword = async (plain: string, hashed: string) => await bcrypt.compare(plain, hashed);
+
+```
+
+## src\utils\logger.ts
+
+```typescript
+// utils/logger.ts
+import winston from "winston";
+
+const logger = winston.createLogger({
+  level: "info",
+  transports: [
+    new winston.transports.Console(),
+    new winston.transports.File({ filename: "logs/app.log" }),
+  ],
+});
+
+export default logger;
+
+```
+
 ## src\utils\mailerConfirmation.ts
 
 ```typescript
 // backend/utils/mailerConfirmation.ts
 import { transporter } from "../config/mailer";
+import logger from "../utils/logger";
 
 const sendConfirmationEmail = async (email: string, token: string) => {
   const link = `${process.env.FRONTEND_URL}/confirm/${token}?email=${encodeURIComponent(email)}`;
-  console.log("🔗 Enlace de confirmación generado:", link);
+  logger.info(`📨 Enviando correo de confirmación a ${email}`);
 
   await transporter.sendMail({
     from: '"Aqua River Park" <no-reply@aquariverpark.com>',
@@ -1096,16 +1233,17 @@ export default sendConfirmationEmail;
 ```typescript
 // backend/utils/mailerRecovery.ts
 import { transporter } from "../config/mailer";
+import logger from "./logger";
 
 const sendRecoveryEmail = async (email: string, token: string) => {
-    const link = `${process.env.FRONTEND_URL}/reset-password?token=${token}&email=${encodeURIComponent(email)}`;
-    console.log("🔗 Enlace de recuperación generado:", link);
+  const link = `${process.env.FRONTEND_URL}/reset-password?token=${token}&email=${encodeURIComponent(email)}`;
+  logger.info(`📨 Enviando correo de confirmación a ${email}`);
 
-    await transporter.sendMail({
-        from: '"Aqua River Park" <no-reply@aquariverpark.com>',
-        to: email,
-        subject: "Recupera tu contraseña - Aqua River Park",
-        html: `
+  await transporter.sendMail({
+    from: '"Aqua River Park" <no-reply@aquariverpark.com>',
+    to: email,
+    subject: "Recupera tu contraseña - Aqua River Park",
+    html: `
     <div style="margin: 0; padding: 0; background-color: #e0f7fa; font-family: 'Segoe UI', sans-serif;">
       <table role="presentation" cellpadding="0" cellspacing="0" width="100%">
         <tr>
@@ -1159,7 +1297,102 @@ const sendRecoveryEmail = async (email: string, token: string) => {
       </table>
     </div>
     `,
-    });
+  });
 };
 
 export default sendRecoveryEmail;
+
+```
+
+## src\utils\tokens.ts
+
+```typescript
+// utils/tokens.ts
+import crypto from "crypto";
+
+export const generateToken = (length = 32): string => {
+  return crypto.randomBytes(length).toString("hex");
+};
+
+```
+
+## src\utils\validators.ts
+
+```typescript
+import bcrypt from "bcryptjs";
+
+// Validación de email
+export const validateEmail = (email: string) => {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) {
+    throw new Error("Correo electrónico inválido.");
+  }
+};
+
+// Solo valida que sea fuerte (para el registro)
+export const validateNewPassword = (password: string): void => {
+  const minLength = 8;
+  const hasUpperCase = /[A-Z]/.test(password);
+  const hasLowerCase = /[a-z]/.test(password);
+  const hasNumber = /\d/.test(password);
+  const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+
+  if (password.length < minLength)
+    throw new Error("La contraseña debe tener al menos 8 caracteres.");
+
+  if (!hasUpperCase)
+    throw new Error("La contraseña debe tener al menos una letra mayúscula.");
+
+  if (!hasLowerCase)
+    throw new Error("La contraseña debe tener al menos una letra minúscula.");
+
+  if (!hasNumber)
+    throw new Error("La contraseña debe incluir al menos un número.");
+
+  if (!hasSpecialChar)
+    throw new Error("La contraseña debe incluir un carácter especial.");
+};
+
+// Valida que no sea igual a la anterior ni al correo
+export const validatePasswordChange = async (
+  newPassword: string,
+  email: string,
+  currentPasswordHash: string
+): Promise<void> => {
+  validateNewPassword(newPassword);
+
+  if (newPassword === email)
+    throw new Error("La contraseña no debe ser igual al correo.");
+
+  const isSameAsOld = await bcrypt.compare(newPassword, currentPasswordHash);
+  if (isSameAsOld)
+    throw new Error("La nueva contraseña no puede ser igual a la anterior.");
+};
+
+
+```
+
+## src\validations\auth.schema.ts
+
+```typescript
+// validations/auth.schema.ts
+import { z } from "zod";
+
+export const loginSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(8),
+});
+
+export const registerSchema = z.object({
+  name: z.string().min(2),
+  email: z.string().email(),
+  phone: z.string().regex(/^\d{10}$/),
+  password: z.string().min(8),
+  confirmPassword: z.string(),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Las contraseñas no coinciden",
+  path: ["confirmPassword"],
+});
+
+```
+

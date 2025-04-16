@@ -4,6 +4,7 @@ import {
     confirmAccountService,
     resendConfirmationService,
   } from "../services/confirm.service";  
+import logger from "../utils/logger";
 
 export const confirmUser = async (req: Request, res: Response): Promise<void> => {
     const { token } = req.params;
@@ -13,7 +14,7 @@ export const confirmUser = async (req: Request, res: Response): Promise<void> =>
         const result = await confirmAccountService(token, email as string | undefined);
         res.status(result.code).json({ message: result.message });
     } catch (error: any) {
-        console.error("❌ Error al confirmar:", error);
+        logger.error("❌ Error al confirmar:", error);
         res.status(500).json({ message: "Error en el servidor" });
     }
 };
@@ -27,7 +28,7 @@ export const resendConfirmation = async (req: Request, res: Response): Promise<v
             message: "Se envió un nuevo enlace de confirmación a tu correo",
         });
     } catch (error: any) {
-        console.error("❌ Error al reenviar confirmación:", error.message || error);
+        logger.error("❌ Error al reenviar confirmación:", error.message || error);
         res.status(400).json({
             message: error.message || "Error al reenviar confirmación",
         });

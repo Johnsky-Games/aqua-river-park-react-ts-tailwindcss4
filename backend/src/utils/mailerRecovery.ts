@@ -1,15 +1,16 @@
 // backend/utils/mailerRecovery.ts
 import { transporter } from "../config/mailer";
+import logger from "./logger";
 
 const sendRecoveryEmail = async (email: string, token: string) => {
-    const link = `${process.env.FRONTEND_URL}/reset-password?token=${token}&email=${encodeURIComponent(email)}`;
-    console.log("🔗 Enlace de recuperación generado:", link);
+  const link = `${process.env.FRONTEND_URL}/reset-password?token=${token}&email=${encodeURIComponent(email)}`;
+  logger.info(`📨 Enviando correo de confirmación a ${email}`);
 
-    await transporter.sendMail({
-        from: '"Aqua River Park" <no-reply@aquariverpark.com>',
-        to: email,
-        subject: "Recupera tu contraseña - Aqua River Park",
-        html: `
+  await transporter.sendMail({
+    from: '"Aqua River Park" <no-reply@aquariverpark.com>',
+    to: email,
+    subject: "Recupera tu contraseña - Aqua River Park",
+    html: `
     <div style="margin: 0; padding: 0; background-color: #e0f7fa; font-family: 'Segoe UI', sans-serif;">
       <table role="presentation" cellpadding="0" cellspacing="0" width="100%">
         <tr>
@@ -63,7 +64,7 @@ const sendRecoveryEmail = async (email: string, token: string) => {
       </table>
     </div>
     `,
-    });
+  });
 };
 
 export default sendRecoveryEmail;

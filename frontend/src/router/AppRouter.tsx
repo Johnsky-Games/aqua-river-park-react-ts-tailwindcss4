@@ -43,7 +43,14 @@ const AppRouter = () => (
         </PublicLayout>
       }
     />
-    <Route path="/reset-password" element={<ResetPassword />} />
+    <Route
+      path="/reset-password"
+      element={
+        <PublicLayout>
+          <ResetPassword />
+        </PublicLayout>
+      }
+    />
 
     <Route
       path="/dashboard"

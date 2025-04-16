@@ -5,7 +5,7 @@ const excluded = [
   "node_modules",
   ".env",
   ".git",
-  ".gitignore, jest.config.ts,package-lock.json, package.json,tsconfig.json",
+  ".gitignore", "jest.config.ts", "package-lock.json", "package.json", "tsconfig.json", "getFullProjectInfo.js",
 ];
 const jsonStructure = {};
 const fileContents = {};
@@ -15,14 +15,14 @@ let markdownContent = "# Contenido de Archivos\n\n";
 
 function walk(dir, prefix = "", jsonObj = jsonStructure) {
   const files = readdirSync(dir).filter(file => !excluded.includes(file));
-  
+
   files.forEach((file, index) => {
     const filePath = join(dir, file);
     const relPath = relative(process.cwd(), filePath);
     const isDir = statSync(filePath).isDirectory();
     const isLast = index === files.length - 1;
     const branch = `${prefix}${isLast ? "└── " : "├── "}${file}`;
-    
+
     markdownStructure += `${branch}\n`;
 
     if (isDir) {

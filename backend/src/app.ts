@@ -4,7 +4,7 @@ import authRoutes from './routes/auth.routes';
 import cors from 'cors';
 import notFound from "./middlewares/notFound.middleware";
 import errorHandler from "./middlewares/errorHandler.middleware";
-import xss from "xss-clean";
+import { sanitizeRequest } from './middlewares/sanitizeRequest';
 
 
 const app = express();
@@ -13,7 +13,7 @@ app.use(cors({
     credentials: true
 }));
 app.use(express.json());
-app.use(xss());
+app.use(sanitizeRequest);
 
 // Agrupar rutas protegidas bajo /api
 app.use('/api', dashboardRoutes);

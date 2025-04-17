@@ -3,7 +3,6 @@ import * as authService from "../services/auth.service";
 import { resendConfirmationService } from "../services/confirm.service";
 import logger from "../utils/logger";
 
-
 // ✅ REGISTRO
 export const register = async (req: Request, res: Response) => {
   try {
@@ -11,6 +10,7 @@ export const register = async (req: Request, res: Response) => {
     res.status(201).json({
       message: "Registro exitoso. Revisa tu correo para confirmar tu cuenta.",
     });
+    logger.info(`✅ Usuario registrado: ${req.body.email}`);
   } catch (error: any) {
     logger.error("❌ Registro:", error.message);
     res.status(400).json({ message: error.message || "Error al registrar" });
@@ -24,6 +24,7 @@ export const login = async (req: Request, res: Response) => {
   try {
     const data = await authService.loginUser(email, password);
     res.json(data);
+    logger.info(`✅ Login exitoso: ${email}`);
   } catch (error: any) {
     if (error.message === "Debes confirmar tu cuenta") {
       res.status(401).json({
@@ -31,7 +32,9 @@ export const login = async (req: Request, res: Response) => {
         tokenExpired: error.tokenExpired || false,
       });
     } else {
-      res.status(401).json({ message: error.message || "Error al iniciar sesión" });
+      res
+        .status(401)
+        .json({ message: error.message || "Error al iniciar sesión" });
     }
   }
 };
@@ -48,6 +51,7 @@ export const resendConfirmation = async (req: Request, res: Response) => {
   try {
     await resendConfirmationService(email); // 👈 llamado correcto
     res.json({ message: "Correo de confirmación reenviado." });
+    logger.info(`✅ Correo de confirmación reenviado: ${email}`);
   } catch (error: any) {
     logger.error("❌ Reenviar confirmación:", error.message);
     res.status(400).json({ message: error.message });
@@ -61,6 +65,7 @@ export const sendRecovery = async (req: Request, res: Response) => {
   try {
     await authService.sendResetPassword(email);
     res.json({ message: "Correo de recuperación enviado." });
+    logger.info(`✅ Correo de recuperación enviado: ${email}`);
   } catch (error: any) {
     logger.error("❌ Enviar recuperación:", error.message);
     res.status(400).json({ message: error.message });
@@ -74,6 +79,7 @@ export const resetPassword = async (req: Request, res: Response) => {
   try {
     await authService.resetPassword(token, password);
     res.json({ message: "Contraseña actualizada con éxito." });
+    logger.info(`✅ Clave actualizada con éxito`);
   } catch (error: any) {
     logger.error("❌ Reset password:", error.message);
     res.status(400).json({ message: error.message });

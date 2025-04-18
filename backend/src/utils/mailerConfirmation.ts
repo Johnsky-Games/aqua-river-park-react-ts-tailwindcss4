@@ -1,6 +1,6 @@
 // backend/utils/mailerConfirmation.ts
-import { transporter } from "../config/mailer";
-import logger from "../utils/logger";
+import { transporter } from "@/config/mailer";
+import logger from "@/utils/logger";
 
 const sendConfirmationEmail = async (email: string, token: string) => {
   const link = `${process.env.FRONTEND_URL}/confirm/${token}?email=${encodeURIComponent(email)}`;

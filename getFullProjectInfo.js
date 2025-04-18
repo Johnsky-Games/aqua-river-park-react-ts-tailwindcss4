@@ -1,7 +1,10 @@
 const fs = require("fs");
 const path = require("path");
 
-const excluded = ["node_modules", ".env", ".git", ".gitignore"];
+const excluded = ["node_modules",
+  ".env",
+  ".git",
+  ".gitignore", "jest.config.ts", "package-lock.json", "package.json", "tsconfig.json", "getFullProjectInfo.js", "create-folders.js"];
 const jsonStructure = {};
 const fileContents = {};
 
@@ -10,14 +13,14 @@ let markdownContent = "# Contenido de Archivos\n\n";
 
 function walk(dir, prefix = "", jsonObj = jsonStructure) {
   const files = fs.readdirSync(dir).filter(file => !excluded.includes(file));
-  
+
   files.forEach((file, index) => {
     const filePath = path.join(dir, file);
     const relPath = path.relative(process.cwd(), filePath);
     const isDir = fs.statSync(filePath).isDirectory();
     const isLast = index === files.length - 1;
     const branch = `${prefix}${isLast ? "└── " : "├── "}${file}`;
-    
+
     markdownStructure += `${branch}\n`;
 
     if (isDir) {

@@ -1,6 +1,6 @@
 // backend/utils/mailerRecovery.ts
-import { transporter } from "../config/mailer";
-import logger from "./logger";
+import { transporter } from "@/config/mailer";
+import logger from "@/utils/logger";
 
 const sendRecoveryEmail = async (email: string, token: string) => {
   const link = `${process.env.FRONTEND_URL}/reset-password?token=${token}&email=${encodeURIComponent(email)}`;

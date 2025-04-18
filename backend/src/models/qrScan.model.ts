@@ -1,1 +1,0 @@
-// qrScan.model.ts

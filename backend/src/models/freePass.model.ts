@@ -1,1 +1,0 @@
-// freePass.model.ts

@@ -5,7 +5,7 @@ const excluded = [
   "node_modules",
   ".env",
   ".git",
-  ".gitignore", "jest.config.ts", "package-lock.json", "package.json", "tsconfig.json", "getFullProjectInfo.js","create-folders.js",
+  ".gitignore", "jest.config.ts", "package-lock.json", "package.json", "tsconfig.json", "getFullProjectInfo.js", "create-folders.js", "app.log", "create-folders.js",
 ];
 const jsonStructure = {};
 const fileContents = {};

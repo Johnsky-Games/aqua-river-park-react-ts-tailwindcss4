@@ -1,10 +1,10 @@
 import express from "express";
-import dashboardRoutes from "@/routes/dashboard/dashboard.routes";
-import authRoutes from "@/routes/auth/auth.routes";
+import dashboardRoutes from "@/interfaces/routes/dashboard/dashboard.routes";
+import authRoutes from "@/interfaces/routes/auth/auth.routes";
 import cors from "cors";
-import notFound from "@/middlewares/error/notFound.middleware";
-import errorHandler from "@/middlewares/error/errorHandler.middleware";
-import { sanitizeRequest } from "@/middlewares/sanitize/sanitizeRequest";
+import notFound from "@/interfaces/middlewares/error/notFound.middleware";
+import errorHandler from "@/interfaces/middlewares/error/errorHandler.middleware";
+import { sanitizeRequest } from "@/interfaces/middlewares/sanitize/sanitizeRequest";
 import helmet from "helmet";
 
 const app = express();

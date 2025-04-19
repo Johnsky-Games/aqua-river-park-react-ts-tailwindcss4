@@ -1,0 +1,124 @@
+{
+  "coverage": {
+    "lcov-report": {
+      "config": {},
+      "constants": {},
+      "repositories": {},
+      "services": {},
+      "utils": {}
+    }
+  },
+  "dist": {
+    "config": {},
+    "constants": {},
+    "controllers": {},
+    "middlewares": {},
+    "models": {},
+    "repositories": {},
+    "routes": {},
+    "services": {},
+    "utils": {
+      "__tests__": {}
+    }
+  },
+  "logs": {},
+  "src": {
+    "app.ts": null,
+    "config": {},
+    "domain": {
+      "models": {
+        "user": {
+          "cart.model.ts": null,
+          "cartItem.model.ts": null,
+          "permission.model.ts": null,
+          "role.model.ts": null,
+          "service.model.ts": null,
+          "user.model.ts": null
+        }
+      },
+      "ports": {
+        "role.repository.ts": null,
+        "user.repository.ts": null
+      },
+      "services": {
+        "auth": {
+          "auth.service.ts": null,
+          "confirm.service.ts": null,
+          "recovery.service.ts": null
+        }
+      }
+    },
+    "index.ts": null,
+    "infraestructure": {
+      "db": {
+        "db.ts": null,
+        "role.repository.ts": null,
+        "user.repository.ts": null
+      },
+      "logger": {
+        "logger.ts": null
+      },
+      "mail": {
+        "mailer.ts": null,
+        "mailerConfirmation.ts": null,
+        "mailerRecovery.ts": null
+      },
+      "security": {
+        "rateLimit.ts": null
+      }
+    },
+    "interfaces": {
+      "controllers": {
+        "auth": {
+          "auth.controller.ts": null,
+          "confirm.controller.ts": null,
+          "recover.controller.ts": null
+        },
+        "dashboard": {
+          "dashboard.controller.ts": null
+        }
+      },
+      "middlewares": {
+        "auth": {
+          "auth.middleware.ts": null
+        },
+        "error": {
+          "errorHandler.middleware.ts": null,
+          "notFound.middleware.ts": null
+        },
+        "role": {
+          "role.middleware.ts": null
+        },
+        "sanitize": {
+          "sanitizeRequest.ts": null
+        },
+        "validate": {
+          "validateInput.ts": null
+        }
+      },
+      "routes": {
+        "auth": {
+          "auth.routes.ts": null
+        },
+        "dashboard": {
+          "dashboard.routes.ts": null
+        }
+      }
+    },
+    "repositories": {},
+    "shared": {
+      "hash.ts": null,
+      "sanitize.ts": null,
+      "security": {
+        "jwt.ts": null
+      },
+      "tokens.ts": null,
+      "validations": {
+        "auth": {},
+        "auth.schema.ts": null,
+        "user": {},
+        "validators.ts": null
+      }
+    }
+  }
+}

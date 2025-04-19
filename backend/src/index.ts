@@ -1,6 +1,6 @@
 // index.ts
-import app from '@/app';
-import logger from '@/utils/logger';
+import app from "@/app";
+import logger from "@/infraestructure/logger/logger";
 
 const PORT = process.env.PORT || 3000;
 

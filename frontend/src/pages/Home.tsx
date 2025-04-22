@@ -1,12 +1,32 @@
-// src/pages/Home.tsx
+// pages/Home.tsx
+import { Hero } from "@/components/home/Hero";
+import { Benefits } from "@/components/home/Benefits";
+import { Attractions } from "@/components/home/Attractions";
+import { RegisterInvoice } from "@/components/home/RegisterInvoice";
+import { Location } from "@/components/home/Location";
+
+type InvoiceData = {
+  cedula: string;
+  email: string;
+  phone: string;
+  invoiceNumber: string;
+};
+
 const Home = () => {
-    return (
-      <div className="text-center">
-        <h1 className="text-3xl font-bold text-primary mt-8">Bienvenido a Aqua River Park</h1>
-        <p className="mt-4 text-gray-700 dark:text-gray-300">Tu aventura acuática comienza aquí.</p>
-      </div>
-    );
+  const handleInvoiceSubmit = (data: InvoiceData) => {
+    console.log("Factura registrada:", data);
+    // Aquí puedes conectar con una API si deseas enviar el formulario
   };
-  
-  export default Home;
-  
+
+  return (
+    <main className="overflow-x-hidden">
+      <Hero />
+      <Benefits />
+      <Attractions />
+      <RegisterInvoice onSubmit={handleInvoiceSubmit} />
+      <Location />
+    </main>
+  );
+};
+
+export default Home;

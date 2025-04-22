@@ -1,0 +1,96 @@
+{
+  "eslint.config.js": null,
+  "index.html": null,
+  "public": {
+    "ARP logo.png": null
+  },
+  "README.md": null,
+  "src": {
+    "api": {
+      "axios.ts": null
+    },
+    "App.css": null,
+    "App.tsx": null,
+    "assets": {
+      "react.svg": null
+    },
+    "components": {
+      "auth": {
+        "AuthForm.tsx": null,
+        "AuthModal.tsx": null,
+        "AuthResendModal.tsx": null,
+        "AuthSidePanel.tsx": null
+      },
+      "common": {
+        "Alert.tsx": null,
+        "Avatar.tsx": null,
+        "Breadcrumb.tsx": null,
+        "Button.tsx": null,
+        "Card.tsx": null,
+        "CardGrid.tsx": null,
+        "CustomToast.tsx": null,
+        "DropdownMenu.tsx": null,
+        "FormField.tsx": null,
+        "Input.tsx": null,
+        "InputWithLabel.tsx": null,
+        "Modal.tsx": null,
+        "PasswordField.tsx": null,
+        "PasswordWithStrengthInputForm.tsx": null,
+        "Spinner.tsx": null,
+        "ToastNotification.tsx": null
+      },
+      "NavMenu.tsx": null,
+      "RouteModalHandler.tsx": null,
+      "ThemeToggle.tsx": null
+    },
+    "context": {
+      "AuthContext.tsx": null,
+      "ThemeContext.tsx": null,
+      "ThemeProvider.tsx": null
+    },
+    "data": {},
+    "hooks": {
+      "useAuth.ts": null,
+      "useTheme.ts": null
+    },
+    "index.css": null,
+    "layout": {
+      "Container.tsx": null,
+      "DashboardLayout.tsx": null,
+      "navigation": {
+        "Footer.tsx": null,
+        "Header.tsx": null,
+        "HeaderMobile.tsx": null,
+        "MiniFooter.tsx": null,
+        "Sidebar.tsx": null
+      },
+      "PublicLayout.tsx": null
+    },
+    "main.tsx": null,
+    "pages": {
+      "ConfirmAccount.tsx": null,
+      "ConfirmationMail.tsx": null,
+      "Dashboard.tsx": null,
+      "Home.tsx": null,
+      "Login.tsx": null,
+      "NotFound.tsx": null,
+      "Register.tsx": null,
+      "ResetPassword.tsx": null
+    },
+    "router": {
+      "AppRouter.tsx": null
+    },
+    "store": {
+      "useAuthModal.ts": null
+    },
+    "utils": {
+      "auth.ts": null,
+      "PrivateRoute.tsx": null,
+      "validationHelpersForm.ts": null
+    },
+    "vite-env.d.ts": null
+  },
+  "tsconfig.app.json": null,
+  "tsconfig.node.json": null,
+  "vite.config.ts": null
+}

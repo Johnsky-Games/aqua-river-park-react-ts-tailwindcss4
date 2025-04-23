@@ -11,19 +11,19 @@ import { toast } from "react-toastify";
 
 const messages = {
   login: {
-    title: "Welcome Back! 👋",
-    description: "We're so excited to see you again! Enter your details to access your account.",
-    sideTitle: "New Here? 🌟",
-    sideDescription: "Join our community and discover amazing features!",
-    sideButton: "Create Account",
+    title: "Bienvenido de vuelta! 👋",
+    description: "Estamos emocionados de verte nuevamente! Ingresa tus credenciales para acceder a tu cuenta.",
+    sideTitle: "Nuevo aquí? 🌟",
+    sideDescription: "Únete a nuestra comunidad y descubre cosas increíbles!",
+    sideButton: "Cerar Cuenta",
     submit: "Sign In",
   },
   register: {
-    title: "Join Our Community! 🎉",
-    description: "Create an account and start your journey with us today.",
-    sideTitle: "One of Us? 🎈",
-    sideDescription: "Already have an account? Sign in and continue your journey!",
-    sideButton: "Sign In",
+    title: "Únete a nuestra comunidad! 🎉",
+    description: "Crea una cuenta y comienza tu viaje con nosotros hoy.",
+    sideTitle: "Uno de nosotros? 🎈",
+    sideDescription: "¿Ya tienes una cuenta? Inicia sesión y continúa tu viaje!",
+    sideButton: "Iniciar sesión",
     submit: "Sign Up",
   },
 };

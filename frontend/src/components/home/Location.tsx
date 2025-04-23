@@ -24,17 +24,17 @@ export const Location = () => {
             className="flex flex-col justify-center"
           >
             <div className="flex items-start gap-4 mb-6">
-              <FaMapMarkerAlt size={28} className="text-primary dark:text-accent1 mt-1" />
+              <FaMapMarkerAlt size={28} className="text-secondary dark:text-accent1 mt-1" />
               <div>
                 <h3 className="text-xl font-semibold text-textDark dark:text-white">Dirección</h3>
                 <p className="text-gray-600 dark:text-gray-300">
-                  Vía al río, Km 12, Parroquia San Pedro, Quito, Ecuador.
+                Guayllabamba - Rio Pisque, Quito, Ecuador.
                 </p>
               </div>
             </div>
 
             <div className="flex items-start gap-4">
-              <FaClock size={28} className="text-primary dark:text-accent1 mt-1" />
+              <FaClock size={28} className="text-secondary dark:text-accent1 mt-1" />
               <div>
                 <h3 className="text-xl font-semibold text-textDark dark:text-white">Horario</h3>
                 <p className="text-gray-600 dark:text-gray-300">
@@ -54,7 +54,7 @@ export const Location = () => {
           >
             <iframe
               title="Ubicación Aqua River Park"
-              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d997.1577814259337!2d-78.4820648582634!3d-0.18065319771840107!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x91d59a6aaef0f4d3%3A0x7e6b805b9c2d79e2!2sParque%20Recreacional!5e0!3m2!1ses-419!2sec!4v1713632500000!5m2!1ses-419!2sec"
+              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3989.817645657002!2d-78.3380557255235!3d-0.03332053553907081!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x91d58afedd97270f%3A0x2bf40c3d3b842bc8!2sAqua%20River%20Park!5e0!3m2!1ses!2sec!4v1745416434328!5m2!1ses!2sec"
               width="100%"
               height="300"
               style={{ border: 0 }}

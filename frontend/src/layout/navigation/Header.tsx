@@ -62,7 +62,7 @@ const Header: React.FC = () => {
               <img
                 src="/ARP logo.png"
                 alt="Logo"
-                className="h-10 w-auto drop-shadow"
+                className="h-16 pb-2 w-auto drop-shadow"
               />
             </Link>
           </div>

@@ -91,7 +91,10 @@ export const RegisterInvoice = ({ onSubmit }: Props) => {
               hidden: { opacity: 0, y: -30 },
               visible: { opacity: 1, y: 0 },
             }}
-            className="register-title text-2xl sm:text-3xl font-bold text-accent2 dark:text-white text-center"
+            initial={{ opacity: 0, y: -30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="register-title text-2xl sm:text-3xl font-bold text-primary dark:text-white text-center"
           >
             Registro de Facturas
           </motion.h3>
@@ -161,7 +164,7 @@ export const RegisterInvoice = ({ onSubmit }: Props) => {
               visible: { opacity: 1, scale: 1 },
             }}
             type="submit"
-            className="register-button w-full bg-gradient-to-r from-accent2 to-primary text-white rounded-xl py-3 px-4 font-medium hover:shadow-lg transition-all duration-200"
+            className="register-button w-full bg-accent2/80 hover:bg-primary text-white rounded-xl py-3 px-4 font-medium hover:shadow-lg transition-all duration-200"
           >
             Registrar Factura
           </motion.button>

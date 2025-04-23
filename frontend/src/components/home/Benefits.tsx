@@ -1,4 +1,3 @@
-// components/Benefits.tsx
 import { FaSwimmer, FaTree, FaUtensils, FaShieldAlt, FaTicketAlt } from "react-icons/fa";
 import { motion } from "framer-motion";
 import AOS from 'aos';
@@ -36,15 +35,18 @@ const benefits = [
 export const Benefits = () => {
   useEffect(() => {
     AOS.init({
-      duration: 1500, // Duración global de la animación en milisegundos (aumenta para más suavidad)
-      easing: 'ease-out-quart', // Tipo de easing para la animación (prueba diferentes valores)
-      once: true, // Opcional: si quieres que la animación solo ocurra una vez
+      duration: 1500,
+      easing: 'ease-out-quart',
+      once: true,
     });
   }, []);
 
+  const isOdd = benefits.length % 2 !== 0;
+  const lastIndex = benefits.length - 1;
+
   return (
     <section className="py-16 bg-secondary/10 dark:bg-neutral-900 text-center" id="benefits">
-      <div className="max-w-6xl mx-auto px-4">
+      <div className="max-w-full mx-auto px-4">
         <motion.h2
           initial={{ opacity: 0, y: -30 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -54,7 +56,7 @@ export const Benefits = () => {
           ¿Por qué elegir Aqua River Park?
         </motion.h2>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 sm:gap-8">
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:flex lg:flex-row lg:justify-center lg:items-stretch lg:gap-6 sm:gap-8">
           {benefits.map((item, index) => (
             <div
               key={index}
@@ -62,6 +64,7 @@ export const Benefits = () => {
                 index === 2 ? "fade-up" : (index % 2 === 0 ? "fade-down-left" : "fade-down-right")
               }
               data-aos-delay={index * 100}
+              className={`${isOdd && index === lastIndex ? 'sm:col-span-2 sm:justify-self-center lg:w-1/5' : 'lg:w-1/5'}`}
             >
               <motion.div
                 initial={{ opacity: 0, y: 20 }}

@@ -43,33 +43,34 @@ export const Hero = () => {
   return (
     <section
       id="hero"
-      className="relative min-h-[90vh] flex items-center justify-center text-center px-6 overflow-hidden"
+      className="relative min-h-screen flex items-center justify-center text-center px-6 overflow-hidden"
     >
       {/* Fondo con parallax y overlay oscuro */}
-      <div className="absolute inset-0 z-0 pointer-events-none top-0">
-        <Parallax speed={-100}>
+      <div className="absolute inset-0 z-0 pointer-events-none">
+        <Parallax speed={-100} className="h-full">
           <img
             src="/hero-bg.jpg"
             alt="Fondo Aqua River Park"
             className="w-full h-full object-cover"
           />
-          <div className="absolute inset-0 bg-bgDark/70 z-10" />
+          <div className="absolute inset-0 z-10" />
         </Parallax>
       </div>
 
       {/* Contenido */}
-      <div className="relative z-20 max-w-4xl text-textLight">
+      <div className="relative z-20 max-w-4xl text-textLight bg-bgDark/40 p-16 rounded-lg border-none shadow-md shadow-bgLight/30">
         <h1
           ref={titleRef}
-          className="text-4xl md:text-6xl font-bold leading-tight mb-6 opacity-0 drop-shadow-md"
+          className="text-4xl md:text-6xl font-bold leading-tight mb-6 opacity-0 drop-shadow-md text-shadow-xs text-shadow-textLight"
         >
           Bienvenido a <span className="text-primary">Aqua River Park</span>
         </h1>
         <p
           ref={subtitleRef}
-          className="text-lg md:text-xl mb-8 opacity-0 max-w-2xl mx-auto text-[--color-textLight]/90"
+          className="text-lg md:text-xl mb-8 opacity-0 max-w-2xl mx-auto text-textLight text-shadow-xs text-shadow-textLight"
         >
-          Diversión, naturaleza y experiencias inolvidables para toda la familia.
+          Diversión, naturaleza y experiencias inolvidables para toda la
+          familia.
         </p>
         <a
           ref={buttonRef}

@@ -288,7 +288,7 @@ export default function AuthForm({
         </button>
 
         <p className="text-center text-sm text-gray-600 mt-4">
-          {isLogin ? "Don’t have an account?" : "Already have an account?"}{" "}
+          {isLogin ? "No tienes una cuenta?" : "Ya tienes una cuenta?"}{" "}
           <button
             type="button"
             onClick={toggleView}

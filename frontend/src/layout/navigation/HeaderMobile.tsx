@@ -31,7 +31,7 @@ const HeaderMobile: React.FC<HeaderMobileProps> = ({ onToggleSidebar }) => {
   }, [location]);
 
   return (
-    <header className="bg-primary dark:bg-bgDark text-white px-4 py-3 flex items-center justify-between shadow-md sticky top-0 z-50">
+    <header className="bg-primary dark:bg-bgDark text-textLight px-4 py-3 flex items-center justify-between shadow-md sticky top-0 z-50">
       {/* Sidebar toggle + Logo */}
       <div className="flex items-center gap-3">
         {onToggleSidebar && (

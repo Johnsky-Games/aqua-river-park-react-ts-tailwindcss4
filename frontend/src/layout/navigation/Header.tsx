@@ -44,7 +44,7 @@ const Header: React.FC = () => {
   return (
     <header className="bg-primary dark:bg-bgDark text-white shadow-md sticky top-0 z-50 transition-colors duration-300 ease-in-out">
       <div className="max-w-[1400px] mx-auto px-4 md:px-8">
-        <div className="flex items-center justify-between h-14 md:h-16">
+        <div className="flex items-center justify-between h-14 md:h-18">
           {/* Logo y Toggle */}
           <div className="flex items-center gap-3">
             <button
@@ -64,7 +64,6 @@ const Header: React.FC = () => {
                 alt="Logo"
                 className="h-10 w-auto drop-shadow"
               />
-              <span className="font-bold text-lg">Aqua River Park</span>
             </Link>
           </div>
 

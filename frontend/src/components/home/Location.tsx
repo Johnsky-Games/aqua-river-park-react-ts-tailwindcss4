@@ -24,9 +24,9 @@ export const Location = () => {
             className="flex flex-col justify-center"
           >
             <div className="flex items-start gap-4 mb-6">
-              <FaMapMarkerAlt size={28} className="text-primary dark:text-accent2 mt-1" />
+              <FaMapMarkerAlt size={28} className="text-primary dark:text-accent1 mt-1" />
               <div>
-                <h3 className="text-xl font-semibold text-[--color-primary] dark:text-white">Dirección</h3>
+                <h3 className="text-xl font-semibold text-textDark dark:text-white">Dirección</h3>
                 <p className="text-gray-600 dark:text-gray-300">
                   Vía al río, Km 12, Parroquia San Pedro, Quito, Ecuador.
                 </p>
@@ -34,9 +34,9 @@ export const Location = () => {
             </div>
 
             <div className="flex items-start gap-4">
-              <FaClock size={28} className="text-[--color-primary] dark:text-accent2 mt-1" />
+              <FaClock size={28} className="text-primary dark:text-accent1 mt-1" />
               <div>
-                <h3 className="text-xl font-semibold text-primary dark:text-white">Horario</h3>
+                <h3 className="text-xl font-semibold text-textDark dark:text-white">Horario</h3>
                 <p className="text-gray-600 dark:text-gray-300">
                   Lunes a Viernes: 09:00 AM - 06:00 PM <br />
                   Fines de semana y feriados: 08:00 AM - 07:00 PM

@@ -46,7 +46,7 @@ export const Hero = () => {
       className="relative min-h-[90vh] flex items-center justify-center text-center px-6 overflow-hidden"
     >
       {/* Fondo con parallax y overlay oscuro */}
-      <div className="absolute inset-0 z-0 pointer-events-none">
+      <div className="absolute inset-0 z-0 pointer-events-none top-0">
         <Parallax speed={-100}>
           <img
             src="/hero-bg.jpg"

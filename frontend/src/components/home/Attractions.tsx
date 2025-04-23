@@ -1,6 +1,9 @@
 // components/Attractions.tsx
 import { FaWater, FaMountain, FaSpa, FaFish, FaSun, FaBiking } from "react-icons/fa";
 import { motion } from "framer-motion";
+import AOS from 'aos';
+import 'aos/dist/aos.css';
+import { useEffect } from 'react';
 
 const attractions = [
   {
@@ -36,6 +39,14 @@ const attractions = [
 ];
 
 export const Attractions = () => {
+  useEffect(() => {
+    AOS.init({
+      duration: 1500, // Duración global de la animación en milisegundos (ajusta para más suavidad)
+      easing: 'ease-out-sine', // Tipo de easing para la animación (prueba diferentes valores)
+      once: false, // Opcional: si quieres que la animación solo ocurra una vez
+    });
+  }, []);
+
   return (
     <section id="attractions" className="py-16 bg-bgLight dark:bg-bgDark text-center">
       <div className="max-w-6xl mx-auto px-4">
@@ -50,18 +61,27 @@ export const Attractions = () => {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 cursor-pointer">
           {attractions.map((item, index) => (
-            <motion.div
+            <div
               key={index}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: index * 0.1, duration: 0.5 }}
-              className="group bg-white dark:bg-neutral-800 hover:bg-secondary/20 dark:hover:bg-neutral-700 p-6 rounded-2xl shadow-md hover:shadow-xl transition"
+              data-aos={
+                index % 3 === 0 ? "fade-down-left" : index % 3 === 1 ? "fade-up" : "fade-down-right"
+              }
+              data-aos-delay={index * 100}
             >
-              <div className="mb-4 flex justify-center">{item.icon}</div>
-              <h3 className="text-xl font-semibold text-[--color-primary] dark:text-white">{item.title}</h3>
-              <p className="text-textDark/75 dark:text-gray-300 mt-2">{item.description}</p>
-            </motion.div>
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5 }}
+                className="h-full"
+              >
+                <div className="group bg-white dark:bg-neutral-800 hover:bg-secondary/20 dark:hover:bg-neutral-700 p-6 rounded-2xl shadow-md hover:shadow-xl transition h-full flex flex-col">
+                  <div className="mb-4 flex justify-center">{item.icon}</div>
+                  <h3 className="text-xl font-semibold text-[--color-primary] dark:text-white mb-2">{item.title}</h3>
+                  <p className="text-textDark/75 dark:text-gray-300 mt-auto">{item.description}</p>
+                </div>
+              </motion.div>
+            </div>
           ))}
         </div>
       </div>

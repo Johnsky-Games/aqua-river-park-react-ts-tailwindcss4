@@ -1,28 +1,12 @@
 # Estructura del Proyecto
 
 ```
-├── coverage
-│   └── lcov-report
-│       ├── config
-│       ├── constants
-│       ├── repositories
-│       ├── services
-│       └── utils
-├── dist
-│   ├── config
-│   ├── constants
-│   ├── controllers
-│   ├── middlewares
-│   ├── models
-│   ├── repositories
-│   ├── routes
-│   ├── services
-│   └── utils
-│       └── __tests__
 ├── logs
 └── src
     ├── app.ts
     ├── config
+    │   ├── db.ts
+    │   └── mailer.ts
     ├── domain
     │   ├── models
     │   │   └── user
@@ -43,13 +27,11 @@
     ├── index.ts
     ├── infraestructure
     │   ├── db
-    │   │   ├── db.ts
     │   │   ├── role.repository.ts
     │   │   └── user.repository.ts
     │   ├── logger
     │   │   └── logger.ts
     │   ├── mail
-    │   │   ├── mailer.ts
     │   │   ├── mailerConfirmation.ts
     │   │   └── mailerRecovery.ts
     │   └── security
@@ -79,16 +61,15 @@
     │       │   └── auth.routes.ts
     │       └── dashboard
     │           └── dashboard.routes.ts
-    ├── repositories
-    └── shared
-        ├── hash.ts
-        ├── sanitize.ts
-        ├── security
-        │   └── jwt.ts
-        ├── tokens.ts
-        └── validations
-            ├── auth
-            ├── auth.schema.ts
-            ├── user
-            └── validators.ts
+    ├── shared
+    │   ├── hash.ts
+    │   ├── sanitize.ts
+    │   ├── security
+    │   │   └── jwt.ts
+    │   ├── tokens.ts
+    │   └── validations
+    │       ├── auth.schema.ts
+    │       └── validators.ts
+    └── types
+        └── express.d.ts
 ```

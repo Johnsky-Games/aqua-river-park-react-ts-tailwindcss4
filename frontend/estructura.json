@@ -2,7 +2,8 @@
   "eslint.config.js": null,
   "index.html": null,
   "public": {
-    "ARP logo.png": null
+    "ARP logo.png": null,
+    "hero-bg.jpg": null
   },
   "README.md": null,
   "src": {
@@ -12,8 +13,10 @@
     "App.css": null,
     "App.tsx": null,
     "assets": {
+      "hero-bg.jpg": null,
       "react.svg": null
     },
+    "auth": {},
     "components": {
       "auth": {
         "AuthForm.tsx": null,
@@ -39,6 +42,13 @@
         "Spinner.tsx": null,
         "ToastNotification.tsx": null
       },
+      "home": {
+        "Attractions.tsx": null,
+        "Benefits.tsx": null,
+        "Hero.tsx": null,
+        "Location.tsx": null,
+        "RegisterInvoice.tsx": null
+      },
       "NavMenu.tsx": null,
       "RouteModalHandler.tsx": null,
       "ThemeToggle.tsx": null
@@ -48,7 +58,6 @@
       "ThemeContext.tsx": null,
       "ThemeProvider.tsx": null
     },
-    "data": {},
     "hooks": {
       "useAuth.ts": null,
       "useTheme.ts": null
@@ -82,6 +91,9 @@
     },
     "store": {
       "useAuthModal.ts": null
+    },
+    "types": {
+      "simple-parallax-js.d.ts": null
     },
     "utils": {
       "auth.ts": null,

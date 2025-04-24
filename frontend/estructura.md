@@ -4,7 +4,8 @@
 ├── eslint.config.js
 ├── index.html
 ├── public
-│   └── ARP logo.png
+│   ├── ARP logo.png
+│   └── hero-bg.jpg
 ├── README.md
 ├── src
 │   ├── api
@@ -12,7 +13,9 @@
 │   ├── App.css
 │   ├── App.tsx
 │   ├── assets
+│   │   ├── hero-bg.jpg
 │   │   └── react.svg
+│   ├── auth
 │   ├── components
 │   │   ├── auth
 │   │   │   ├── AuthForm.tsx
@@ -36,6 +39,12 @@
 │   │   │   ├── PasswordWithStrengthInputForm.tsx
 │   │   │   ├── Spinner.tsx
 │   │   │   └── ToastNotification.tsx
+│   │   ├── home
+│   │   │   ├── Attractions.tsx
+│   │   │   ├── Benefits.tsx
+│   │   │   ├── Hero.tsx
+│   │   │   ├── Location.tsx
+│   │   │   └── RegisterInvoice.tsx
 │   │   ├── NavMenu.tsx
 │   │   ├── RouteModalHandler.tsx
 │   │   └── ThemeToggle.tsx
@@ -43,7 +52,6 @@
 │   │   ├── AuthContext.tsx
 │   │   ├── ThemeContext.tsx
 │   │   └── ThemeProvider.tsx
-│   ├── data
 │   ├── hooks
 │   │   ├── useAuth.ts
 │   │   └── useTheme.ts
@@ -72,6 +80,8 @@
 │   │   └── AppRouter.tsx
 │   ├── store
 │   │   └── useAuthModal.ts
+│   ├── types
+│   │   └── simple-parallax-js.d.ts
 │   ├── utils
 │   │   ├── auth.ts
 │   │   ├── PrivateRoute.tsx

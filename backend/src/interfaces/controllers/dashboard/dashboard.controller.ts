@@ -8,6 +8,11 @@ export const getDashboard = async (
 ): Promise<void> => {
   const user = req.user;
 
+  if (!user) {
+    res.status(401).json({ message: "No autorizado" });
+    return;
+  }
+
   res.json({
     message: `Hola ${user.name}, bienvenido al dashboard.`,
     role: user.role,

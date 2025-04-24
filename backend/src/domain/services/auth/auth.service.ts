@@ -1,7 +1,6 @@
 // src/domain/services/auth/auth.service.ts
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
-import { generateToken } from "@/shared/security/jwt";
 import sendConfirmationEmail from "@/infraestructure/mail/mailerConfirmation";
 import { UserRepository } from "@/domain/ports/user.repository";
 import {
@@ -10,6 +9,11 @@ import {
   validatePasswordChange,
 } from "@/shared/validations/validators";
 import logger from "@/infraestructure/logger/logger";
+import {
+  generateAccessToken,
+  generateRefreshToken,
+  verifyRefreshToken,
+} from "@/shared/security/jwt";
 
 // 👇 Define aquí los roles permitidos para el JWT
 type RoleName = "admin" | "client";
@@ -76,20 +80,55 @@ export const loginUser = async (
   const isMatch = await bcrypt.compare(password, user.password_hash);
   if (!isMatch) throw new Error("Contraseña incorrecta");
 
-  const token = generateToken({
+  const accessToken = generateAccessToken({
     id: user.id,
     email: user.email,
     name: user.name,
-    role: (user.role_name || "client") as RoleName, // ← CORREGIDO
+    role: (user.role_name || "client") as RoleName,
+    roleId: user.role_id || 0, // ✅ fallback por si es undefined
+  });
+
+  const refreshToken = generateRefreshToken({
+    id: user.id,
+    email: user.email,
+    name: user.name,
+    role: (user.role_name || "client") as RoleName,
+    roleId: user.role_id || 0,
   });
 
   return {
-    token,
+    accessToken,
+    refreshToken,
     user: {
       email: user.email,
       isConfirmed: Boolean(user.is_confirmed),
     },
   };
+};
+
+export const refreshAccessToken = async (
+  deps: { userRepository: UserRepository },
+  refreshToken: string
+) => {
+  try {
+    const payload = verifyRefreshToken(refreshToken);
+    const { userRepository } = deps;
+
+    const user = await userRepository.findUserBasicByEmail(payload.email);
+    if (!user) throw new Error("Usuario no encontrado");
+
+    const newAccessToken = generateAccessToken({
+      id: payload.id,
+      email: payload.email,
+      name: payload.name,
+      role: payload.role,
+      roleId: payload.roleId || 0,
+    });
+
+    return { accessToken: newAccessToken };
+  } catch (error) {
+    throw new Error("Token de refresco inválido o expirado");
+  }
 };
 
 export const sendResetPassword = async (

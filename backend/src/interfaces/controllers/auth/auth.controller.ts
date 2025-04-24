@@ -18,31 +18,58 @@ export const register = async (req: Request, res: Response) => {
 };
 
 // ✅ LOGIN
-export const login = async (req: Request, res: Response) => {
+export const login = async (req: Request, res: Response): Promise<void> => {
   const { email, password } = req.body;
 
   try {
-    const data = await authService.loginUser({ userRepository }, email, password);
-    res.json(data);
+    const { accessToken, refreshToken, user } = await authService.loginUser(
+      { userRepository },
+      email,
+      password
+    );
+
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+
+    res.status(200).json({
+      token: accessToken,
+      user,
+    });
+
     logger.info(`✅ Login exitoso: ${email}`);
   } catch (error: any) {
+    logger.error("❌ Login:", error.message);
+
     if (error.message === "Debes confirmar tu cuenta") {
       res.status(401).json({
         message: error.message,
         tokenExpired: error.tokenExpired || false,
       });
-    } else {
-      res.status(401).json({ message: error.message || "Error al iniciar sesión" });
+      return; // ← IMPORTANTE
     }
+
+    res.status(401).json({
+      message: error.message || "Error al iniciar sesión",
+    });
   }
 };
 
-// ✅ LOGOUT (placeholder si usas JWT)
-export const logout = async (_req: Request, res: Response) => {
-  res.json({ message: "Sesión cerrada" });
+
+// ✅ LOGOUT - elimina cookie
+export const logout = (_req: Request, res: Response) => {
+  res.clearCookie("refreshToken", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "strict",
+  });
+  res.json({ message: "Sesión cerrada correctamente." });
 };
 
-// ✅ SOLICITAR RECUPERACIÓN DE CONTRASEÑA
+// ✅ ENVIAR CORREO DE RECUPERACIÓN
 export const sendRecovery = async (req: Request, res: Response) => {
   const { email } = req.body;
 
@@ -69,3 +96,26 @@ export const resetPassword = async (req: Request, res: Response) => {
     res.status(400).json({ message: error.message });
   }
 };
+
+// ✅ REFRESH TOKEN
+export const refreshToken = async (req: Request, res: Response): Promise<void> => {
+  const refreshToken = req.cookies?.refreshToken;
+  if (!refreshToken) {
+    res.status(401).json({ message: "No se encontró token de refresco" });
+    return;
+  }
+
+  try {
+    const { accessToken } = await authService.refreshAccessToken(
+      { userRepository },
+      refreshToken
+    );
+
+    // ❌ NO hacer: return res.json(...)
+    // ✅ Solo llamar res.json(...) sin return
+    res.json({ token: accessToken });
+  } catch (error: any) {
+    res.status(403).json({ message: error.message || "Token inválido" });
+  }
+};
+

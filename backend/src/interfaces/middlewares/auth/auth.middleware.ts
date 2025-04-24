@@ -1,5 +1,6 @@
+// src/interfaces/middlewares/auth/auth.middleware.ts
 import { Request, Response, NextFunction } from "express";
-import { verifyToken, TokenPayload } from "@/shared/security/jwt";
+import { verifyAccessToken } from "@/shared/security/jwt";
 import { AuthenticatedRequest } from "@/types/express";
 
 export const authMiddleware = (
@@ -17,8 +18,16 @@ export const authMiddleware = (
   const token = authHeader.split(" ")[1];
 
   try {
-    const decoded = verifyToken(token) as TokenPayload;
-    (req as AuthenticatedRequest).user = decoded;
+    const decoded = verifyAccessToken(token);
+
+    (req as AuthenticatedRequest).user = {
+      id: decoded.id,
+      email: decoded.email,
+      name: decoded.name,
+      role: decoded.role,
+      roleId: decoded.roleId, // ✅ ya está validado por tipo TokenPayload
+    };
+
     next();
   } catch {
     res.status(401).json({ message: "Token inválido o expirado" });

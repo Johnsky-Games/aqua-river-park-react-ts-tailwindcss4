@@ -6,8 +6,10 @@ import notFound from "@/interfaces/middlewares/error/notFound.middleware";
 import errorHandler from "@/interfaces/middlewares/error/errorHandler.middleware";
 import { sanitizeRequest } from "@/interfaces/middlewares/sanitize/sanitizeRequest";
 import helmet from "helmet";
+import cookieParser from "cookie-parser";
 
 const app = express();
+app.use(cookieParser());
 app.use(express.json({ limit: "10kb" })); // Evita ataques de payloads masivos (DoS)
 app.use(
   helmet.hsts({

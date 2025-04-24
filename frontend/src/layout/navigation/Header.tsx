@@ -35,7 +35,7 @@ const Header: React.FC = () => {
 
   useEffect(() => {
     if (isLoggedIn && userRole === "admin") {
-      navigate("/admin");
+      navigate("/admin/dashboard");
     }
   }, [isLoggedIn, userRole, navigate]);
 

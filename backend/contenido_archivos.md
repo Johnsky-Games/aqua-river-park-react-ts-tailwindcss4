@@ -38,6 +38,52 @@ export default app;
 
 ```
 
+## src\config\db.ts
+
+```typescript
+// db.ts
+import mysql from 'mysql2/promise';
+import dotenv from 'dotenv';
+dotenv.config();
+
+export const db = mysql.createPool({
+  host: process.env.DB_HOST || 'localhost',
+  user: process.env.DB_USER || 'root',
+  password: process.env.DB_PASSWORD || '',
+  database: process.env.DB_NAME || 'aqua_river_park',
+  waitForConnections: true,
+  connectionLimit: 10,
+  queueLimit: 0
+});
+
+// console.log('Conectando a la DB con usuario:', process.env.DB_USER);
+// console.log('Contraseña:', process.env.DB_PASSWORD);
+
+
+
+export default db;
+
+```
+
+## src\config\mailer.ts
+
+```typescript
+// backend/config/mailer.ts
+import dotenv from 'dotenv';
+dotenv.config();
+import nodemailer from 'nodemailer';
+
+export const transporter = nodemailer.createTransport({
+  host: process.env.MAIL_HOST,
+  port: Number(process.env.MAIL_PORT),
+  auth: {
+    user: process.env.MAIL_USER,
+    pass: process.env.MAIL_PASS
+  }
+});
+
+```
+
 ## src\domain\models\user\cart.model.ts
 
 ```typescript
@@ -103,24 +149,24 @@ export interface Service {
 
 ```typescript
 export interface User {
-    id: number;
-    name: string;
-    email: string;
-    password_hash: string;
-    created_at: Date;
-    is_confirmed?: boolean;
-    confirmation_token?: string | null;
-    confirmation_expires?: Date | null;
-    reset_token?: string | null;
-    reset_expires?: Date | null;
-    last_login?: Date | null;
-    avatar_url?: string | null;
-    login_attempts?: number;
-    locked_until?: Date | null;
-    role_id?: number | null;
-    phone?: string | null;
-  }
-  
+  id: number;
+  name: string;
+  email: string;
+  password_hash: string;
+  created_at: Date;
+  is_confirmed?: boolean;
+  confirmation_token?: string | null;
+  confirmation_expires?: Date | null;
+  reset_token?: string | null;
+  reset_expires?: Date | null;
+  last_login?: Date | null;
+  avatar_url?: string | null;
+  login_attempts?: number;
+  locked_until?: Date | null;
+  role_id?: number | null;
+  phone?: string | null;
+}
+
 ```
 
 ## src\domain\ports\role.repository.ts
@@ -459,37 +505,10 @@ app.listen(PORT, () => {
 
 ```
 
-## src\infraestructure\db\db.ts
-
-```typescript
-// db.ts
-import mysql from 'mysql2/promise';
-import dotenv from 'dotenv';
-dotenv.config();
-
-export const db = mysql.createPool({
-  host: process.env.DB_HOST || 'localhost',
-  user: process.env.DB_USER || 'root',
-  password: process.env.DB_PASSWORD || '',
-  database: process.env.DB_NAME || 'aqua_river_park',
-  waitForConnections: true,
-  connectionLimit: 10,
-  queueLimit: 0
-});
-
-// console.log('Conectando a la DB con usuario:', process.env.DB_USER);
-// console.log('Contraseña:', process.env.DB_PASSWORD);
-
-
-
-export default db;
-
-```
-
 ## src\infraestructure\db\role.repository.ts
 
 ```typescript
-import { db } from "@/infraestructure/db/db";
+import { db } from "@/config/db";
 import { RowDataPacket, ResultSetHeader } from "mysql2";
 import { Role } from "@/domain/models/user/role.model";
 import { RoleRepository } from "@/domain/ports/role.repository";
@@ -505,7 +524,7 @@ export const roleRepository: RoleRepository = {
       "SELECT * FROM roles WHERE id = ?",
       [id]
     );
-    return rows[0] as Role || null;
+    return (rows[0] as Role) || null;
   },
 
   async findRoleByName(name: string): Promise<Role | null> {
@@ -513,7 +532,7 @@ export const roleRepository: RoleRepository = {
       "SELECT * FROM roles WHERE name = ?",
       [name]
     );
-    return rows[0] as Role || null;
+    return (rows[0] as Role) || null;
   },
 
   async createRole(role: Omit<Role, "id">): Promise<number> {
@@ -534,7 +553,7 @@ export const roleRepository: RoleRepository = {
 ## src\infraestructure\db\user.repository.ts
 
 ```typescript
-import db from "@/infraestructure/db/db";
+import db from "@/config/db";
 import { RowDataPacket, ResultSetHeader } from "mysql2";
 import { User } from "@/domain/models/user/user.model";
 import { UserRepository } from "@/domain/ports/user.repository";
@@ -548,7 +567,7 @@ export const userRepository: UserRepository = {
        WHERE u.email = ?`,
       [email]
     );
-    return rows[0] as (User & { role_name?: string }) || null;
+    return (rows[0] as User & { role_name?: string }) || null;
   },
 
   async createUser(user) {
@@ -565,7 +584,15 @@ export const userRepository: UserRepository = {
     const [result] = await db.query<ResultSetHeader>(
       `INSERT INTO users (name, email, password_hash, phone, role_id, confirmation_token, confirmation_expires)
        VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      [name, email, password_hash, phone, role_id, confirmation_token, confirmation_expires]
+      [
+        name,
+        email,
+        password_hash,
+        phone,
+        role_id,
+        confirmation_token,
+        confirmation_expires,
+      ]
     );
 
     return result.insertId;
@@ -592,7 +619,12 @@ export const userRepository: UserRepository = {
        WHERE reset_token = ? AND reset_expires > NOW()`,
       [token]
     );
-    return rows[0] as Pick<User, "id" | "email" | "password_hash" | "reset_expires"> || null;
+    return (
+      (rows[0] as Pick<
+        User,
+        "id" | "email" | "password_hash" | "reset_expires"
+      >) || null
+    );
   },
 
   async updatePassword(userId, newPasswordHash) {
@@ -607,7 +639,7 @@ export const userRepository: UserRepository = {
       `SELECT * FROM users WHERE confirmation_token = ?`,
       [token]
     );
-    return rows[0] as User || null;
+    return (rows[0] as User) || null;
   },
 
   async checkConfirmedByEmail(email) {
@@ -615,7 +647,7 @@ export const userRepository: UserRepository = {
       `SELECT is_confirmed FROM users WHERE email = ?`,
       [email]
     );
-    return rows[0] as Pick<User, "is_confirmed"> || null;
+    return (rows[0] as Pick<User, "is_confirmed">) || null;
   },
 
   async confirmUserById(id) {
@@ -632,7 +664,7 @@ export const userRepository: UserRepository = {
       `SELECT id FROM users WHERE email = ?`,
       [email]
     );
-    return rows[0] as Pick<User, "id"> || null;
+    return (rows[0] as Pick<User, "id">) || null;
   },
 
   async getResetTokenExpiration(token) {
@@ -640,7 +672,7 @@ export const userRepository: UserRepository = {
       `SELECT reset_expires FROM users WHERE reset_token = ?`,
       [token]
     );
-    return rows[0] as Pick<User, "reset_expires"> || null;
+    return (rows[0] as Pick<User, "reset_expires">) || null;
   },
 };
 
@@ -664,30 +696,11 @@ export default logger;
 
 ```
 
-## src\infraestructure\mail\mailer.ts
-
-```typescript
-// backend/config/mailer.ts
-import dotenv from 'dotenv';
-dotenv.config();
-import nodemailer from 'nodemailer';
-
-export const transporter = nodemailer.createTransport({
-  host: process.env.MAIL_HOST,
-  port: Number(process.env.MAIL_PORT),
-  auth: {
-    user: process.env.MAIL_USER,
-    pass: process.env.MAIL_PASS
-  }
-});
-
-```
-
 ## src\infraestructure\mail\mailerConfirmation.ts
 
 ```typescript
 // backend/utils/mailerConfirmation.ts
-import { transporter } from "@/infraestructure/mail/mailer";
+import { transporter } from "@/config/mailer";
 import logger from "@/infraestructure/logger/logger";
 
 const sendConfirmationEmail = async (email: string, token: string) => {
@@ -763,7 +776,7 @@ export default sendConfirmationEmail;
 
 ```typescript
 // backend/utils/mailerRecovery.ts
-import { transporter } from "@/infraestructure/mail/mailer";
+import { transporter } from "@/config/mailer";
 import logger from "@/infraestructure/logger/logger";
 
 const sendRecoveryEmail = async (email: string, token: string) => {
@@ -888,19 +901,17 @@ export const login = async (req: Request, res: Response) => {
         tokenExpired: error.tokenExpired || false,
       });
     } else {
-      res
-        .status(401)
-        .json({ message: error.message || "Error al iniciar sesión" });
+      res.status(401).json({ message: error.message || "Error al iniciar sesión" });
     }
   }
 };
 
-// ✅ LOGOUT
+// ✅ LOGOUT (placeholder si usas JWT)
 export const logout = async (_req: Request, res: Response) => {
   res.json({ message: "Sesión cerrada" });
 };
 
-// ✅ RECUPERACIÓN DE CONTRASEÑA
+// ✅ SOLICITAR RECUPERACIÓN DE CONTRASEÑA
 export const sendRecovery = async (req: Request, res: Response) => {
   const { email } = req.body;
 
@@ -933,27 +944,21 @@ export const resetPassword = async (req: Request, res: Response) => {
 ## src\interfaces\controllers\auth\confirm.controller.ts
 
 ```typescript
-// src/controllers/confirm.controller.ts
 import { Request, Response } from "express";
 import {
   confirmAccountService,
   resendConfirmationService,
 } from "@/domain/services/auth/confirm.service";
+import { userRepository } from "@/infraestructure/db/user.repository";
 import logger from "@/infraestructure/logger/logger";
 
 // ✅ CONFIRMAR USUARIO
-export const confirmUser = async (
-  req: Request,
-  res: Response
-): Promise<void> => {
+export const confirmUser = async (req: Request, res: Response): Promise<void> => {
   const { token } = req.params;
   const { email } = req.query;
 
   try {
-    const result = await confirmAccountService(
-      token,
-      email as string | undefined
-    );
+    const result = await confirmAccountService({ userRepository }, token, email as string | undefined);
     res.status(result.code).json({ message: result.message });
   } catch (error: any) {
     logger.error("❌ Error al confirmar:", error);
@@ -962,14 +967,11 @@ export const confirmUser = async (
 };
 
 // ✅ REENVIAR CONFIRMACIÓN
-export const resendConfirmation = async (
-  req: Request,
-  res: Response
-): Promise<void> => {
+export const resendConfirmation = async (req: Request, res: Response): Promise<void> => {
   const { email } = req.body;
 
   try {
-    await resendConfirmationService(email);
+    await resendConfirmationService({ userRepository }, email);
     res.status(200).json({
       message: "Se envió un nuevo enlace de confirmación a tu correo",
     });
@@ -1204,6 +1206,7 @@ export const validate = (schema: ZodSchema) => async (
 ## src\interfaces\routes\auth\auth.routes.ts
 
 ```typescript
+// src/interfaces/routes/auth/auth.routes.ts
 import { Router } from "express";
 import {
   login,
@@ -1214,39 +1217,38 @@ import {
   confirmUser,
   resendConfirmation,
 } from "@/interfaces/controllers/auth/confirm.controller";
-// import { checkTokenStatus } from '../controllers/tokenStatus.controller';
 import {
   sendRecovery,
   checkTokenStatus,
   resetPassword,
-} from "@/interfaces/controllers/auth/recover.controller"; // 👈 nuevo
+} from "@/interfaces/controllers/auth/recover.controller";
 
 import { authMiddleware } from "@/interfaces/middlewares/auth/auth.middleware";
-import { getDashboard } from "@/interfaces/controllers/dashboard/dashboard.controller";
 import { checkRole } from "@/interfaces/middlewares/role/role.middleware";
+import { getDashboard } from "@/interfaces/controllers/dashboard/dashboard.controller";
 import { validate } from "@/interfaces/middlewares/validate/validateInput";
-import { registerSchema, loginSchema } from "@/validations/auth.schema";
+import { registerSchema, loginSchema } from "@/shared/validations/auth.schema";
 import { loginLimiter } from "@/infraestructure/security/rateLimit";
 import { AuthenticatedRequest } from "@/types/express";
 
 const router = Router();
 
-// Auth
+// ✅ Registro y autenticación
 router.post("/register", validate(registerSchema), register);
 router.post("/login", loginLimiter, validate(loginSchema), login);
 router.post("/logout", logout);
 
-// Confirmación
+// ✅ Confirmación de cuenta
 router.get("/confirm/:token", confirmUser);
 router.post("/resend-confirmation", loginLimiter, resendConfirmation);
 
-// Recuperación de contraseña
-router.post("/send-recovery", loginLimiter, sendRecovery); // 👈 nuevo
-router.post("/reset-password", resetPassword); // 👈 nuevo
-router.post("/reset-password/:token", resetPassword); // 👈 importante
-router.post("/check-token-status", checkTokenStatus); // 👈 nuevo
+// ✅ Recuperación de contraseña
+router.post("/send-recovery", loginLimiter, sendRecovery);
+router.post("/reset-password", resetPassword); // desde el frontend con token incluido en el body
+router.post("/reset-password/:token", resetPassword); // vía URL directa con token
+router.post("/check-token-status", checkTokenStatus);
 
-// Protegidas
+// ✅ Ruta protegida de prueba
 router.get("/dashboard", authMiddleware, (req, res) =>
   getDashboard(req as AuthenticatedRequest, res)
 );
@@ -1422,6 +1424,19 @@ export const validatePasswordChange = async (
     throw new Error("La nueva contraseña no puede ser igual a la anterior.");
 };
 
+
+```
+
+## src\types\express.d.ts
+
+```typescript
+// src/types/express.d.ts
+import { Request } from "express";
+import { TokenPayload } from "../config/jwt";
+
+export interface AuthenticatedRequest extends Request {
+  user?: TokenPayload;
+}
 
 ```
 

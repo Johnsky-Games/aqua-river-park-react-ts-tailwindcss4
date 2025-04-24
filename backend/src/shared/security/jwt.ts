@@ -1,25 +1,33 @@
-// jwt.ts
-import jwt, { JwtPayload } from 'jsonwebtoken';
-import dotenv from 'dotenv';
+// src/shared/security/jwt.ts
+import jwt from "jsonwebtoken";
+import dotenv from "dotenv";
 
 dotenv.config();
 
-const JWT_SECRET = process.env.JWT_SECRET || 'supersecret';
-const JWT_EXPIRES_IN = '7d';
-
-export type RoleName = 'admin' | 'client' | 'moderator' | 'superadmin'; // extensible
-
-export interface TokenPayload {
+export type TokenPayload = {
   id: number;
   email: string;
   name: string;
-  role: RoleName;
-}
-
-export const generateToken = (payload: TokenPayload): string => {
-  return jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
+  role: string;
+  roleId: number; // ✅ Agregado para validaciones por ID
 };
 
-export const verifyToken = (token: string): TokenPayload => {
-  return jwt.verify(token, JWT_SECRET) as TokenPayload;
+
+const ACCESS_TOKEN_SECRET = process.env.JWT_ACCESS_SECRET || "accesssecret";
+const REFRESH_TOKEN_SECRET = process.env.JWT_REFRESH_SECRET || "refreshsecret";
+
+export const generateAccessToken = (payload: TokenPayload): string => {
+  return jwt.sign(payload, ACCESS_TOKEN_SECRET, { expiresIn: "15m" });
+};
+
+export const generateRefreshToken = (payload: TokenPayload): string => {
+  return jwt.sign(payload, REFRESH_TOKEN_SECRET, { expiresIn: "7d" });
+};
+
+export const verifyAccessToken = (token: string): TokenPayload => {
+  return jwt.verify(token, ACCESS_TOKEN_SECRET) as TokenPayload;
+};
+
+export const verifyRefreshToken = (token: string): TokenPayload => {
+  return jwt.verify(token, REFRESH_TOKEN_SECRET) as TokenPayload;
 };

@@ -1,6 +1,13 @@
 // src/types/express.d.ts
 import { Request } from "express";
-import { TokenPayload } from "../config/jwt";
+
+export interface TokenPayload {
+  id: number;
+  email: string;
+  name: string;
+  role: string;
+  roleId: number; // ✅ Asegúrate de que esta propiedad esté presente
+}
 
 export interface AuthenticatedRequest extends Request {
   user?: TokenPayload;

@@ -1,6 +1,8 @@
-// middlewares/errorHandler.middleware.ts
+// src/interfaces/middlewares/error/errorHandler.middleware.ts
 import { Request, Response, NextFunction } from "express";
 import logger from "@/infraestructure/logger/logger";
+import { errorMessages } from "@/shared/errors/errorMessages";
+import { errorCodes } from "@/shared/errors/errorCodes";
 
 const errorHandler = (
   err: any,
@@ -8,10 +10,13 @@ const errorHandler = (
   res: Response,
   _next: NextFunction
 ) => {
-  logger.error(`❌ Error global: ${err.stack || err.message}`);
-  res
-    .status(err.status || 500)
-    .json({ message: err.message || "Error interno del servidor" });
+  const status = err.status || 500;
+  const code = err.code || errorCodes.INTERNAL_SERVER_ERROR;
+  const message = err.message || errorMessages.internalServerError;
+
+  logger.error(`❌ Error global: ${message}`);
+
+  res.status(status).json({ code, message });
 };
 
 export default errorHandler;

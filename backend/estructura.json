@@ -36,11 +36,18 @@
         "user.repository.ts": null
       },
       "logger": {
+        "errorHandler.ts": null,
         "logger.ts": null
       },
       "mail": {
         "mailerConfirmation.ts": null,
-        "mailerRecovery.ts": null
+        "mailerRecovery.ts": null,
+        "mailService.ts": null
+      },
+      "metrics": {
+        "customMetrics.ts": null,
+        "metrics.ts": null,
+        "requestDurationHistogram.ts": null
       },
       "security": {
         "rateLimit.ts": null
@@ -55,6 +62,9 @@
         },
         "dashboard": {
           "dashboard.controller.ts": null
+        },
+        "health": {
+          "health.controller.ts": null
         }
       },
       "middlewares": {
@@ -81,14 +91,29 @@
         },
         "dashboard": {
           "dashboard.routes.ts": null
+        },
+        "health": {
+          "health.routes.ts": null,
+          "metrics.routes.ts": null
+        },
+        "metrics": {
+          "metrics.routes.ts": null
         }
       }
     },
     "shared": {
+      "errors": {
+        "createError.ts": null,
+        "errorCodes.ts": null,
+        "errorMessages.ts": null
+      },
       "hash.ts": null,
       "sanitize.ts": null,
       "security": {
         "jwt.ts": null
+      },
+      "succes": {
+        "successMessages.ts": null
       },
       "tokens.ts": null,
       "validations": {
@@ -98,6 +123,7 @@
     },
     "types": {
       "express.d.ts": null
-    }
+    },
+    "utils": {}
   }
 }

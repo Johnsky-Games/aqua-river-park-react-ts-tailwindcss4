@@ -61,3 +61,103 @@
 {"level":"info","message":"✅ Login exitoso: jonathanboada1@gmail.com"}
 {"level":"error","message":"❌ Login:"}
 {"level":"error","message":"❌ Login:"}
+{"level":"info","message":"✅ Login exitoso: jonathanboada1@gmail.com"}
+{"level":"info","message":"✅ Servidor iniciado en http://localhost:3000"}
+{"level":"info","message":"✅ Servidor iniciado en http://localhost:3000"}
+{"level":"info","message":"✅ Servidor iniciado en http://localhost:3000"}
+{"level":"info","message":"✅ Servidor iniciado en http://localhost:3000"}
+{"level":"info","message":"✅ Servidor iniciado en http://localhost:3000"}
+{"level":"info","message":"✅ Servidor iniciado en http://localhost:3000"}
+{"level":"info","message":"✅ Servidor iniciado en http://localhost:3000"}
+{"level":"info","message":"✅ Servidor iniciado en http://localhost:3000"}
+{"level":"info","message":"✅ Servidor iniciado en http://localhost:3000"}
+{"level":"info","message":"✅ Servidor iniciado en http://localhost:3000"}
+{"level":"info","message":"✅ Servidor iniciado en http://localhost:3000"}
+{"level":"info","message":"✅ Servidor iniciado en http://localhost:3000"}
+{"level":"info","message":"✅ Servidor iniciado en http://localhost:3000"}
+{"level":"info","message":"✅ Servidor iniciado en http://localhost:3000"}
+{"level":"info","message":"✅ Servidor iniciado en http://localhost:3000"}
+{"level":"info","message":"✅ Servidor iniciado en http://localhost:3000"}
+{"level":"info","message":"✅ Servidor iniciado en http://localhost:3000"}
+{"level":"info","message":"✅ Servidor iniciado en http://localhost:3000"}
+{"level":"info","message":"✅ Servidor iniciado en http://localhost:3000"}
+{"level":"info","message":"✅ Servidor iniciado en http://localhost:3000"}
+{"level":"info","message":"✅ Servidor iniciado en http://localhost:3000"}
+{"level":"info","message":"✅ Servidor iniciado en http://localhost:3000"}
+{"level":"info","message":"✅ Servidor iniciado en http://localhost:3000"}
+{"level":"info","message":"✅ Servidor iniciado en http://localhost:3000"}
+{"level":"info","message":"✅ Servidor iniciado en http://localhost:3000"}
+{"level":"info","message":"✅ Servidor iniciado en http://localhost:3000"}
+{"level":"info","message":"✅ Servidor iniciado en http://localhost:3000"}
+{"level":"info","message":"✅ Servidor iniciado en http://localhost:3000"}
+{"level":"info","message":"✅ Servidor iniciado en http://localhost:3000"}
+{"level":"info","message":"✅ Servidor iniciado en http://localhost:3000"}
+{"level":"info","message":"✅ Servidor iniciado en http://localhost:3000"}
+{"level":"info","message":"✅ Servidor iniciado en http://localhost:3000"}
+{"level":"info","message":"✅ Servidor iniciado en http://localhost:3000"}
+{"level":"info","message":"✅ Servidor iniciado en http://localhost:3000"}
+{"level":"info","message":"✅ Servidor iniciado en http://localhost:3000"}
+{"level":"info","message":"✅ Servidor iniciado en http://localhost:3000"}
+{"level":"info","message":"✅ Servidor iniciado en http://localhost:3000"}
+{"level":"info","message":"✅ Servidor iniciado en http://localhost:3000"}
+{"level":"info","message":"✅ Servidor iniciado en http://localhost:3000"}
+{"level":"info","message":"✅ Servidor iniciado en http://localhost:3000"}
+{"level":"info","message":"✅ Servidor iniciado en http://localhost:3000"}
+{"level":"info","message":"✅ Servidor iniciado en http://localhost:3000"}
+{"level":"info","message":"✅ Servidor iniciado en http://localhost:3000"}
+{"level":"info","message":"✅ Servidor iniciado en http://localhost:3000"}
+{"level":"info","message":"✅ Servidor iniciado en http://localhost:3000"}
+{"level":"info","message":"✅ Servidor iniciado en http://localhost:3000"}
+{"level":"info","message":"✅ Servidor iniciado en http://localhost:3000"}
+{"level":"info","message":"✅ Servidor iniciado en http://localhost:3000"}
+{"level":"info","message":"✅ Servidor iniciado en http://localhost:3000"}
+{"level":"info","message":"✅ Servidor iniciado en http://localhost:3000"}
+{"level":"info","message":"✅ Servidor iniciado en http://localhost:3000"}
+{"level":"info","message":"✅ Servidor iniciado en http://localhost:3000"}
+{"level":"info","message":"✅ Servidor iniciado en http://localhost:3000"}
+{"level":"info","message":"✅ Servidor iniciado en http://localhost:3000"}
+{"level":"info","message":"✅ Servidor iniciado en http://localhost:3000"}
+{"level":"info","message":"✅ Servidor iniciado en http://localhost:3000"}
+{"level":"info","message":"✅ Servidor iniciado en http://localhost:3000"}
+{"level":"info","message":"✅ Servidor iniciado en http://localhost:3000"}
+[2025-04-25 12:36:11] [32minfo[39m: ✅ Servidor iniciado en http://localhost:3000
+[2025-04-25 12:36:32] [32minfo[39m: ✅ Servidor iniciado en http://localhost:3000
+[2025-04-25 12:36:59] [32minfo[39m: ✅ Servidor iniciado en http://localhost:3000
+[2025-04-25 12:55:43] [32minfo[39m: ✅ Login exitoso: jonathanboada1@gmail.com
+[2025-04-25 12:56:02] [31merror[39m: ❌ Login: Credenciales incorrectas | Code: 1003 | Status: 401
+[2025-04-25 12:58:50] [32minfo[39m: ✅ Servidor iniciado en http://localhost:3000
+[2025-04-25 12:59:05] [32minfo[39m: ✅ Servidor iniciado en http://localhost:3000
+[2025-04-25 12:59:24] [33mwarn[39m: 🚫 Ruta no encontrada: GET /api/health
+[2025-04-25 12:59:25] [33mwarn[39m: 🚫 Ruta no encontrada: GET /favicon.ico
+[2025-04-25 13:01:27] [32minfo[39m: ✅ Servidor iniciado en http://localhost:3000
+[2025-04-25 13:07:58] [32minfo[39m: ✅ Servidor iniciado en http://localhost:3000
+[2025-04-25 13:08:12] [32minfo[39m: ✅ Servidor iniciado en http://localhost:3000
+[2025-04-25 13:09:45] [33mwarn[39m: 🚫 Ruta no encontrada: GET /api/metrics
+[2025-04-25 14:04:33] [32minfo[39m: ✅ Servidor iniciado en http://localhost:3000
+[2025-04-25 14:04:53] [32minfo[39m: ✅ Servidor iniciado en http://localhost:3000
+[2025-04-25 14:04:57] [32minfo[39m: ✅ Servidor iniciado en http://localhost:3000
+[2025-04-25 14:07:19] [33mwarn[39m: 🚫 Ruta no encontrada: GET /
+[2025-04-25 14:13:59] [32minfo[39m: ✅ Servidor iniciado en http://localhost:3000
+[2025-04-25 14:14:10] [32minfo[39m: ✅ Servidor iniciado en http://localhost:3000
+[2025-04-25 14:14:44] [33mwarn[39m: 🚫 Ruta no encontrada: GET /api/mentrics
+[2025-04-25 14:14:48] [33mwarn[39m: 🚫 Ruta no encontrada: GET /api/mentricas
+[2025-04-25 14:16:05] [32minfo[39m: ✅ Servidor iniciado en http://localhost:3000
+[2025-04-25 14:18:28] [32minfo[39m: ✅ Servidor iniciado en http://localhost:3000
+[2025-04-25 14:27:10] [32minfo[39m: ✅ Servidor iniciado en http://localhost:3000
+[2025-04-25 14:29:34] [32minfo[39m: ✅ Servidor iniciado en http://localhost:3000
+[2025-04-25 14:29:37] [32minfo[39m: ✅ Servidor iniciado en http://localhost:3000
+[2025-04-25 14:33:59] [32minfo[39m: ✅ Servidor iniciado en http://localhost:3000
+[2025-04-25 14:35:46] [31merror[39m: ❌ Login: Credenciales incorrectas | Code: 1003 | Status: 401
+[2025-04-25 14:35:49] [32minfo[39m: ✅ Login exitoso: jonathanboada1@gmail.com
+[2025-04-25 14:40:02] [32minfo[39m: ✅ Servidor iniciado en http://localhost:3000
+[2025-04-25 14:40:53] [32minfo[39m: ✅ Servidor iniciado en http://localhost:3000
+[2025-04-25 14:41:28] [32minfo[39m: ✅ Servidor iniciado en http://localhost:3000
+[2025-04-25 14:41:57] [32minfo[39m: ✅ Servidor iniciado en http://localhost:3000
+[2025-04-25 14:42:56] [32minfo[39m: ✅ Servidor iniciado en http://localhost:3000
+[2025-04-25 14:43:06] [31merror[39m: ❌ Error global: Cannot read properties of undefined (reading 'startTimer')
+[2025-04-25 14:43:09] [31merror[39m: ❌ Error global: Cannot read properties of undefined (reading 'startTimer')
+[2025-04-25 14:45:11] [32minfo[39m: ✅ Servidor iniciado en http://localhost:3000
+[2025-04-25 14:45:45] [32minfo[39m: ✅ Login exitoso: jonathanboada1@gmail.com
+[2025-04-25 15:14:30] [32minfo[39m: ✅ Servidor iniciado en http://localhost:3000
+[2025-04-25 16:15:36] [32minfo[39m: ✅ Login exitoso: jonathanboada1@gmail.com
+[2025-04-25 16:55:32] [32minfo[39m: ✅ Login exitoso: jonathanboada1@gmail.com

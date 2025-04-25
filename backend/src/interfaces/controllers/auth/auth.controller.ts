@@ -1,7 +1,9 @@
 import { Request, Response } from "express";
 import * as authService from "@/domain/services/auth/auth.service";
 import { userRepository } from "@/infraestructure/db/user.repository";
+import { logError } from "@/infraestructure/logger/errorHandler";
 import logger from "@/infraestructure/logger/logger";
+import { errorCodes } from "@/shared/errors/errorCodes";
 
 // ✅ REGISTRO
 export const register = async (req: Request, res: Response) => {
@@ -9,11 +11,13 @@ export const register = async (req: Request, res: Response) => {
     await authService.registerUser({ userRepository }, req.body);
     res.status(201).json({
       message: "Registro exitoso. Revisa tu correo para confirmar tu cuenta.",
-    });
+    }); // Incrementar el contador de usuarios registrados
     logger.info(`✅ Usuario registrado: ${req.body.email}`);
+
   } catch (error: any) {
-    logger.error("❌ Registro:", error.message);
-    res.status(400).json({ message: error.message || "Error al registrar" });
+    logError("Registro", error);
+    const status = error.code === errorCodes.EMAIL_ALREADY_REGISTERED ? 409 : 400;
+    res.status(status).json({ message: error.message });
   }
 };
 
@@ -39,25 +43,29 @@ export const login = async (req: Request, res: Response): Promise<void> => {
       token: accessToken,
       user,
     });
-
     logger.info(`✅ Login exitoso: ${email}`);
   } catch (error: any) {
-    logger.error("❌ Login:", error.message);
+    logError("Login", error);
 
-    if (error.message === "Debes confirmar tu cuenta") {
+    if (error.code === errorCodes.ACCOUNT_NOT_CONFIRMED) {
       res.status(401).json({
         message: error.message,
         tokenExpired: error.tokenExpired || false,
       });
-      return; // ← IMPORTANTE
+      return;
     }
 
-    res.status(401).json({
+    const status =
+      error.code === errorCodes.EMAIL_NOT_REGISTERED ||
+        error.code === errorCodes.INVALID_CREDENTIALS
+        ? 401
+        : 400;
+
+    res.status(status).json({
       message: error.message || "Error al iniciar sesión",
     });
   }
 };
-
 
 // ✅ LOGOUT - elimina cookie
 export const logout = (_req: Request, res: Response) => {
@@ -78,8 +86,9 @@ export const sendRecovery = async (req: Request, res: Response) => {
     res.json({ message: "Correo de recuperación enviado." });
     logger.info(`✅ Correo de recuperación enviado: ${email}`);
   } catch (error: any) {
-    logger.error("❌ Enviar recuperación:", error.message);
-    res.status(400).json({ message: error.message });
+    logError("Enviar recuperación", error);
+    const status = error.code === errorCodes.EMAIL_NOT_REGISTERED ? 404 : 400;
+    res.status(status).json({ message: error.message });
   }
 };
 
@@ -92,14 +101,16 @@ export const resetPassword = async (req: Request, res: Response) => {
     res.json({ message: "Contraseña actualizada con éxito." });
     logger.info(`✅ Clave actualizada con éxito`);
   } catch (error: any) {
-    logger.error("❌ Reset password:", error.message);
-    res.status(400).json({ message: error.message });
+    logError("Reset password", error);
+    const status = error.code === errorCodes.INVALID_OR_EXPIRED_TOKEN ? 400 : 500;
+    res.status(status).json({ message: error.message });
   }
 };
 
 // ✅ REFRESH TOKEN
 export const refreshToken = async (req: Request, res: Response): Promise<void> => {
   const refreshToken = req.cookies?.refreshToken;
+
   if (!refreshToken) {
     res.status(401).json({ message: "No se encontró token de refresco" });
     return;
@@ -110,12 +121,10 @@ export const refreshToken = async (req: Request, res: Response): Promise<void> =
       { userRepository },
       refreshToken
     );
-
-    // ❌ NO hacer: return res.json(...)
-    // ✅ Solo llamar res.json(...) sin return
     res.json({ token: accessToken });
   } catch (error: any) {
-    res.status(403).json({ message: error.message || "Token inválido" });
+    logError("Refresh token", error);
+    const status = error.code === errorCodes.TOKEN_INVALID_OR_EXPIRED ? 403 : 500;
+    res.status(status).json({ message: error.message || "Token inválido" });
   }
 };
-

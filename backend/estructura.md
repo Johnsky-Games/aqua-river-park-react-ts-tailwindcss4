@@ -30,10 +30,16 @@
     │   │   ├── role.repository.ts
     │   │   └── user.repository.ts
     │   ├── logger
+    │   │   ├── errorHandler.ts
     │   │   └── logger.ts
     │   ├── mail
     │   │   ├── mailerConfirmation.ts
-    │   │   └── mailerRecovery.ts
+    │   │   ├── mailerRecovery.ts
+    │   │   └── mailService.ts
+    │   ├── metrics
+    │   │   ├── customMetrics.ts
+    │   │   ├── metrics.ts
+    │   │   └── requestDurationHistogram.ts
     │   └── security
     │       └── rateLimit.ts
     ├── interfaces
@@ -42,8 +48,10 @@
     │   │   │   ├── auth.controller.ts
     │   │   │   ├── confirm.controller.ts
     │   │   │   └── recover.controller.ts
-    │   │   └── dashboard
-    │   │       └── dashboard.controller.ts
+    │   │   ├── dashboard
+    │   │   │   └── dashboard.controller.ts
+    │   │   └── health
+    │   │       └── health.controller.ts
     │   ├── middlewares
     │   │   ├── auth
     │   │   │   └── auth.middleware.ts
@@ -59,17 +67,29 @@
     │   └── routes
     │       ├── auth
     │       │   └── auth.routes.ts
-    │       └── dashboard
-    │           └── dashboard.routes.ts
+    │       ├── dashboard
+    │       │   └── dashboard.routes.ts
+    │       ├── health
+    │       │   ├── health.routes.ts
+    │       │   └── metrics.routes.ts
+    │       └── metrics
+    │           └── metrics.routes.ts
     ├── shared
+    │   ├── errors
+    │   │   ├── createError.ts
+    │   │   ├── errorCodes.ts
+    │   │   └── errorMessages.ts
     │   ├── hash.ts
     │   ├── sanitize.ts
     │   ├── security
     │   │   └── jwt.ts
+    │   ├── succes
+    │   │   └── successMessages.ts
     │   ├── tokens.ts
     │   └── validations
     │       ├── auth.schema.ts
     │       └── validators.ts
-    └── types
-        └── express.d.ts
+    ├── types
+    │   └── express.d.ts
+    └── utils
 ```

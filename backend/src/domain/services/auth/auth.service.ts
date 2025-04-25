@@ -1,23 +1,22 @@
 // src/domain/services/auth/auth.service.ts
-import bcrypt from "bcryptjs";
-import crypto from "crypto";
-import sendConfirmationEmail from "@/infraestructure/mail/mailerConfirmation";
 import { UserRepository } from "@/domain/ports/user.repository";
-import {
-  validateEmail,
-  validateNewPassword,
-  validatePasswordChange,
-} from "@/shared/validations/validators";
+import sendConfirmationEmail from "@/infraestructure/mail/mailerConfirmation";
+import { validateEmail, validateNewPassword, validatePasswordChange } from "@/shared/validations/validators";
+import { generateAccessToken, generateRefreshToken, verifyRefreshToken } from "@/shared/security/jwt";
+import { hashPassword } from "@/shared/hash";
+import { generateToken } from "@/shared/tokens";
+import { errorMessages } from "@/shared/errors/errorMessages";
+import { errorCodes } from "@/shared/errors/errorCodes";
+import { createError } from "@/shared/errors/createError";
 import logger from "@/infraestructure/logger/logger";
-import {
-  generateAccessToken,
-  generateRefreshToken,
-  verifyRefreshToken,
-} from "@/shared/security/jwt";
+import bcrypt from "bcryptjs";
+import { passwordResetCounter, userLoginCounter, userRegisterCounter } from "@/infraestructure/metrics/customMetrics";
 
-// 👇 Define aquí los roles permitidos para el JWT
 type RoleName = "admin" | "client";
 
+/**
+ * ✅ Registro de nuevo usuario
+ */
 export const registerUser = async (
   deps: { userRepository: UserRepository },
   {
@@ -37,25 +36,37 @@ export const registerUser = async (
   validateNewPassword(password);
 
   const existingUser = await userRepository.findUserByEmail(email);
-  if (existingUser) throw new Error("El correo ya está registrado");
+  if (existingUser) {
+    throw createError(
+      errorMessages.emailAlreadyRegistered,
+      errorCodes.EMAIL_ALREADY_REGISTERED,
+      409
+    );
+  }
 
-  const password_hash = await bcrypt.hash(password, 10);
-  const confirmation_token = crypto.randomBytes(32).toString("hex");
-  const confirmation_expires = new Date(Date.now() + 24 * 60 * 60 * 1000);
+  const password_hash = await hashPassword(password);
+  const confirmation_token = generateToken();
+  const confirmation_expires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24h
 
   await userRepository.createUser({
     name,
     email,
     password_hash,
     phone,
-    role_id: 4, // 👈 este número deberías mapearlo con un nombre si lo necesitas
+    role_id: 4,
     confirmation_token,
     confirmation_expires,
   });
 
+  // Incrementar contador 👇
+  userRegisterCounter.inc(); // Incrementa el contador de registro de usuarios
+
   await sendConfirmationEmail(email, confirmation_token);
 };
 
+/**
+ * ✅ Inicio de sesión de usuario
+ */
 export const loginUser = async (
   deps: { userRepository: UserRepository },
   email: string,
@@ -63,7 +74,14 @@ export const loginUser = async (
 ) => {
   const { userRepository } = deps;
   const user = await userRepository.findUserByEmail(email);
-  if (!user) throw new Error("Correo no registrado");
+
+  if (!user) {
+    throw createError(
+      errorMessages.emailNotRegistered,
+      errorCodes.EMAIL_NOT_REGISTERED,
+      404
+    );
+  }
 
   if (!user.is_confirmed) {
     const tokenExpired =
@@ -71,30 +89,37 @@ export const loginUser = async (
       !user.confirmation_expires ||
       new Date(user.confirmation_expires) < new Date();
 
-    throw {
-      message: "Debes confirmar tu cuenta",
-      tokenExpired,
-    };
+    const error = createError(
+      errorMessages.accountNotConfirmed,
+      errorCodes.ACCOUNT_NOT_CONFIRMED,
+      401
+    );
+    (error as any).tokenExpired = tokenExpired;
+    throw error;
   }
 
   const isMatch = await bcrypt.compare(password, user.password_hash);
-  if (!isMatch) throw new Error("Contraseña incorrecta");
+  if (!isMatch) {
+    throw createError(
+      errorMessages.invalidCredentials,
+      errorCodes.INVALID_CREDENTIALS,
+      401
+    );
+  }
 
-  const accessToken = generateAccessToken({
-    id: user.id,
-    email: user.email,
-    name: user.name,
-    role: (user.role_name || "client") as RoleName,
-    roleId: user.role_id || 0, // ✅ fallback por si es undefined
-  });
+  // Incrementar contador 👇
+  userLoginCounter.inc();
 
-  const refreshToken = generateRefreshToken({
+  const payload = {
     id: user.id,
     email: user.email,
     name: user.name,
     role: (user.role_name || "client") as RoleName,
     roleId: user.role_id || 0,
-  });
+  };
+
+  const accessToken = generateAccessToken(payload);
+  const refreshToken = generateRefreshToken(payload);
 
   return {
     accessToken,
@@ -106,6 +131,9 @@ export const loginUser = async (
   };
 };
 
+/**
+ * ✅ Refrescar token de acceso usando el refresh token
+ */
 export const refreshAccessToken = async (
   deps: { userRepository: UserRepository },
   refreshToken: string
@@ -115,7 +143,13 @@ export const refreshAccessToken = async (
     const { userRepository } = deps;
 
     const user = await userRepository.findUserBasicByEmail(payload.email);
-    if (!user) throw new Error("Usuario no encontrado");
+    if (!user) {
+      throw createError(
+        errorMessages.userNotFound,
+        errorCodes.USER_NOT_FOUND,
+        404
+      );
+    }
 
     const newAccessToken = generateAccessToken({
       id: payload.id,
@@ -127,25 +161,42 @@ export const refreshAccessToken = async (
 
     return { accessToken: newAccessToken };
   } catch (error) {
-    throw new Error("Token de refresco inválido o expirado");
+    throw createError(
+      errorMessages.tokenInvalidOrExpired,
+      errorCodes.TOKEN_INVALID_OR_EXPIRED,
+      403
+    );
   }
 };
 
+/**
+ * ✅ Enviar enlace de recuperación de contraseña
+ */
 export const sendResetPassword = async (
   deps: { userRepository: UserRepository },
   email: string
 ) => {
   const { userRepository } = deps;
   const user = await userRepository.findUserByEmail(email);
-  if (!user) throw new Error("Correo no registrado");
 
-  const token = crypto.randomBytes(32).toString("hex");
-  const expires = new Date(Date.now() + 60 * 60 * 1000);
+  if (!user) {
+    throw createError(
+      errorMessages.emailNotRegistered,
+      errorCodes.EMAIL_NOT_REGISTERED,
+      404
+    );
+  }
+
+  const token = generateToken();
+  const expires = new Date(Date.now() + 60 * 60 * 1000); // 1 hora
 
   await userRepository.updateResetToken(email, token, expires);
   logger.info(`📧 Enlace de recuperación enviado a ${email}`);
 };
 
+/**
+ * ✅ Cambiar la contraseña usando un token válido
+ */
 export const resetPassword = async (
   deps: { userRepository: UserRepository },
   token: string,
@@ -153,20 +204,34 @@ export const resetPassword = async (
 ) => {
   const { userRepository } = deps;
   const user = await userRepository.findUserByResetToken(token);
-  if (!user) throw new Error("Token inválido o expirado");
+
+  // Incrementar contador 👇
+  passwordResetCounter.inc();
+
+  if (!user) {
+    throw createError(
+      errorMessages.invalidOrExpiredToken,
+      errorCodes.INVALID_OR_EXPIRED_TOKEN,
+      400
+    );
+  }
 
   await validatePasswordChange(newPassword, user.email, user.password_hash);
 
-  const password_hash = await bcrypt.hash(newPassword, 10);
+  const password_hash = await hashPassword(newPassword);
   await userRepository.updatePassword(user.id, password_hash);
 };
 
+/**
+ * ✅ Verificar si un token de recuperación es válido
+ */
 export const checkResetToken = async (
   deps: { userRepository: UserRepository },
   token: string
 ) => {
   const { userRepository } = deps;
   const user = await userRepository.findUserByResetToken(token);
+
   return (
     !!user &&
     user.reset_expires !== null &&

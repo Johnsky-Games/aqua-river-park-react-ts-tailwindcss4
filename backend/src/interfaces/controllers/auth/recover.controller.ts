@@ -1,46 +1,57 @@
 import { Request, Response } from "express";
 import * as recoveryService from "@/domain/services/auth/recovery.service";
 import { userRepository } from "@/infraestructure/db/user.repository";
-import logger from "@/infraestructure/logger/logger";
+import { logError } from "@/infraestructure/logger/errorHandler";
+import { errorCodes } from "@/shared/errors/errorCodes";
 
 // ✅ 1. Enviar correo de recuperación
-export const sendRecovery = async (req: Request, res: Response) => {
+export const sendRecovery = async (req: Request, res: Response): Promise<void> => {
   const { email } = req.body;
 
   try {
     await recoveryService.sendRecoveryService({ userRepository }, email);
-    res.json({ message: "Correo de recuperación enviado. Revisa tu bandeja." });
+    res.status(200).json({ message: "Correo de recuperación enviado. Revisa tu bandeja." });
   } catch (error: any) {
-    logger.error("❌ Error en sendRecovery:", error.message);
-    res
-      .status(error.status || 500)
-      .json({ message: error.message || "Error del servidor" });
+    logError("Enviar recuperación", error);
+
+    const status =
+      error.code === errorCodes.EMAIL_NOT_REGISTERED
+        ? 404
+        : 400;
+
+    res.status(status).json({ message: error.message || "Error al enviar recuperación" });
   }
 };
 
 // ✅ 2. Verificar token
-export const checkTokenStatus = async (req: Request, res: Response) => {
+export const checkTokenStatus = async (req: Request, res: Response): Promise<void> => {
   const { token } = req.body;
 
   try {
     const isValid = await recoveryService.checkTokenStatusService({ userRepository }, token);
-    res.json({ valid: isValid });
+    res.status(200).json({ valid: isValid });
   } catch (error: any) {
-    logger.error("❌ Error en checkTokenStatus:", error.message);
+    logError("Verificar token recuperación", error);
     res.status(500).json({ message: "Error al verificar token" });
   }
 };
 
 // ✅ 3. Cambiar contraseña
-export const resetPassword = async (req: Request, res: Response) => {
+export const resetPassword = async (req: Request, res: Response): Promise<void> => {
   const { token } = req.params;
   const { password } = req.body;
 
   try {
     await recoveryService.resetPasswordService({ userRepository }, token, password);
-    res.json({ message: "Contraseña actualizada correctamente" });
+    res.status(200).json({ message: "Contraseña actualizada correctamente" });
   } catch (error: any) {
-    logger.error("❌ Error en resetPassword:", error.message);
-    res.status(500).json({ message: "Error al cambiar contraseña" });
+    logError("Resetear contraseña", error);
+
+    const status =
+      error.code === errorCodes.INVALID_OR_EXPIRED_TOKEN
+        ? 400
+        : 500;
+
+    res.status(status).json({ message: error.message || "Error al cambiar contraseña" });
   }
 };

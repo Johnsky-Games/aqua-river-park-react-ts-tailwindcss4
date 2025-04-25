@@ -1,8 +1,12 @@
-import crypto from "crypto";
-import bcrypt from "bcryptjs";
+// src/domain/services/auth/recovery.service.ts
 import sendRecoveryEmail from "@/infraestructure/mail/mailerRecovery";
 import { UserRepository } from "@/domain/ports/user.repository";
 import { validatePasswordChange } from "@/shared/validations/validators";
+import { hashPassword } from "@/shared/hash";
+import { generateToken } from "@/shared/tokens";
+import { errorMessages } from "@/shared/errors/errorMessages";
+import { errorCodes } from "@/shared/errors/errorCodes";
+import { createError } from "@/shared/errors/createError";
 
 /**
  * ✅ Enviar enlace de recuperación por correo
@@ -13,9 +17,12 @@ export const sendRecoveryService = async (
 ) => {
   const { userRepository } = deps;
   const user = await userRepository.findUserBasicByEmail(email);
-  if (!user) throw new Error("Correo no registrado");
 
-  const token = crypto.randomBytes(32).toString("hex");
+  if (!user) {
+    throw createError(errorMessages.emailNotRegistered, errorCodes.EMAIL_NOT_REGISTERED);
+  }
+
+  const token = generateToken();
   const expires = new Date(Date.now() + 60 * 60 * 1000); // 1 hora
 
   await userRepository.updateResetToken(email, token, expires);
@@ -31,6 +38,7 @@ export const checkTokenStatusService = async (
 ): Promise<boolean> => {
   const { userRepository } = deps;
   const resetData = await userRepository.getResetTokenExpiration(token);
+
   return !!resetData?.reset_expires && new Date(resetData.reset_expires) > new Date();
 };
 
@@ -44,11 +52,14 @@ export const resetPasswordService = async (
 ) => {
   const { userRepository } = deps;
   const user = await userRepository.findUserByResetToken(token);
-  if (!user) throw new Error("Token inválido o expirado");
 
-  // Validar que no sea la misma contraseña ni igual al correo (reglas fuertes)
+  if (!user) {
+    throw createError(errorMessages.invalidOrExpiredToken, errorCodes.INVALID_OR_EXPIRED_TOKEN);
+  }
+
+  // Validar reglas de seguridad de contraseña
   await validatePasswordChange(newPassword, user.email, user.password_hash);
 
-  const password_hash = await bcrypt.hash(newPassword, 10);
+  const password_hash = await hashPassword(newPassword);
   await userRepository.updatePassword(user.id, password_hash);
 };

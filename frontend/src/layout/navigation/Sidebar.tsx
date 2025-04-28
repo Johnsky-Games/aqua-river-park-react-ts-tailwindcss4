@@ -1,6 +1,7 @@
 // src/layout/navigation/Sidebar.tsx
-import { Link, useLocation } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 import { FaHome, FaUser, FaCog } from "react-icons/fa";
+import { motion } from "framer-motion";
 import classNames from "classnames";
 
 interface SidebarProps {
@@ -8,20 +9,20 @@ interface SidebarProps {
 }
 
 const menuItems = [
-  { label: "Inicio", path: "/", icon: <FaHome /> },
+  { label: "Inicio", path: "/admin/dashboard", icon: <FaHome /> },
   { label: "Perfil", path: "/perfil", icon: <FaUser /> },
   { label: "Configuración", path: "/ajustes", icon: <FaCog /> },
 ];
 
 const Sidebar = ({ isOpen }: SidebarProps) => {
-  const location = useLocation();
-
   return (
-    <aside
-      className={classNames(
-        "h-screen bg-accent2 text-white transition-all duration-300 flex flex-col",
-        isOpen ? "w-64" : "w-16"
-      )}
+    <motion.aside
+      role="complementary"
+      aria-label="Sidebar principal"
+      initial={false}
+      animate={{ width: isOpen ? "16rem" : "4rem" }}
+      transition={{ type: "spring", stiffness: 300, damping: 30 }}
+      className="h-screen bg-accent2 text-white flex flex-col transition-colors duration-300"
     >
       {/* Header */}
       <div className="flex items-center justify-center md:justify-between px-4 py-4 border-b border-white/10">
@@ -29,21 +30,28 @@ const Sidebar = ({ isOpen }: SidebarProps) => {
       </div>
 
       {/* Menu */}
-      <nav className="flex-1 overflow-y-auto mt-4 space-y-2">
-        {menuItems.map((item, index) => (
-          <Link
+      <nav
+        role="navigation"
+        aria-label="Enlaces principales"
+        className="flex-1 overflow-y-auto mt-4 space-y-2"
+      >
+        {menuItems.map((item, idx) => (
+          <NavLink
             to={item.path}
-            key={index}
-            className={classNames(
-              "flex items-center gap-3 px-4 py-2 rounded-md mx-2 transition-colors",
-              location.pathname === item.path
-                ? "bg-accent1 text-textDark font-semibold"
-                : "hover:bg-white/10"
-            )}
+            key={idx}
+            end
+            className={({ isActive }: { isActive: boolean }) =>
+              classNames(
+                "flex items-center gap-3 px-4 py-2 rounded-md mx-2 transition-colors",
+                isActive
+                  ? "bg-accent1 text-textDark font-semibold"
+                  : "hover:bg-white/10"
+              )
+            }
           >
             <span className="text-lg">{item.icon}</span>
             {isOpen && <span className="text-sm">{item.label}</span>}
-          </Link>
+          </NavLink>
         ))}
       </nav>
 
@@ -53,7 +61,7 @@ const Sidebar = ({ isOpen }: SidebarProps) => {
           © {new Date().getFullYear()} Aqua River Park
         </div>
       )}
-    </aside>
+    </motion.aside>
   );
 };
 

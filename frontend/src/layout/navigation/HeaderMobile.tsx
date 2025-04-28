@@ -1,10 +1,10 @@
-import { useEffect } from "react";
-import { Link, useLocation } from "react-router-dom";
+// src/components/HeaderMobile.tsx
+import { useEffect, useRef, useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { FaBars, FaSun, FaMoon, FaUserCircle } from "react-icons/fa";
-import { Menu, MenuButton, MenuItem } from "@headlessui/react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useTheme } from "../../hooks/useTheme";
 import { useAuthStore } from "@/store/useAuthStore";
+import { useTheme } from "@/hooks/useTheme";
 
 interface HeaderMobileProps {
   onToggleSidebar?: () => void;
@@ -14,6 +14,25 @@ const HeaderMobile: React.FC<HeaderMobileProps> = ({ onToggleSidebar }) => {
   const { darkMode, toggleDarkMode } = useTheme();
   const { isLoggedIn, logout, userRole } = useAuthStore();
   const location = useLocation();
+  const navigate = useNavigate();
+  const menuRef = useRef<HTMLDivElement>(null);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+
+  // Cierra dropdown al cambiar de ruta
+  useEffect(() => {
+    setDropdownOpen(false);
+  }, [location.pathname]);
+
+  // Cierra dropdown al hacer click fuera
+  useEffect(() => {
+    const onClickOutside = (e: MouseEvent) => {
+      if (dropdownOpen && menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", onClickOutside);
+    return () => document.removeEventListener("mousedown", onClickOutside);
+  }, [dropdownOpen]);
 
   const dropdownItems: Record<string, { label: string; path: string }[]> = {
     client: [
@@ -21,96 +40,89 @@ const HeaderMobile: React.FC<HeaderMobileProps> = ({ onToggleSidebar }) => {
       { label: "Ajustes", path: "/ajustes" },
     ],
     admin: [
+      { label: "Home", path: "/" },
       { label: "Dashboard", path: "/admin/dashboard" },
       { label: "Perfil", path: "/perfil" },
     ],
   };
 
-  useEffect(() => {
-    // Podrías cerrar modales o limpiar algún estado aquí si lo deseas
-  }, [location]);
+  const handleLogout = () => {
+    logout(false);
+    navigate("/", { replace: true });
+  };
 
   return (
-    <header className="bg-primary dark:bg-bgDark text-textLight px-4 py-3 flex items-center justify-between shadow-md sticky top-0 z-50">
-      {/* Sidebar toggle + Logo */}
+    <header className="bg-primary dark:bg-bgDark text-white px-4 py-3 flex items-center justify-between shadow-md sticky top-0 z-50">
+      {/* Toggle sidebar + Logo */}
       <div className="flex items-center gap-3">
         {onToggleSidebar && (
-          <button onClick={onToggleSidebar} className="text-white text-xl">
+          <button onClick={onToggleSidebar} className="text-xl focus:outline-none">
             <FaBars />
           </button>
         )}
         <Link to="/" className="flex items-center gap-2">
           <img src="/ARP logo.png" alt="Logo" className="h-8" />
-          <span className="font-semibold text-base">Aqua River Park</span>
         </Link>
       </div>
 
-      {/* Dark mode + Auth */}
+      {/* Controles derecho */}
       <div className="flex items-center gap-4">
+        {/* Dark mode toggle */}
         <button
           onClick={toggleDarkMode}
           className="p-2 rounded-full bg-white/20 hover:bg-white/30 transition"
           title={darkMode ? "Modo claro" : "Modo oscuro"}
         >
-          {darkMode ? <FaSun /> : <FaMoon />}
+          {darkMode ? <FaSun className="text-yellow-300" /> : <FaMoon className="text-gray-800" />}
         </button>
 
+        {/* User menu */}
         {isLoggedIn ? (
-          <Menu as="div" className="relative">
-            <MenuButton className="flex items-center">
-              <FaUserCircle className="text-2xl" />
-            </MenuButton>
+          <div ref={menuRef} className="relative">
+            <button
+              onClick={() => setDropdownOpen((o) => !o)}
+              className="text-2xl focus:outline-none"
+              aria-label="Abrir menú de usuario"
+            >
+              <FaUserCircle />
+            </button>
+
             <AnimatePresence>
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 10 }}
-                transition={{ duration: 0.2 }}
-                className="absolute right-0 mt-2 w-44 bg-white dark:bg-bgDark rounded-md shadow-lg z-50 ring-1 ring-black/10"
-              >
-                <div className="py-1">
-                  {(dropdownItems[userRole] || []).map(
-                    (item, idx: number) => (
-                      <MenuItem key={idx}>
-                        {({ active }: { active: boolean }) => (
-                          <Link
-                            to={item.path}
-                            className={`block px-4 py-2 text-sm ${
-                              active
-                                ? "bg-gray-100 dark:bg-gray-700 text-primary"
-                                : "text-gray-800 dark:text-white"
-                            }`}
-                          >
-                            {item.label}
-                          </Link>
-                        )}
-                      </MenuItem>
-                    )
-                  )}
-                </div>
-                <div className="py-1">
-                  <MenuItem>
-                    {({ active }: { active: boolean }) => (
-                      <button
-                        onClick={() => logout(false)}
-                        className={`block w-full text-left px-4 py-2 text-sm ${
-                          active
-                            ? "bg-red-100 dark:bg-red-600 text-red-700"
-                            : "text-red-500"
-                        }`}
+              {dropdownOpen && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95, y: -10 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.95, y: -10 }}
+                  transition={{ duration: 0.2 }}
+                  className="absolute right-0 mt-2 w-44 bg-white dark:bg-bgDark rounded-lg shadow-lg ring-1 ring-black/10 overflow-hidden z-50 divide-y divide-gray-200 dark:divide-gray-700"
+                >
+                  <div className="py-1">
+                    {(dropdownItems[userRole] || []).map((item, idx) => (
+                      <Link
+                        key={idx}
+                        to={item.path}
+                        className="block px-4 py-2 text-sm text-gray-800 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700 transition"
                       >
-                        Cerrar sesión
-                      </button>
-                    )}
-                  </MenuItem>
-                </div>
-              </motion.div>
+                        {item.label}
+                      </Link>
+                    ))}
+                  </div>
+                  <div className="py-1">
+                    <button
+                      onClick={handleLogout}
+                      className="w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-red-100 dark:hover:bg-red-600 dark:text-red-300 transition"
+                    >
+                      Cerrar sesión
+                    </button>
+                  </div>
+                </motion.div>
+              )}
             </AnimatePresence>
-          </Menu>
+          </div>
         ) : (
           <Link
             to="/login"
-            className="bg-secondary hover:bg-hoverSecondary px-3 py-1.5 rounded-md text-white text-sm transition"
+            className="px-3 py-1.5 bg-secondary hover:bg-hoverSecondary rounded-md text-white text-sm transition"
           >
             Acceder
           </Link>

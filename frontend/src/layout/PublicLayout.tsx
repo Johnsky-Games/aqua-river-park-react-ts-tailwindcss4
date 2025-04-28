@@ -1,13 +1,17 @@
-import Header from "../layout/navigation/Header";
-import Footer from "../layout/navigation/Footer";
+// src/layout/PublicLayout.tsx
+import { Outlet } from "react-router-dom";
+import Header from "@/layout/navigation/Header";
+import Footer from "@/layout/navigation/Footer";
 
-const PublicLayout = ({ children }: { children: React.ReactNode }) => {
+const PublicLayout: React.FC = () => {
   return (
-    <div className="flex flex-col min-h-screen bg-bgLight dark:bg-bgDark transition-colors">
+    <>
       <Header />
-      <main className="flex-grow">{children}</main>
+      <main className="pt-4">
+        <Outlet />
+      </main>
       <Footer />
-    </div>
+    </>
   );
 };
 

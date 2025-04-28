@@ -1,10 +1,10 @@
+// src/components/auth/AuthForm.tsx
 import { useState } from "react";
-// import { useNavigate } from "react-router-dom";
 import { AxiosError } from "axios";
 import api from "../../api/axios";
 import { toast } from "react-toastify";
 import { useAuthModal } from "../../store/useAuthModal";
-import { useAuthStore } from "../../store/useAuthStore"; // ✅ AÑADIDO
+import { useAuthStore } from "../../store/useAuthStore";
 import AuthResendModal from "./AuthResendModal";
 import {
   getPasswordScore,
@@ -44,7 +44,7 @@ export default function AuthForm({
   setModalType,
 }: Props) {
   const { view, closeModal, toggleView } = useAuthModal();
-  const { login } = useAuthStore(); // ✅ correcto
+  const login = useAuthStore((state) => state.login);
   const isLogin = view === "login";
 
   const [formData, setFormData] = useState(initialForm);
@@ -55,11 +55,11 @@ export default function AuthForm({
 
   const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    const formattedValue = name === "fullName" ? capitalizeName(value) : value;
-
-    if (name === "password") setPasswordStrength(getPasswordScore(value));
-
-    setFormData((prev) => ({ ...prev, [name]: formattedValue }));
+    const formatted = name === "fullName" ? capitalizeName(value) : value;
+    if (name === "password") {
+      setPasswordStrength(getPasswordScore(value));
+    }
+    setFormData((prev) => ({ ...prev, [name]: formatted }));
     setErrors((prev) => ({ ...prev, [name]: "" }));
   };
 
@@ -69,14 +69,13 @@ export default function AuthForm({
     if (!validateEmailFormat(formData.email)) {
       errs.email = "Correo no válido";
     }
-
-    const passwordErrors = validatePasswordSecurity(formData.password, formData.email);
-    if (passwordErrors.length > 0) {
-      errs.password = passwordErrors.join(" ");
+    const pwdErrs = validatePasswordSecurity(formData.password, formData.email);
+    if (pwdErrs.length) {
+      errs.password = pwdErrs.join(" ");
     }
 
     if (!isLogin) {
-      if (!formData.fullName || formData.fullName.length < 2) {
+      if (formData.fullName.trim().length < 2) {
         errs.fullName = "El nombre debe tener al menos 2 caracteres.";
       }
       if (!/^[0-9]{10}$/.test(formData.phone)) {
@@ -91,41 +90,37 @@ export default function AuthForm({
     return Object.keys(errs).length === 0;
   };
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (isSubmitting) return;
     setIsSubmitting(true);
 
-    const isValid = validate();
-    if (!isValid) {
+    if (!validate()) {
       setIsSubmitting(false);
       return;
     }
 
     try {
       if (isLogin) {
-        const res = await api.post("/login", {
+        const { data } = await api.post("/login", {
           email: formData.email,
           password: formData.password,
         });
 
-        if (!res.data.user.isConfirmed) {
-          const tokenExpired = res.data.tokenExpired;
+        if (!data.user.isConfirmed) {
           setModalType("confirm");
-          setModalStep(tokenExpired ? "form" : "notice");
+          setModalStep(data.tokenExpired ? "form" : "notice");
           setShowModal(true);
           return;
         }
 
-        const { token } = res.data;
+        const token = data.token as string | undefined;
         if (token) {
           localStorage.setItem("token", token);
-
-          login(token); // ✅ solo actualizamos el store
-
+          login(token);
           closeModal();
           toast.success("¡Login exitoso!");
-          // ❗ No navegamos aquí — eso lo maneja LoginRedirectHandler.tsx
+          // 🚨 NO navegamos aquí: lo hace LoginRedirectHandler
         }
       } else {
         const res = await api.post("/register", {
@@ -134,7 +129,6 @@ export default function AuthForm({
           phone: formData.phone,
           password: formData.password,
         });
-
         if (res.status === 200 || res.status === 201) {
           toast.success("Registro exitoso. Revisa tu correo para confirmar tu cuenta.");
           toggleView();
@@ -143,16 +137,12 @@ export default function AuthForm({
     } catch (err) {
       const error = err as AxiosError<{ message: string; tokenExpired?: boolean }>;
       const msg = error.response?.data?.message;
-
       if (msg === "Debes confirmar tu cuenta") {
-        const tokenExpired = error.response?.data?.tokenExpired;
         setModalType("confirm");
-        setModalStep(tokenExpired ? "form" : "notice");
+        setModalStep(error.response!.data.tokenExpired ? "form" : "notice");
         setShowModal(true);
-      } else if (msg) {
-        toast.error(msg);
       } else {
-        toast.error("Ocurrió un error inesperado.");
+        toast.error(msg || "Ocurrió un error inesperado.");
       }
     } finally {
       setIsSubmitting(false);
@@ -166,31 +156,22 @@ export default function AuthForm({
     setResendMsg("");
 
     const endpoint = modalType === "recover" ? "/send-recovery" : "/resend-confirmation";
-
     try {
       const res = await api.post(endpoint, { email: formData.email });
       setResendMsg(res.data.message);
       setModalStep("success");
-
       setTimeout(() => {
-        toast.success(modalType === "recover"
-          ? "¡Enlace de recuperación enviado!"
-          : "¡Correo de confirmación reenviado!"
+        toast.success(
+          modalType === "recover"
+            ? "¡Enlace de recuperación enviado!"
+            : "¡Correo de confirmación reenviado!"
         );
         setShowModal(false);
         setResendMsg("");
         setFormData((prev) => ({ ...prev, email: "", password: "" }));
       }, 5000);
-    } catch (err) {
-      const error = err as AxiosError<{ message: string }>;
-      const msg = error.response?.data?.message;
-
-      if (msg === "La cuenta ya está confirmada") {
-        toast.info("La cuenta ya ha sido confirmada.");
-        setShowModal(false);
-      } else {
-        setResendMsg("Error al enviar el enlace.");
-      }
+    } catch {
+      setResendMsg("Error al enviar el enlace.");
     } finally {
       setIsSubmitting(false);
     }
@@ -296,7 +277,9 @@ export default function AuthForm({
         email={formData.email}
         resendMsg={resendMsg}
         onClose={() => setShowModal(false)}
-        onEmailChange={(email) => setFormData((prev) => ({ ...prev, email }))}
+        onEmailChange={(email) =>
+          setFormData((prev) => ({ ...prev, email }))
+        }
         onResend={handleResend}
         type={modalType}
       />

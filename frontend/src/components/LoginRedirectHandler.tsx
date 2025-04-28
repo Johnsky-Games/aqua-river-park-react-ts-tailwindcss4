@@ -1,3 +1,4 @@
+// src/components/LoginRedirectHandler.tsx
 import { useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuthStore } from "@/store/useAuthStore";
@@ -5,17 +6,25 @@ import { useAuthStore } from "@/store/useAuthStore";
 export const LoginRedirectHandler = () => {
   const { isLoggedIn, userRole } = useAuthStore();
   const navigate = useNavigate();
-  const location = useLocation();
+  const { pathname } = useLocation();
 
   useEffect(() => {
-    if (isLoggedIn) {
-      if (userRole === "admin" && location.pathname !== "/admin/dashboard") {
-        navigate("/admin/dashboard", { replace: true });
-      } else if (userRole === "client" && (location.pathname === "/login" || location.pathname === "/register")) {
-        navigate("/", { replace: true });
-      }
+    if (!isLoggedIn) return; // solo actuamos tras login
+
+    // Admin siempre va a dashboard si no está ya allí
+    if (userRole === "admin" && pathname !== "/admin/dashboard") {
+      navigate("/admin/dashboard", { replace: true });
+      return;
     }
-  }, [isLoggedIn, userRole, location.pathname, navigate]);
+
+    // Cliente nunca debe ver login/register
+    if (
+      userRole === "client" &&
+      (pathname === "/login" || pathname === "/register")
+    ) {
+      navigate("/", { replace: true });
+    }
+  }, [isLoggedIn, userRole, pathname, navigate]);
 
   return null;
 };

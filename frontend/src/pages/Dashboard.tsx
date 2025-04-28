@@ -1,71 +1,85 @@
+// src/pages/Dashboard.tsx
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "@/store/useAuthStore";
-import api from "../api/axios";
+import api from "@/api/axios";
 
-const Dashboard = () => {
-  const [user, setUser] = useState<{ name: string; role: string } | null>(null);
-  const [error, setError] = useState("");
-  const { isLoggedIn, logout } = useAuthStore(); // 👈 Estado global de sesión
+interface UserInfo {
+  name: string;
+  role: string;
+}
+
+const Dashboard: React.FC = () => {
+  const [user, setUser] = useState<UserInfo | null>(null);
+  const [error, setError] = useState<string>("");
   const navigate = useNavigate();
+  const { isLoggedIn, userRole, logout } = useAuthStore();
 
   useEffect(() => {
-    if (!isLoggedIn) return; // ⛔ Si no está logueado, NO llames la API
+    if (!isLoggedIn) {
+      navigate("/login", { replace: true });
+      return;
+    }
+    if (userRole !== "admin") {
+      navigate("/", { replace: true });
+      return;
+    }
 
-    const fetchData = async () => {
-      const token = localStorage.getItem("token");
+    const controller = new AbortController();
 
-      if (!token) {
-        logout(false);
-        navigate("/login", { replace: true });
-        return;
-      }
-
+    const fetchDashboard = async () => {
       try {
+        const token = localStorage.getItem("token");
+        if (!token) {
+          throw new Error("Token no encontrado");
+        }
+
         const res = await api.get("/admin/dashboard", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
+          signal: controller.signal,
         });
 
+        const parts = (res.data.message as string).split(" ");
         setUser({
-          name: res.data.message.split(" ")[1],
+          name: parts[1] || "Usuario",
           role: res.data.role,
         });
-      } catch (error: unknown) {
-        console.error("Error accediendo al dashboard", error);
-        setError("Acceso no autorizado. Redirigiendo...");
-        setTimeout(() => {
-          logout(false);
-          navigate("/login", { replace: true });
-        }, 1500);
+      } catch (err: unknown) {
+        // Si la petición fue abortada, no hacemos nada
+        if (controller.signal.aborted) return;
+        console.error(err);
+        setError("No se pudo cargar el dashboard. Intenta de nuevo.");
       }
     };
 
-    fetchData();
-  }, [isLoggedIn, logout, navigate]); // ⚡ ahora depende de isLoggedIn
+    fetchDashboard();
+    return () => {
+      controller.abort();
+    };
+  }, [isLoggedIn, userRole, navigate]);
 
   const handleLogout = () => {
-    logout(false); // ✅ cerrar sesión correctamente
-    navigate("/", { replace: true });
+    logout();
+    navigate("/login", { replace: true });
   };
 
   return (
-    <div className="max-w-lg mx-auto mt-20">
-      <h1 className="text-3xl font-bold mb-4">Dashboard</h1>
+    <div className="max-w-lg mx-auto mt-20 space-y-4">
+      <h1 className="text-3xl font-bold">Dashboard</h1>
 
-      {error && <p className="text-red-500 mb-4">{error}</p>}
+      {error && <p className="text-red-500">{error}</p>}
+
+      {!error && !user && <p className="text-gray-600">Cargando datos del dashboard…</p>}
 
       {user && (
         <>
-          <p className="text-lg mb-4">
+          <p className="text-lg">
             Bienvenido <strong>{user.name}</strong>. Tu rol es:{" "}
-            <strong>{user.role}</strong>
+            <strong>{user.role}</strong>.
           </p>
-
           <button
             onClick={handleLogout}
-            className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition-all"
+            className="mt-4 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded transition"
           >
             Cerrar sesión
           </button>

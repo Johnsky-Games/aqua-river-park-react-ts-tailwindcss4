@@ -1,71 +1,50 @@
 // src/router/AppRouter.tsx
 import { Routes, Route } from "react-router-dom";
-import Home from "../pages/Home";
-import Dashboard from "../pages/Dashboard";
-import ConfirmationMail from "../pages/ConfirmationMail";
-import ResetPassword from "../pages/ResetPassword";
-import NotFound from "../pages/NotFound";
-import PublicLayout from "../layout/PublicLayout";
-import DashboardLayout from "../layout/DashboardLayout";
-import PrivateRoute from "../utils/PrivateRoute";
+import PublicLayout from "@/layout/PublicLayout";
+import DashboardLayout from "@/layout/DashboardLayout";
+import Home from "@/pages/Home";
+import ConfirmationMail from "@/pages/ConfirmationMail";
+import ResetPassword from "@/pages/ResetPassword";
+import Dashboard from "@/pages/Dashboard";
+import NotFound from "@/pages/NotFound";
+import PrivateRoute from "@/utils/PrivateRoute";
 
-const AppRouter = () => (
-  
-  <Routes>
-    <Route
-      path="/"
-      element={
-        <PublicLayout>
-          <Home />
-        </PublicLayout>
-      }
-    />
-    <Route
-      path="/login"
-      element={
-        <PublicLayout>
-          <Home />
-        </PublicLayout>
-      }
-    />
-    <Route
-      path="/register"
-      element={
-        <PublicLayout>
-          <Home />
-        </PublicLayout>
-      }
-    />
-    <Route
-      path="/confirm/:token"
-      element={
-        <PublicLayout>
-          <ConfirmationMail />
-        </PublicLayout>
-      }
-    />
-    <Route
-      path="/reset-password"
-      element={
-        <PublicLayout>
-          <ResetPassword />
-        </PublicLayout>
-      }
-    />
+const AppRouter: React.FC = () => {
+  return (
+    <Routes>
+      {/*
+        RUTAS PÚBLICAS
+        Se agrupan todas bajo PublicLayout para no repetirlo en cada ruta.
+      */}
+      <Route element={<PublicLayout />}>
+        <Route path="/" element={<Home />} />
+        <Route path="/login" element={<Home />} />
+        <Route path="/register" element={<Home />} />
+        <Route path="/confirm/:token" element={<ConfirmationMail />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
+      </Route>
 
-    <Route
-      path="admin/dashboard"
-      element={
-        <PrivateRoute allowedRoles={["admin"]}>
-          <DashboardLayout>
-            <Dashboard />
-          </DashboardLayout>
-        </PrivateRoute>
-      }
-    />
+      {/*
+        RUTA PROTEGIDA
+        Sólo usuarios con rol "admin" pueden acceder.
+      */}
+      <Route
+        path="/admin/dashboard"
+        element={
+          <PrivateRoute allowedRoles={["admin"]}>
+            <DashboardLayout>
+              <Dashboard />
+            </DashboardLayout>
+          </PrivateRoute>
+        }
+      />
 
-    <Route path="*" element={<NotFound />} />
-  </Routes>
-);
+      {/*
+        Cualquiera otra ruta → 404
+      */}
+      <Route path="*" element={<NotFound />} />
+    </Routes>
+  );
+};
 
 export default AppRouter;

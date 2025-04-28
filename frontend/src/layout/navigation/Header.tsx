@@ -1,3 +1,4 @@
+// src/layout/navigation/Header.tsx
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { FaUserCircle, FaBars, FaTimes } from "react-icons/fa";
 import { Menu, MenuButton, MenuItem } from "@headlessui/react";
@@ -5,18 +6,22 @@ import { AnimatePresence, motion } from "framer-motion";
 import { ThemeToggle } from "../../components/ThemeToggle";
 import { useEffect, useState, useRef } from "react";
 import { NavMenu } from "../../components/NavMenu";
-import { useAuthModal } from "../../store/useAuthModal"; // <-- store Zustand
-import { useAuthStore } from "@/store/useAuthStore"; // tu Zustand store
+import { useAuthModal } from "../../store/useAuthModal";
+import { useAuthStore } from "@/store/useAuthStore";
+
+// definimos aquí el subconjunto de roles que usamos en este dropdown
+type Role = "client" | "admin";
 
 const Header: React.FC = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
-  const { openModal } = useAuthModal(); // <-- usar Zustand
+  const { openModal } = useAuthModal();
   const { isLoggedIn, logout, userRole } = useAuthStore();
-  const navigate = useNavigate();
 
-  const dropdownItems = {
+  // sólo manejamos clientes y administradores en el menú
+  const dropdownItems: Record<Role, { label: string; path: string }[]> = {
     client: [
       { label: "Perfil", path: "/perfil" },
       { label: "Ajustes", path: "/ajustes" },
@@ -29,26 +34,29 @@ const Header: React.FC = () => {
     ],
   };
 
+  // cerrar menú móvil al navegar
   useEffect(() => {
     setMobileMenuOpen(false);
   }, [location]);
 
   const handleLinkClick = () => setMobileMenuOpen(false);
 
+  // si es otro rol o vacío, simplemente mostramos array vacío
+  const menuForRole = dropdownItems[userRole as Role] ?? [];
+
   return (
     <header className="bg-primary dark:bg-bgDark text-white shadow-md sticky top-0 z-50 transition-colors duration-300 ease-in-out">
       <div className="max-w-[1400px] mx-auto px-4 md:px-8">
         <div className="flex items-center justify-between h-14 md:h-18">
-          {/* Logo y Toggle */}
+          {/* Logo y toggle móvil */}
           <div className="flex items-center gap-3">
             <button
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              onClick={() => setMobileMenuOpen(v => !v)}
               className="md:hidden text-2xl transition-transform hover:scale-110"
               aria-label="Abrir menú"
             >
               {mobileMenuOpen ? <FaTimes /> : <FaBars />}
             </button>
-
             <Link
               to="/"
               className="flex items-center gap-2 transition-transform hover:scale-105"
@@ -61,7 +69,7 @@ const Header: React.FC = () => {
             </Link>
           </div>
 
-          {/* Menú de navegación (desktop) */}
+          {/* Menú desktop */}
           <nav className="hidden md:flex items-center gap-6 justify-center">
             <NavMenu
               isLoggedIn={isLoggedIn}
@@ -71,7 +79,7 @@ const Header: React.FC = () => {
             />
           </nav>
 
-          {/* Iconos a la derecha */}
+          {/* Iconos derecha */}
           <div className="flex items-center gap-4">
             <ThemeToggle />
             {isLoggedIn ? (
@@ -88,38 +96,30 @@ const Header: React.FC = () => {
                     className="absolute right-0 mt-2 w-48 bg-white dark:bg-bgDark rounded-md shadow-lg z-50 ring-1 ring-black/10 divide-y divide-gray-200 dark:divide-gray-700"
                   >
                     <div className="py-1">
-                      {(userRole === "client" || userRole === "admin"
-                        ? dropdownItems[userRole]
-                        : []
-                      ).map(
-                        (
-                          item: { label: string; path: string },
-                          idx: number
-                        ) => (
-                          <MenuItem key={idx}>
-                            {({ active }) => (
-                              <Link
-                                to={item.path}
-                                className={`block px-4 py-2 text-sm transition-all duration-200 ${
-                                  active
-                                    ? "bg-gray-100 dark:bg-gray-700 text-primary"
-                                    : "text-gray-700 dark:text-white"
-                                }`}
-                              >
-                                {item.label}
-                              </Link>
-                            )}
-                          </MenuItem>
-                        )
-                      )}
+                      {menuForRole.map((item, idx) => (
+                        <MenuItem key={idx}>
+                          {({ active }) => (
+                            <Link
+                              to={item.path}
+                              className={`block px-4 py-2 text-sm transition-all duration-200 ${
+                                active
+                                  ? "bg-gray-100 dark:bg-gray-700 text-primary"
+                                  : "text-gray-700 dark:text-white"
+                              }`}
+                            >
+                              {item.label}
+                            </Link>
+                          )}
+                        </MenuItem>
+                      ))}
                     </div>
                     <div className="py-1">
                       <MenuItem>
                         {({ active }) => (
                           <button
                             onClick={() => {
-                              logout(false); // logout manual (no expirado)
-                              navigate("/"); // 🔥 y redirige a Home
+                              logout(false);
+                              navigate("/");
                             }}
                             className={`block w-full text-left px-4 py-2 text-sm transition-all duration-200 ${
                               active
@@ -137,7 +137,6 @@ const Header: React.FC = () => {
               </Menu>
             ) : (
               <>
-                {/* Mobile icon */}
                 <button
                   onClick={() => openModal("login")}
                   aria-label="Iniciar sesión"
@@ -145,8 +144,6 @@ const Header: React.FC = () => {
                 >
                   <FaUserCircle />
                 </button>
-
-                {/* Desktop button */}
                 <button
                   onClick={() => openModal("login")}
                   className="hidden md:inline-block bg-secondary hover:bg-hoverSecondary px-4 py-2 rounded-md text-white transition-colors duration-300 text-sm"
@@ -159,7 +156,7 @@ const Header: React.FC = () => {
         </div>
       </div>
 
-      {/* Menú móvil deslizable */}
+      {/* Menú móvil */}
       <AnimatePresence>
         {mobileMenuOpen && (
           <motion.div

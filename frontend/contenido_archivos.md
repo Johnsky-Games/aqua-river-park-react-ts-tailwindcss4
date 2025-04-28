@@ -1,3 +1,119 @@
+# Contenido de Archivos
+
+## eslint.config.js
+
+```javascript
+import js from '@eslint/js'
+import globals from 'globals'
+import reactHooks from 'eslint-plugin-react-hooks'
+import reactRefresh from 'eslint-plugin-react-refresh'
+import tseslint from 'typescript-eslint'
+
+export default tseslint.config(
+  { ignores: ['dist'] },
+  {
+    extends: [js.configs.recommended, ...tseslint.configs.recommended],
+    files: ['**/*.{ts,tsx}'],
+    languageOptions: {
+      ecmaVersion: 2020,
+      globals: globals.browser,
+    },
+    plugins: {
+      'react-hooks': reactHooks,
+      'react-refresh': reactRefresh,
+    },
+    rules: {
+      ...reactHooks.configs.recommended.rules,
+      'react-refresh/only-export-components': [
+        'warn',
+        { allowConstantExport: true },
+      ],
+    },
+  },
+)
+
+```
+
+## index.html
+
+```html
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image" href="/ARP logo.png" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Aqua River Park</title>
+</head>
+
+<body>
+  <div id="root"></div>
+  <script type="module" src="/src/main.tsx"></script>
+</body>
+
+</html>
+```
+## README.md
+
+```markdown
+# React + TypeScript + Vite
+
+This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+
+Currently, two official plugins are available:
+
+- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
+- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+
+## Expanding the ESLint configuration
+
+If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+
+```js
+export default tseslint.config({
+  extends: [
+    // Remove ...tseslint.configs.recommended and replace with this
+    ...tseslint.configs.recommendedTypeChecked,
+    // Alternatively, use this for stricter rules
+    ...tseslint.configs.strictTypeChecked,
+    // Optionally, add this for stylistic rules
+    ...tseslint.configs.stylisticTypeChecked,
+  ],
+  languageOptions: {
+    // other options...
+    parserOptions: {
+      project: ['./tsconfig.node.json', './tsconfig.app.json'],
+      tsconfigRootDir: import.meta.dirname,
+    },
+  },
+})
+```
+
+You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+
+```js
+// eslint.config.js
+import reactX from 'eslint-plugin-react-x'
+import reactDom from 'eslint-plugin-react-dom'
+
+export default tseslint.config({
+  plugins: {
+    // Add the react-x and react-dom plugins
+    'react-x': reactX,
+    'react-dom': reactDom,
+  },
+  rules: {
+    // other rules...
+    // Enable its recommended typescript rules
+    ...reactX.configs['recommended-typescript'].rules,
+    ...reactDom.configs.recommended.rules,
+  },
+})
+```
+
+```
+
 ## src\api\axios.ts
 
 ```typescript
@@ -46,7 +162,6 @@ function App() {
 export default App;
 
 ```
-
 ## src\components\auth\AuthForm.tsx
 
 ```tsx
@@ -2776,7 +2891,7 @@ const Header: React.FC = () => {
 
   useEffect(() => {
     if (isLoggedIn && userRole === "admin") {
-      navigate("/admin");
+      navigate("/admin/dashboard");
     }
   }, [isLoggedIn, userRole, navigate]);
 
@@ -3496,6 +3611,218 @@ export default Home;
 
 ```
 
+## src\pages\Login.tsx
+
+```tsx
+// import { useEffect, useState } from "react";
+// import api from "../api/axios";
+// import { useNavigate } from "react-router-dom";
+// import { FaEye, FaEyeSlash, FaCheckCircle, FaInfoCircle } from "react-icons/fa";
+// import { toast } from "react-toastify";
+// import { AxiosError } from "axios";
+
+// const Login = () => {
+//   const [email, setEmail] = useState("");
+//   const [password, setPassword] = useState("");
+//   const [error, setError] = useState("");
+//   const [showPassword, setShowPassword] = useState(false);
+//   const [showModal, setShowModal] = useState(false);
+//   const [modalStep, setModalStep] = useState<"notice" | "form" | "success">(
+//     "notice"
+//   );
+//   const [resendMsg, setResendMsg] = useState("");
+//   const navigate = useNavigate();
+
+//   useEffect(() => {
+//     const confirmed = sessionStorage.getItem("confirmationSuccess");
+//     if (confirmed) {
+//       toast.success(
+//         "¡Cuenta confirmada con éxito! Ahora puedes iniciar sesión."
+//       );
+//       sessionStorage.removeItem("confirmationSuccess");
+//     }
+//   }, []);
+
+//   useEffect(() => {
+//     const successMsg = sessionStorage.getItem("toastSuccess");
+//     if (successMsg) {
+//       toast.success(successMsg);
+//       sessionStorage.removeItem("toastSuccess");
+//     }
+//   }, []);
+
+//   const handleSubmit = async (e: React.FormEvent) => {
+//     e.preventDefault();
+//     setError("");
+
+//     try {
+//       const res = await api.post("/login", { email, password });
+//       localStorage.setItem("token", res.data.token);
+//       navigate("/dashboard");
+//     } catch (err) {
+//       const error = err as AxiosError<{
+//         message: string;
+//         tokenExpired?: boolean;
+//       }>;
+//       const msg = error.response?.data?.message;
+
+//       if (msg === "Debes confirmar tu cuenta") {
+//         const expired = error.response?.data?.tokenExpired;
+//         setModalStep(expired ? "form" : "notice");
+//         setShowModal(true);
+//       } else {
+//         setError("Credenciales incorrectas");
+//       }
+//     }
+//   };
+
+//   const handleResend = async (e: React.FormEvent) => {
+//     e.preventDefault();
+//     setResendMsg("");
+
+//     try {
+//       const res = await api.post("/resend-confirmation", { email });
+//       setResendMsg(res.data.message);
+//       setModalStep("success");
+
+//       setTimeout(() => {
+//         toast.success("¡Correo reenviado!, Revisa tu bandeja...");
+//         setShowModal(false);
+//         setResendMsg("");
+//         setEmail("");
+//         setPassword("");
+//       }, 5000);
+//     } catch (err) {
+//       const error = err as AxiosError<{ message: string }>;
+//       const msg = error.response?.data?.message;
+
+//       if (msg === "La cuenta ya está confirmada") {
+//         toast.info("La cuenta ya ha sido confirmada.");
+//         setShowModal(false);
+//       } else {
+//         setResendMsg("Error al reenviar el enlace.");
+//       }
+//     }
+//   };
+
+//   return (
+//     <>
+//       <div className="max-w-sm mx-auto mt-8">
+//         <h1 className="text-2xl font-bold mb-4">Iniciar sesión</h1>
+//         <form onSubmit={handleSubmit} className="space-y-4">
+//           <input
+//             type="email"
+//             placeholder="Correo"
+//             className="w-full border p-2"
+//             value={email}
+//             onChange={(e) => setEmail(e.target.value)}
+//             required
+//           />
+//           <div className="relative">
+//             <input
+//               type={showPassword ? "text" : "password"}
+//               placeholder="Contraseña"
+//               className="w-full border p-2 pr-10"
+//               value={password}
+//               onChange={(e) => setPassword(e.target.value)}
+//               required
+//             />
+//             <button
+//               type="button"
+//               onClick={() => setShowPassword(!showPassword)}
+//               className="absolute top-1/2 right-3 transform -translate-y-1/2 text-gray-500"
+//             >
+//               {showPassword ? <FaEyeSlash /> : <FaEye />}
+//             </button>
+//           </div>
+//           <button
+//             type="submit"
+//             className="w-full bg-blue-500 text-white p-2 rounded"
+//           >
+//             Entrar
+//           </button>
+//           {error && <p className="text-red-500 text-sm">{error}</p>}
+//           <p className="text-sm mt-2">
+//             ¿No tienes una cuenta?{" "}
+//             <a href="/register" className="text-blue-500 underline">
+//               Regístrate aquí
+//             </a>
+//           </p>
+//         </form>
+//       </div>
+
+//       {showModal && (
+//         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+//           <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md relative text-center">
+//             <button
+//               onClick={() => setShowModal(false)}
+//               className="absolute top-2 right-3 text-gray-500 hover:text-red-500 text-lg font-bold"
+//             >
+//               &times;
+//             </button>
+
+//             {modalStep === "notice" && (
+//               <>
+//                 <FaInfoCircle className="text-yellow-500 text-4xl mx-auto mb-2" />
+//                 <h2 className="text-xl font-bold mb-2 text-sky-600">
+//                   Verifica tu cuenta
+//                 </h2>
+//                 <p className="text-sm text-gray-600 mb-4">
+//                   Aún no has confirmado tu cuenta. Revisa tu correo para
+//                   activarla.
+//                 </p>
+//               </>
+//             )}
+
+//             {modalStep === "form" && (
+//               <>
+//                 <h2 className="text-xl font-bold mb-2 text-sky-600">
+//                   Reenviar Enlace
+//                 </h2>
+//                 <form onSubmit={handleResend} className="space-y-4">
+//                   <input
+//                     type="email"
+//                     placeholder="Tu correo"
+//                     className="w-full px-4 py-2 border rounded-md"
+//                     value={email}
+//                     onChange={(e) => setEmail(e.target.value)}
+//                     required
+//                   />
+//                   <button
+//                     type="submit"
+//                     className="w-full bg-sky-600 text-white py-2 rounded-md hover:bg-sky-700"
+//                   >
+//                     Reenviar
+//                   </button>
+//                   {resendMsg && (
+//                     <p className="text-sm text-red-500">{resendMsg}</p>
+//                   )}
+//                 </form>
+//               </>
+//             )}
+
+//             {modalStep === "success" && (
+//               <>
+//                 <FaCheckCircle className="text-green-500 text-4xl mx-auto mb-2" />
+//                 <p className="text-green-600 text-sm font-medium">
+//                   {resendMsg}
+//                 </p>
+//                 <p className="text-sm text-gray-500 mt-2">
+//                   Serás redirigido al login...
+//                 </p>
+//               </>
+//             )}
+//           </div>
+//         </div>
+//       )}
+//     </>
+//   );
+// };
+
+// export default Login;
+
+```
+
 ## src\pages\NotFound.tsx
 
 ```tsx
@@ -3614,7 +3941,90 @@ const NotFound = () => {
 export default NotFound;
 
 ```
+
+## src\pages\Register.tsx
+
+```tsx
+// import { useState } from "react";
+// import api from "../api/axios";
+// import { useNavigate } from "react-router-dom";
+
+// const Register = () => {
+//   const [name, setName] = useState("");
+//   const [email, setEmail] = useState("");
+//   const [password, setPassword] = useState("");
+//   const [phone, setPhone] = useState("");
+//   const [error, setError] = useState("");
+//   const navigate = useNavigate();
+
+//   const handleSubmit = async (e: React.FormEvent) => {
+//     e.preventDefault();
+//     try {
+//       await api.post("/register", { name, email, password, phone });
+//       alert("Registro exitoso. Revisa tu correo para confirmar tu cuenta.");
+//       navigate("/login");
+//     } catch (err) {
+//       console.error(err);
+//       setError("Error al registrarse. Puede que el correo ya exista.");
+//     }
+//   };
+
+//   return (
+//     <div className="max-w-sm mx-auto mt-8">
+//       <h1 className="text-2xl font-bold mb-4">Registro</h1>
+//       <form onSubmit={handleSubmit} className="space-y-4">
+//         <input
+//           type="text"
+//           placeholder="Nombre"
+//           className="w-full border p-2"
+//           value={name}
+//           onChange={(e) => setName(e.target.value)}
+//         />
+//         <input
+//           type="email"
+//           placeholder="Correo"
+//           className="w-full border p-2"
+//           value={email}
+//           onChange={(e) => setEmail(e.target.value)}
+//         />
+//         <input
+//           type="tel"
+//           placeholder="Teléfono"
+//           className="w-full border p-2"
+//           value={phone}
+//           onChange={(e) => setPhone(e.target.value)}
+//         />
+//         <input
+//           type="password"
+//           placeholder="Contraseña"
+//           className="w-full border p-2"
+//           value={password}
+//           onChange={(e) => setPassword(e.target.value)}
+//         />
+//         <button
+//           type="submit"
+//           className="w-full bg-green-600 text-white p-2 rounded"
+//         >
+//           Registrarse
+//         </button>
+//         {error && <p className="text-red-500 text-sm">{error}</p>}
+//         <p className="text-sm mt-2">
+//           ¿Ya tienes una cuenta?{" "}
+//           <a href="/login" className="text-blue-500 underline">
+//             Inicia sesión aquí
+//           </a>
+//         </p>
+//       </form>
+//     </div>
+//   );
+// };
+
+// export default Register;
+
+```
+
 ## src\pages\ResetPassword.tsx
+
 ```tsx
 import { useEffect, useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
@@ -3940,13 +4350,6 @@ declare module "simple-parallax-js" {
 
 ```
 
-## src\utils\auth.ts
-
-```typescript
-export const isAuthenticated = () => true;
-
-```
-
 ## src\utils\PrivateRoute.tsx
 
 ```tsx
@@ -4058,3 +4461,101 @@ export const getStrengthLabel = (score: number) => {
 
 
 ```
+
+## src\vite-env.d.ts
+
+```typescript
+/// <reference types="vite/client" />
+
+```
+
+## tsconfig.app.json
+
+```json
+{
+  "compilerOptions": {
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
+    "target": "ES2020",
+    "useDefineForClassFields": true,
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "skipLibCheck": true,
+    "baseUrl": "./src",
+    "paths": {
+      "@/*": ["*"]
+    },
+
+    /* Bundler mode */
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "isolatedModules": true,
+    "moduleDetection": "force",
+    "noEmit": true,
+    "jsx": "react-jsx",
+
+    /* Linting */
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedSideEffectImports": true
+  },
+  "include": ["src", "../backend/src/utils/sanitize.ts"]
+}
+
+```
+
+## tsconfig.node.json
+
+```json
+{
+  "compilerOptions": {
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.node.tsbuildinfo",
+    "target": "ES2022",
+    "lib": ["ES2023"],
+    "module": "ESNext",
+    "skipLibCheck": true,
+
+    /* Bundler mode */
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "isolatedModules": true,
+    "moduleDetection": "force",
+    "noEmit": true,
+
+    /* Linting */
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedSideEffectImports": true
+  },
+  "include": ["vite.config.ts"]
+}
+
+```
+
+## vite.config.ts
+
+```typescript
+// import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+import tailwindcss from "@tailwindcss/vite";
+import { defineConfig } from "vitest/config";
+
+// https://vite.dev/config/
+export default defineConfig({
+  plugins: [react(), tailwindcss()],
+  resolve: {
+    alias: {
+      "@": "/src",
+    },
+  },
+  test: {
+    globals: true,
+    environment: "node",
+  },
+});
+
+```
+

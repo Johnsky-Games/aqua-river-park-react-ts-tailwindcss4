@@ -15,7 +15,6 @@
 │   ├── assets
 │   │   ├── hero-bg.jpg
 │   │   └── react.svg
-│   ├── auth
 │   ├── components
 │   │   ├── auth
 │   │   │   ├── AuthForm.tsx
@@ -83,7 +82,6 @@
 │   ├── types
 │   │   └── simple-parallax-js.d.ts
 │   ├── utils
-│   │   ├── auth.ts
 │   │   ├── PrivateRoute.tsx
 │   │   └── validationHelpersForm.ts
 │   └── vite-env.d.ts

@@ -3,8 +3,8 @@ import { Link, useLocation } from "react-router-dom";
 import { FaBars, FaSun, FaMoon, FaUserCircle } from "react-icons/fa";
 import { Menu, MenuButton, MenuItem } from "@headlessui/react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useAuth } from "../../hooks/useAuth";
 import { useTheme } from "../../hooks/useTheme";
+import { useAuthStore } from "@/store/useAuthStore";
 
 interface HeaderMobileProps {
   onToggleSidebar?: () => void;
@@ -12,7 +12,7 @@ interface HeaderMobileProps {
 
 const HeaderMobile: React.FC<HeaderMobileProps> = ({ onToggleSidebar }) => {
   const { darkMode, toggleDarkMode } = useTheme();
-  const { isLoggedIn, logout, userRole } = useAuth();
+  const { isLoggedIn, logout, userRole } = useAuthStore();
   const location = useLocation();
 
   const dropdownItems: Record<string, { label: string; path: string }[]> = {
@@ -21,7 +21,7 @@ const HeaderMobile: React.FC<HeaderMobileProps> = ({ onToggleSidebar }) => {
       { label: "Ajustes", path: "/ajustes" },
     ],
     admin: [
-      { label: "Dashboard", path: "/admin" },
+      { label: "Dashboard", path: "/admin/dashboard" },
       { label: "Perfil", path: "/perfil" },
     ],
   };
@@ -92,7 +92,7 @@ const HeaderMobile: React.FC<HeaderMobileProps> = ({ onToggleSidebar }) => {
                   <MenuItem>
                     {({ active }: { active: boolean }) => (
                       <button
-                        onClick={logout}
+                        onClick={() => logout(false)}
                         className={`block w-full text-left px-4 py-2 text-sm ${
                           active
                             ? "bg-red-100 dark:bg-red-600 text-red-700"

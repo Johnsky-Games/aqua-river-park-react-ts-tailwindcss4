@@ -5,6 +5,9 @@ import { ToastContainer } from "react-toastify";
 import { useAuthModal } from "./store/useAuthModal";
 import AuthModal from "./components/auth/AuthModal";
 import RouteModalHandler from "./components/RouteModalHandler";
+import { LoginRedirectHandler } from "@/components/LoginRedirectHandler";
+import { AutoTokenManager } from "@/components/AutoTokenManager";
+import { GlobalLoadingOverlay } from "@/components/GlobalLoadingOverlay";
 import "react-toastify/dist/ReactToastify.css";
 
 function App() {
@@ -12,6 +15,9 @@ function App() {
 
   return (
     <Router>
+      <AutoTokenManager />         {/* ⚡ Auto refresh de token */}
+      <LoginRedirectHandler />     {/* ⚡ Redirige si ya estás logueado */}
+      <GlobalLoadingOverlay />     {/* ✨ Overlay de carga global si es necesario */}
       <RouteModalHandler />
       <AppRouter />
       {isOpen && <AuthModal />}

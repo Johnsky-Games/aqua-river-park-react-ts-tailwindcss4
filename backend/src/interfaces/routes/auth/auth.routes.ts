@@ -43,12 +43,6 @@ router.post("/check-token-status", checkTokenStatus);
 // ✅ Refresh token — asegurarte que devuelve void en el controller
 router.get("/refresh", refreshToken);
 
-// ✅ Ruta protegida de prueba
-router.get(
-  "/admin/dashboard",
-  authMiddleware,
-  checkRoleById([1, 2, 3, 5, 6]), // admin, staff, reception, editor, validador
-  (req, res) => getDashboard(req as AuthenticatedRequest, res)
-);
+
 
 export default router;

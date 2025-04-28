@@ -16,7 +16,6 @@
       "hero-bg.jpg": null,
       "react.svg": null
     },
-    "auth": {},
     "components": {
       "auth": {
         "AuthForm.tsx": null,
@@ -96,7 +95,6 @@
       "simple-parallax-js.d.ts": null
     },
     "utils": {
-      "auth.ts": null,
       "PrivateRoute.tsx": null,
       "validationHelpersForm.ts": null
     },

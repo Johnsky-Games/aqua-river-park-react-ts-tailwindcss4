@@ -77,8 +77,8 @@ export const loginUser = async (
 
   if (!user) {
     throw createError(
-      errorMessages.emailNotRegistered,
-      errorCodes.EMAIL_NOT_REGISTERED,
+      errorMessages.invalidCredentials,
+      errorCodes.INVALID_CREDENTIALS,
       404
     );
   }

@@ -10,6 +10,7 @@ import DashboardLayout from "../layout/DashboardLayout";
 import PrivateRoute from "../utils/PrivateRoute";
 
 const AppRouter = () => (
+  
   <Routes>
     <Route
       path="/"
@@ -53,9 +54,9 @@ const AppRouter = () => (
     />
 
     <Route
-      path="/dashboard"
+      path="admin/dashboard"
       element={
-        <PrivateRoute>
+        <PrivateRoute allowedRoles={["admin"]}>
           <DashboardLayout>
             <Dashboard />
           </DashboardLayout>

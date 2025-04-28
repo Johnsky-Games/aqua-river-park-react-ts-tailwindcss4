@@ -1,9 +1,10 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+// import { useNavigate } from "react-router-dom";
 import { AxiosError } from "axios";
 import api from "../../api/axios";
 import { toast } from "react-toastify";
 import { useAuthModal } from "../../store/useAuthModal";
+import { useAuthStore } from "../../store/useAuthStore"; // ✅ AÑADIDO
 import AuthResendModal from "./AuthResendModal";
 import {
   getPasswordScore,
@@ -20,9 +21,7 @@ interface Props {
   showModal: boolean;
   modalType: "confirm" | "recover";
   setFormEmail: React.Dispatch<React.SetStateAction<string>>;
-  setModalStep: React.Dispatch<
-    React.SetStateAction<"notice" | "form" | "success">
-  >;
+  setModalStep: React.Dispatch<React.SetStateAction<"notice" | "form" | "success">>;
   setShowModal: React.Dispatch<React.SetStateAction<boolean>>;
   setModalType: React.Dispatch<React.SetStateAction<"confirm" | "recover">>;
 }
@@ -45,8 +44,8 @@ export default function AuthForm({
   setModalType,
 }: Props) {
   const { view, closeModal, toggleView } = useAuthModal();
+  const { login } = useAuthStore(); // ✅ correcto
   const isLogin = view === "login";
-  const navigate = useNavigate();
 
   const [formData, setFormData] = useState(initialForm);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
@@ -56,7 +55,6 @@ export default function AuthForm({
 
   const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-
     const formattedValue = name === "fullName" ? capitalizeName(value) : value;
 
     if (name === "password") setPasswordStrength(getPasswordScore(value));
@@ -72,10 +70,7 @@ export default function AuthForm({
       errs.email = "Correo no válido";
     }
 
-    const passwordErrors = validatePasswordSecurity(
-      formData.password,
-      formData.email
-    );
+    const passwordErrors = validatePasswordSecurity(formData.password, formData.email);
     if (passwordErrors.length > 0) {
       errs.password = passwordErrors.join(" ");
     }
@@ -84,11 +79,9 @@ export default function AuthForm({
       if (!formData.fullName || formData.fullName.length < 2) {
         errs.fullName = "El nombre debe tener al menos 2 caracteres.";
       }
-
       if (!/^[0-9]{10}$/.test(formData.phone)) {
         errs.phone = "El teléfono debe tener 10 dígitos.";
       }
-
       if (formData.password !== formData.confirmPassword) {
         errs.confirmPassword = "Las contraseñas no coinciden.";
       }
@@ -100,12 +93,12 @@ export default function AuthForm({
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (isSubmitting) return; // Evita múltiples envíos
+    if (isSubmitting) return;
     setIsSubmitting(true);
 
     const isValid = validate();
     if (!isValid) {
-      setIsSubmitting(false); // 🔁 Agrega esto para volver a habilitar el botón
+      setIsSubmitting(false);
       return;
     }
 
@@ -124,9 +117,16 @@ export default function AuthForm({
           return;
         }
 
-        closeModal();
-        toast.success("Login exitoso!");
-        navigate("/");
+        const { token } = res.data;
+        if (token) {
+          localStorage.setItem("token", token);
+
+          login(token); // ✅ solo actualizamos el store
+
+          closeModal();
+          toast.success("¡Login exitoso!");
+          // ❗ No navegamos aquí — eso lo maneja LoginRedirectHandler.tsx
+        }
       } else {
         const res = await api.post("/register", {
           name: formData.fullName,
@@ -136,15 +136,12 @@ export default function AuthForm({
         });
 
         if (res.status === 200 || res.status === 201) {
-          toast.success("Registro exitoso. Revisa tu correo.");
+          toast.success("Registro exitoso. Revisa tu correo para confirmar tu cuenta.");
           toggleView();
         }
       }
     } catch (err) {
-      const error = err as AxiosError<{
-        message: string;
-        tokenExpired?: boolean;
-      }>;
+      const error = err as AxiosError<{ message: string; tokenExpired?: boolean }>;
       const msg = error.response?.data?.message;
 
       if (msg === "Debes confirmar tu cuenta") {
@@ -164,26 +161,21 @@ export default function AuthForm({
 
   const handleResend = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (isSubmitting) return; // Evita múltiples envíos
+    if (isSubmitting) return;
     setIsSubmitting(true);
     setResendMsg("");
 
-    const endpoint =
-      modalType === "recover" ? "/send-recovery" : "/resend-confirmation";
+    const endpoint = modalType === "recover" ? "/send-recovery" : "/resend-confirmation";
 
     try {
-      const res = await api.post(endpoint, {
-        email: formData.email,
-      });
-
+      const res = await api.post(endpoint, { email: formData.email });
       setResendMsg(res.data.message);
       setModalStep("success");
 
       setTimeout(() => {
-        toast.success(
-          modalType === "recover"
-            ? "¡Enlace de recuperación enviado!"
-            : "¡Correo de confirmación reenviado!"
+        toast.success(modalType === "recover"
+          ? "¡Enlace de recuperación enviado!"
+          : "¡Correo de confirmación reenviado!"
         );
         setShowModal(false);
         setResendMsg("");
@@ -217,7 +209,6 @@ export default function AuthForm({
               placeholder="Tu nombre completo"
               error={errors.fullName}
             />
-
             <InputWithLabel
               label=""
               name="phone"
@@ -235,7 +226,7 @@ export default function AuthForm({
           type="email"
           value={formData.email}
           onChange={handleInput}
-          placeholder="Mail"
+          placeholder="Correo electrónico"
           error={errors.email}
           autoFocus
         />
@@ -269,7 +260,7 @@ export default function AuthForm({
                 setModalType("recover");
                 setModalStep("form");
                 setShowModal(true);
-                setFormEmail(formData.email); // importante para usar en el modal
+                setFormEmail(formData.email);
               }}
             >
               Forgot Password?
@@ -288,7 +279,7 @@ export default function AuthForm({
         </button>
 
         <p className="text-center text-sm text-gray-600 mt-4">
-          {isLogin ? "No tienes una cuenta?" : "Ya tienes una cuenta?"}{" "}
+          {isLogin ? "¿No tienes cuenta?" : "¿Ya tienes cuenta?"}{" "}
           <button
             type="button"
             onClick={toggleView}

@@ -161,3 +161,99 @@
 [2025-04-25 15:14:30] [32minfo[39m: ✅ Servidor iniciado en http://localhost:3000
 [2025-04-25 16:15:36] [32minfo[39m: ✅ Login exitoso: jonathanboada1@gmail.com
 [2025-04-25 16:55:32] [32minfo[39m: ✅ Login exitoso: jonathanboada1@gmail.com
+[2025-04-25 23:20:19] [32minfo[39m: ✅ Servidor iniciado en http://localhost:3000
+[2025-04-25 23:30:49] [33mwarn[39m: 🚫 Ruta no encontrada: GET /
+[2025-04-25 23:30:50] [33mwarn[39m: 🚫 Ruta no encontrada: GET /favicon.ico
+[2025-04-26 01:08:33] [31merror[39m: ❌ Login: Correo no registrado | Code: 1002 | Status: 404
+[2025-04-26 01:08:47] [31merror[39m: ❌ Enviar recuperación: Correo no registrado | Code: 1002 | Status: 400
+[2025-04-26 01:09:05] [31merror[39m: ❌ Enviar recuperación: Correo no registrado | Code: 1002 | Status: 400
+[2025-04-26 01:09:50] [31merror[39m: ❌ Login: Correo no registrado | Code: 1002 | Status: 404
+[2025-04-26 01:11:26] [32minfo[39m: ✅ Servidor iniciado en http://localhost:3000
+[2025-04-26 01:11:26] [31merror[39m: ❌ Login: Credenciales incorrectas | Code: 1002 | Status: 404
+[2025-04-26 01:12:03] [32minfo[39m: ✅ Servidor iniciado en http://localhost:3000
+[2025-04-26 01:12:09] [31merror[39m: ❌ Login: Credenciales incorrectas | Code: 1003 | Status: 404
+[2025-04-26 01:12:35] [31merror[39m: ❌ Enviar recuperación: Correo no registrado | Code: 1002 | Status: 400
+[2025-04-26 01:12:37] [31merror[39m: ❌ Enviar recuperación: Correo no registrado | Code: 1002 | Status: 400
+[2025-04-26 01:12:37] [31merror[39m: ❌ Enviar recuperación: Correo no registrado | Code: 1002 | Status: 400
+[2025-04-26 01:12:38] [31merror[39m: ❌ Enviar recuperación: Correo no registrado | Code: 1002 | Status: 400
+[2025-04-26 01:23:39] [33mwarn[39m: 🚫 Ruta no encontrada: POST /api/api/auth/send-recovery
+[2025-04-26 01:31:05] [32minfo[39m: 📨 Correo enviado a salomon@correo.com: Recupera tu contraseña - Aqua River Park
+[2025-04-26 01:32:06] [32minfo[39m: ✅ Login exitoso: salomon@correo.com
+[2025-04-26 01:35:55] [31merror[39m: ❌ Login: Debes confirmar tu cuenta | Code: 1004 | Status: 401
+[2025-04-26 01:35:59] [32minfo[39m: 📨 Correo enviado a salomon@correo.com: Confirma tu cuenta
+[2025-04-26 01:35:59] [32minfo[39m: ✅ Correo de confirmación reenviado: salomon@correo.com
+[2025-04-26 01:36:52] [32minfo[39m: ✅ Login exitoso: salomon@correo.com
+[2025-04-26 01:50:40] [32minfo[39m: ✅ Login exitoso: salomon@correo.com
+[2025-04-26 02:02:01] [32minfo[39m: 📨 Correo enviado a ml@ml.com: Recupera tu contraseña - Aqua River Park
+[2025-04-26 02:02:22] [31merror[39m: ❌ Enviar recuperación: Correo no registrado | Code: 1002 | Status: 400
+[2025-04-26 02:02:23] [31merror[39m: ❌ Enviar recuperación: Correo no registrado | Code: 1002 | Status: 400
+[2025-04-26 02:02:24] [31merror[39m: ❌ Enviar recuperación: Correo no registrado | Code: 1002 | Status: 400
+[2025-04-26 13:37:00] [32minfo[39m: ✅ Servidor iniciado en http://localhost:3000
+[2025-04-26 16:42:02] [32minfo[39m: 📨 Correo enviado a carlos-boada14@hotmail.com: Recupera tu contraseña - Aqua River Park
+[2025-04-26 16:42:43] [32minfo[39m: ✅ Login exitoso: carlos-boada14@hotmail.com
+[2025-04-26 16:43:04] [32minfo[39m: ✅ Login exitoso: carlos-boada14@hotmail.com
+[2025-04-26 16:44:00] [32minfo[39m: ✅ Login exitoso: carlos-boada14@hotmail.com
+[2025-04-26 17:39:12] [32minfo[39m: ✅ Login exitoso: carlos-boada14@hotmail.com
+[2025-04-26 20:00:34] [32minfo[39m: ✅ Servidor iniciado en http://localhost:3000
+[2025-04-26 20:00:59] [32minfo[39m: ✅ Login exitoso: carlos-boada14@hotmail.com
+[2025-04-26 20:01:38] [32minfo[39m: ✅ Servidor iniciado en http://localhost:3000
+[2025-04-26 20:20:26] [32minfo[39m: ✅ Login exitoso: carlos-boada14@hotmail.com
+[2025-04-26 20:34:34] [32minfo[39m: ✅ Login exitoso: carlos-boada14@hotmail.com
+[2025-04-26 20:34:57] [32minfo[39m: ✅ Login exitoso: carlos-boada14@hotmail.com
+[2025-04-26 21:05:38] [32minfo[39m: ✅ Login exitoso: carlos-boada14@hotmail.com
+[2025-04-26 22:06:41] [32minfo[39m: ✅ Login exitoso: carlos-boada14@hotmail.com
+[2025-04-27 00:52:44] [32minfo[39m: ✅ Login exitoso: carlos-boada14@hotmail.com
+[2025-04-27 00:54:12] [32minfo[39m: ✅ Login exitoso: carlos-boada14@hotmail.com
+[2025-04-27 00:55:04] [32minfo[39m: ✅ Login exitoso: carlos-boada14@hotmail.com
+[2025-04-27 01:31:23] [32minfo[39m: ✅ Login exitoso: carlos-boada14@hotmail.com
+[2025-04-27 01:32:10] [32minfo[39m: ✅ Login exitoso: carlos-boada14@hotmail.com
+[2025-04-27 01:39:40] [32minfo[39m: ✅ Login exitoso: carlos-boada14@hotmail.com
+[2025-04-27 01:40:21] [32minfo[39m: ✅ Servidor iniciado en http://localhost:3000
+[2025-04-27 01:40:23] [32minfo[39m: ✅ Login exitoso: carlos-boada14@hotmail.com
+[2025-04-27 01:41:25] [32minfo[39m: ✅ Servidor iniciado en http://localhost:3000
+[2025-04-27 01:47:42] [32minfo[39m: ✅ Servidor iniciado en http://localhost:3000
+[2025-04-27 01:47:53] [32minfo[39m: ✅ Servidor iniciado en http://localhost:3000
+[2025-04-27 01:48:07] [32minfo[39m: ✅ Servidor iniciado en http://localhost:3000
+[2025-04-27 01:49:07] [32minfo[39m: ✅ Servidor iniciado en http://localhost:3000
+[2025-04-27 01:49:17] [32minfo[39m: ✅ Servidor iniciado en http://localhost:3000
+[2025-04-27 01:49:34] [32minfo[39m: ✅ Servidor iniciado en http://localhost:3000
+[2025-04-27 02:01:48] [32minfo[39m: ✅ Servidor iniciado en http://localhost:3000
+[2025-04-27 02:01:55] [32minfo[39m: ✅ Servidor iniciado en http://localhost:3000
+[2025-04-27 02:02:18] [32minfo[39m: ✅ Servidor iniciado en http://localhost:3000
+[2025-04-27 02:02:27] [32minfo[39m: ✅ Servidor iniciado en http://localhost:3000
+[2025-04-27 02:07:32] [32minfo[39m: ✅ Login exitoso: carlos-boada14@hotmail.com
+[2025-04-27 02:24:56] [32minfo[39m: ✅ Login exitoso: carlos-boada14@hotmail.com
+[2025-04-27 02:25:40] [32minfo[39m: ✅ Login exitoso: carlos-boada14@hotmail.com
+[2025-04-27 22:28:47] [32minfo[39m: ✅ Servidor iniciado en http://localhost:3000
+[2025-04-27 22:29:56] [33mwarn[39m: 🚫 Ruta no encontrada: GET /favicon.ico
+[2025-04-27 22:29:59] [33mwarn[39m: 🚫 Ruta no encontrada: GET /
+[2025-04-27 22:32:01] [32minfo[39m: ✅ Login exitoso: carlos-boada14@hotmail.com
+[2025-04-27 22:45:20] [32minfo[39m: ✅ Login exitoso: carlos-boada14@hotmail.com
+[2025-04-27 22:45:31] [32minfo[39m: ✅ Login exitoso: carlos-boada14@hotmail.com
+[2025-04-27 23:18:27] [32minfo[39m: ✅ Login exitoso: carlos-boada14@hotmail.com
+[2025-04-27 23:29:27] [33mwarn[39m: 🚫 Ruta no encontrada: GET /api/refresh-token
+[2025-04-27 23:57:40] [32minfo[39m: ✅ Login exitoso: carlos-boada14@hotmail.com
+[2025-04-28 00:01:42] [32minfo[39m: ✅ Login exitoso: carlos-boada14@hotmail.com
+[2025-04-28 00:12:42] [33mwarn[39m: 🚫 Ruta no encontrada: GET /api/refresh-token
+[2025-04-28 00:38:12] [32minfo[39m: ✅ Login exitoso: carlos-boada14@hotmail.com
+[2025-04-28 00:40:06] [32minfo[39m: ✅ Login exitoso: carlos-boada14@hotmail.com
+[2025-04-28 00:40:25] [32minfo[39m: ✅ Login exitoso: carlos-boada14@hotmail.com
+[2025-04-28 00:41:00] [33mwarn[39m: 🚫 Ruta no encontrada: GET /api/login
+[2025-04-28 00:41:21] [32minfo[39m: ✅ Login exitoso: carlos-boada14@hotmail.com
+[2025-04-28 00:41:55] [33mwarn[39m: 🚫 Ruta no encontrada: GET /api/refresh-token
+[2025-04-28 00:42:39] [32minfo[39m: ✅ Login exitoso: carlos-boada14@hotmail.com
+[2025-04-28 00:47:07] [32minfo[39m: ✅ Servidor iniciado en http://localhost:3000
+[2025-04-28 00:47:11] [32minfo[39m: ✅ Login exitoso: carlos-boada14@hotmail.com
+[2025-04-28 00:47:33] [32minfo[39m: ✅ Login exitoso: carlos-boada14@hotmail.com
+[2025-04-28 00:47:59] [32minfo[39m: ✅ Login exitoso: carlos-boada14@hotmail.com
+[2025-04-28 00:48:23] [32minfo[39m: ✅ Login exitoso: carlos-boada14@hotmail.com
+[2025-04-28 00:50:37] [32minfo[39m: ✅ Login exitoso: carlos-boada14@hotmail.com
+[2025-04-28 00:58:03] [32minfo[39m: ✅ Servidor iniciado en http://localhost:3000
+[2025-04-28 00:58:05] [32minfo[39m: ✅ Login exitoso: carlos-boada14@hotmail.com
+[2025-04-28 01:05:00] [32minfo[39m: ✅ Login exitoso: carlos-boada14@hotmail.com
+[2025-04-28 01:17:44] [32minfo[39m: ✅ Login exitoso: carlos-boada14@hotmail.com
+[2025-04-28 01:27:22] [32minfo[39m: ✅ Login exitoso: carlos-boada14@hotmail.com
+[2025-04-28 01:28:23] [32minfo[39m: ✅ Login exitoso: carlos-boada14@hotmail.com
+[2025-04-28 01:38:34] [33mwarn[39m: 🚫 Ruta no encontrada: GET /api/refresh-token
+[2025-04-28 01:55:32] [32minfo[39m: ✅ Login exitoso: carlos-boada14@hotmail.com
+[2025-04-28 02:05:31] [32minfo[39m: ✅ Login exitoso: carlos-boada14@hotmail.com

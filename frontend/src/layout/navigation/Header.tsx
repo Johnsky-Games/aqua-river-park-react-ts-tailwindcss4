@@ -3,18 +3,18 @@ import { FaUserCircle, FaBars, FaTimes } from "react-icons/fa";
 import { Menu, MenuButton, MenuItem } from "@headlessui/react";
 import { AnimatePresence, motion } from "framer-motion";
 import { ThemeToggle } from "../../components/ThemeToggle";
-import { useAuth } from "../../hooks/useAuth";
 import { useEffect, useState, useRef } from "react";
 import { NavMenu } from "../../components/NavMenu";
 import { useAuthModal } from "../../store/useAuthModal"; // <-- store Zustand
+import { useAuthStore } from "@/store/useAuthStore"; // tu Zustand store
 
 const Header: React.FC = () => {
-  const { isLoggedIn, logout, userRole } = useAuth();
   const location = useLocation();
-  const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const { openModal } = useAuthModal(); // <-- usar Zustand
+  const { isLoggedIn, logout, userRole } = useAuthStore();
+  const navigate = useNavigate();
 
   const dropdownItems = {
     client: [
@@ -32,12 +32,6 @@ const Header: React.FC = () => {
   useEffect(() => {
     setMobileMenuOpen(false);
   }, [location]);
-
-  useEffect(() => {
-    if (isLoggedIn && userRole === "admin") {
-      navigate("/admin/dashboard");
-    }
-  }, [isLoggedIn, userRole, navigate]);
 
   const handleLinkClick = () => setMobileMenuOpen(false);
 
@@ -94,28 +88,39 @@ const Header: React.FC = () => {
                     className="absolute right-0 mt-2 w-48 bg-white dark:bg-bgDark rounded-md shadow-lg z-50 ring-1 ring-black/10 divide-y divide-gray-200 dark:divide-gray-700"
                   >
                     <div className="py-1">
-                      {(dropdownItems[userRole] || []).map((item, idx) => (
-                        <MenuItem key={idx}>
-                          {({ active }) => (
-                            <Link
-                              to={item.path}
-                              className={`block px-4 py-2 text-sm transition-all duration-200 ${
-                                active
-                                  ? "bg-gray-100 dark:bg-gray-700 text-primary"
-                                  : "text-gray-700 dark:text-white"
-                              }`}
-                            >
-                              {item.label}
-                            </Link>
-                          )}
-                        </MenuItem>
-                      ))}
+                      {(userRole === "client" || userRole === "admin"
+                        ? dropdownItems[userRole]
+                        : []
+                      ).map(
+                        (
+                          item: { label: string; path: string },
+                          idx: number
+                        ) => (
+                          <MenuItem key={idx}>
+                            {({ active }) => (
+                              <Link
+                                to={item.path}
+                                className={`block px-4 py-2 text-sm transition-all duration-200 ${
+                                  active
+                                    ? "bg-gray-100 dark:bg-gray-700 text-primary"
+                                    : "text-gray-700 dark:text-white"
+                                }`}
+                              >
+                                {item.label}
+                              </Link>
+                            )}
+                          </MenuItem>
+                        )
+                      )}
                     </div>
                     <div className="py-1">
                       <MenuItem>
                         {({ active }) => (
                           <button
-                            onClick={logout}
+                            onClick={() => {
+                              logout(false); // logout manual (no expirado)
+                              navigate("/"); // 🔥 y redirige a Home
+                            }}
                             className={`block w-full text-left px-4 py-2 text-sm transition-all duration-200 ${
                               active
                                 ? "bg-red-100 dark:bg-red-600 text-red-700"

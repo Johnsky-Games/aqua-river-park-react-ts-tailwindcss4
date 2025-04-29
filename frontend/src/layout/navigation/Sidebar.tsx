@@ -1,64 +1,113 @@
 // src/layout/navigation/Sidebar.tsx
-import React, { useState } from "react";
-// import { NavLink } from "react-router-dom";
-import { BsGrid1X2Fill } from "react-icons/bs";
-import { FaHome, FaUser, FaCog } from "react-icons/fa";
-import { motion } from "framer-motion";
+import React from "react";
+import { Link, useLocation } from "react-router-dom";
+import {
+  BsGrid1X2Fill,
+  BsFileText,
+  BsListCheck,
+  BsPersonFill,
+  BsGearFill,
+} from "react-icons/bs";
+import { motion, AnimatePresence } from "framer-motion";
 
-const menuItems = [
-  { label: "Inicio", path: "/admin/dashboard", icon: <FaHome /> },
-  { label: "Perfil", path: "/perfil", icon: <FaUser /> },
-  { label: "Configuración", path: "/ajustes", icon: <FaCog /> },
+interface MenuItem {
+  label: string;
+  path: string;
+  icon: React.ReactNode;
+}
+
+const menuItems: MenuItem[] = [
+  { label: "Dashboard", path: "/admin/dashboard", icon: <BsGrid1X2Fill /> },
+  { label: "Invoices",  path: "/invoices",        icon: <BsFileText />    },
+  { label: "Entries",   path: "/entries",         icon: <BsListCheck />   },
+  { label: "Users",     path: "/users",           icon: <BsPersonFill />  },
+  { label: "Settings",  path: "/settings",        icon: <BsGearFill />    },
 ];
 
-const Sidebar: React.FC = () => {
-  const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [activeTab, setActiveTab] = useState(menuItems[0].path);
+interface SidebarProps {
+  isOpen: boolean;
+  onToggle: () => void;
+  isMobile: boolean;
+}
+
+const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, isMobile }) => {
+  const { pathname } = useLocation();
 
   return (
-    <motion.aside
-      role="complementary"
-      aria-label="Sidebar principal"
-      initial={false}
-      animate={{ width: sidebarOpen ? "16rem" : "4rem" }}
-      transition={{ type: "spring", stiffness: 300, damping: 30 }}
-      className="h-screen fixed left-0 top-0 bg-accent2 text-white flex flex-col transition-colors duration-300"
-    >
-      {/* Header: título + toggle */}
-      <div className="p-4">
-        <div className="flex items-center justify-between mb-8">
-          {sidebarOpen && <h2 className="text-white text-xl font-bold">Aqua River</h2>}
-          <button
-            onClick={() => setSidebarOpen((open) => !open)}
-            className="text-white p-2 rounded hover:bg-accent1 transition-colors"
-            aria-label={sidebarOpen ? "Cerrar sidebar" : "Abrir sidebar"}
-          >
-            <BsGrid1X2Fill />
-          </button>
-        </div>
+    <AnimatePresence>
+      {(isOpen || !isMobile) && (
+        <motion.aside
+          role="complementary"
+          aria-label="Sidebar principal"
+          layout
+          initial={false}
+          animate={{ width: isOpen ? "16rem" : "4rem" }}
+          transition={{ type: "tween", duration: 0.3, ease: "easeInOut" }}
+          className="h-screen fixed left-0 top-0 bg-accent2 text-white flex flex-col overflow-hidden z-50"
+        >
+          <div className="flex flex-col justify-between h-full p-2">
+            <div>
+              {/* header */}
+              <div className="flex items-center justify-between mb-8">
+                <motion.h2
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{
+                    opacity: isOpen ? 1 : 0,
+                    x: isOpen ? 0 : -20,
+                  }}
+                  transition={{ duration: 0.3 }}
+                  className="text-xl font-bold whitespace-nowrap overflow-hidden"
+                >
+                  Aqua River
+                </motion.h2>
+                <button
+                  onClick={onToggle}
+                  className="p-4 rounded hover:bg-accent1 transition focus:outline-none"
+                  aria-label={isOpen ? "Cerrar sidebar" : "Abrir sidebar"}
+                >
+                  <BsGrid1X2Fill size={20} />
+                </button>
+              </div>
 
-        {/* Enlaces */}
-        <nav>
-          {menuItems.map((item) => {
-            const isActive = activeTab === item.path;
-            return (
-              <button
-                key={item.path}
-                onClick={() => setActiveTab(item.path)}
-                className={`w-full flex items-center p-3 mb-2 rounded-lg transition-colors ${
-                  isActive
-                    ? "bg-accent1 text-textDark"
-                    : "text-gray-300 hover:bg-accent1 hover:text-textDark"
-                }`}
-              >
-                <span className="text-xl">{item.icon}</span>
-                {sidebarOpen && <span className="ml-3">{item.label}</span>}
-              </button>
-            );
-          })}
-        </nav>
-      </div>
-    </motion.aside>
+              {/* menú con enlaces actualizados */}
+              <nav className="space-y-2">
+                {menuItems.map(item => {
+                  const selected = pathname === item.path;
+                  return (
+                    <Link
+                      key={item.path}
+                      to={item.path}
+                      className={`
+                        flex items-center p-3 rounded-lg transition-colors focus:outline-none
+                        ${selected
+                          ? "bg-accent1 text-textDark"
+                          : "text-gray-300 hover:bg-accent1 hover:text-textDark"}
+                        ${isOpen ? "justify-start" : "justify-center"}
+                      `}
+                    >
+                      <span className="text-lg">{item.icon}</span>
+                      <AnimatePresence>
+                        {isOpen && (
+                          <motion.span
+                            initial={{ opacity: 0, x: -10 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: -10 }}
+                            transition={{ duration: 0.3 }}
+                            className="ml-3 whitespace-nowrap overflow-hidden"
+                          >
+                            {item.label}
+                          </motion.span>
+                        )}
+                      </AnimatePresence>
+                    </Link>
+                  );
+                })}
+              </nav>
+            </div>
+          </div>
+        </motion.aside>
+      )}
+    </AnimatePresence>
   );
 };
 

@@ -1,4 +1,3 @@
-// src/pages/Dashboard.tsx
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "@/store/useAuthStore";
@@ -30,22 +29,15 @@ const Dashboard: React.FC = () => {
     const fetchDashboard = async () => {
       try {
         const token = localStorage.getItem("token");
-        if (!token) {
-          throw new Error("Token no encontrado");
-        }
+        if (!token) throw new Error("Token no encontrado");
 
         const res = await api.get("/admin/dashboard", {
           headers: { Authorization: `Bearer ${token}` },
           signal: controller.signal,
         });
-
         const parts = (res.data.message as string).split(" ");
-        setUser({
-          name: parts[1] || "Usuario",
-          role: res.data.role,
-        });
+        setUser({ name: parts[1] || "Usuario", role: res.data.role });
       } catch (err: unknown) {
-        // Si la petición fue abortada, no hacemos nada
         if (controller.signal.aborted) return;
         console.error(err);
         setError("No se pudo cargar el dashboard. Intenta de nuevo.");
@@ -53,9 +45,7 @@ const Dashboard: React.FC = () => {
     };
 
     fetchDashboard();
-    return () => {
-      controller.abort();
-    };
+    return () => controller.abort();
   }, [isLoggedIn, userRole, navigate]);
 
   const handleLogout = () => {
@@ -64,12 +54,11 @@ const Dashboard: React.FC = () => {
   };
 
   return (
-    <div className="max-w-lg mx-auto mt-20 space-y-4">
+    <div className="max-w-lg mx-auto pt-20 space-y-4">
       <h1 className="text-3xl font-bold">Dashboard</h1>
 
       {error && <p className="text-red-500">{error}</p>}
-
-      {!error && !user && <p className="text-gray-600">Cargando datos del dashboard…</p>}
+      {!error && !user && <p className="text-gray-600">Cargando datos…</p>}
 
       {user && (
         <>

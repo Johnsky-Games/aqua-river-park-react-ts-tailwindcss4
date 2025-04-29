@@ -282,3 +282,13 @@
 [2025-04-28 16:08:28] [32minfo[39m: ✅ Login exitoso: jonathanboada1@gmail.com
 [2025-04-28 16:10:23] [32minfo[39m: ✅ Login exitoso: jonathanboada1@gmail.com
 [2025-04-28 17:01:59] [32minfo[39m: ✅ Login exitoso: jonathanboada1@gmail.com
+[2025-04-28 18:47:55] [32minfo[39m: ✅ Servidor iniciado en http://localhost:3000
+[2025-04-28 19:24:05] [32minfo[39m: ✅ Servidor iniciado en http://localhost:3000
+[2025-04-28 19:25:18] [31merror[39m: ❌ Login: Debes confirmar tu cuenta | Code: 1004 | Status: 401
+[2025-04-28 19:25:29] [32minfo[39m: 📨 Correo enviado a jonathanboada1@gmail.com: Confirma tu cuenta
+[2025-04-28 19:25:29] [32minfo[39m: ✅ Correo de confirmación reenviado: jonathanboada1@gmail.com
+[2025-04-28 19:26:26] [31merror[39m: ❌ Login: Credenciales incorrectas | Code: 1003 | Status: 401
+[2025-04-28 19:26:40] [32minfo[39m: 📨 Correo enviado a jonathanboada1@gmail.com: Recupera tu contraseña - Aqua River Park
+[2025-04-28 19:27:22] [32minfo[39m: ✅ Login exitoso: jonathanboada1@gmail.com
+[2025-04-28 19:37:17] [32minfo[39m: ✅ Servidor iniciado en http://localhost:3000
+[2025-04-28 19:37:23] [32minfo[39m: ✅ Login exitoso: jonathanboada1@gmail.com

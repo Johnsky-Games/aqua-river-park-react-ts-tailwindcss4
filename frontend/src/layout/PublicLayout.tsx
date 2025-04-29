@@ -7,7 +7,7 @@ const PublicLayout: React.FC = () => {
   return (
     <>
       <Header />
-      <main className="pt-4">
+      <main className="pt-0">
         <Outlet />
       </main>
       <Footer />

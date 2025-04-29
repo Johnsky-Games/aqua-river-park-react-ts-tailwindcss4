@@ -1,12 +1,9 @@
 // src/layout/navigation/Sidebar.tsx
-import { NavLink } from "react-router-dom";
+import React, { useState } from "react";
+// import { NavLink } from "react-router-dom";
+import { BsGrid1X2Fill } from "react-icons/bs";
 import { FaHome, FaUser, FaCog } from "react-icons/fa";
 import { motion } from "framer-motion";
-import classNames from "classnames";
-
-interface SidebarProps {
-  isOpen: boolean;
-}
 
 const menuItems = [
   { label: "Inicio", path: "/admin/dashboard", icon: <FaHome /> },
@@ -14,53 +11,53 @@ const menuItems = [
   { label: "Configuración", path: "/ajustes", icon: <FaCog /> },
 ];
 
-const Sidebar = ({ isOpen }: SidebarProps) => {
+const Sidebar: React.FC = () => {
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [activeTab, setActiveTab] = useState(menuItems[0].path);
+
   return (
     <motion.aside
       role="complementary"
       aria-label="Sidebar principal"
       initial={false}
-      animate={{ width: isOpen ? "16rem" : "4rem" }}
+      animate={{ width: sidebarOpen ? "16rem" : "4rem" }}
       transition={{ type: "spring", stiffness: 300, damping: 30 }}
-      className="h-screen bg-accent2 text-white flex flex-col transition-colors duration-300"
+      className="h-screen fixed left-0 top-0 bg-accent2 text-white flex flex-col transition-colors duration-300"
     >
-      {/* Header */}
-      <div className="flex items-center justify-center md:justify-between px-4 py-4 border-b border-white/10">
-        {isOpen && <h1 className="text-lg font-bold">Aqua River</h1>}
-      </div>
-
-      {/* Menu */}
-      <nav
-        role="navigation"
-        aria-label="Enlaces principales"
-        className="flex-1 overflow-y-auto mt-4 space-y-2"
-      >
-        {menuItems.map((item, idx) => (
-          <NavLink
-            to={item.path}
-            key={idx}
-            end
-            className={({ isActive }: { isActive: boolean }) =>
-              classNames(
-                "flex items-center gap-3 px-4 py-2 rounded-md mx-2 transition-colors",
-                isActive
-                  ? "bg-accent1 text-textDark font-semibold"
-                  : "hover:bg-white/10"
-              )
-            }
+      {/* Header: título + toggle */}
+      <div className="p-4">
+        <div className="flex items-center justify-between mb-8">
+          {sidebarOpen && <h2 className="text-white text-xl font-bold">Aqua River</h2>}
+          <button
+            onClick={() => setSidebarOpen((open) => !open)}
+            className="text-white p-2 rounded hover:bg-accent1 transition-colors"
+            aria-label={sidebarOpen ? "Cerrar sidebar" : "Abrir sidebar"}
           >
-            <span className="text-lg">{item.icon}</span>
-            {isOpen && <span className="text-sm">{item.label}</span>}
-          </NavLink>
-        ))}
-      </nav>
-
-      {/* Footer */}
-      {isOpen && (
-        <div className="px-4 py-4 text-xs text-gray-300 border-t border-white/10">
-          © {new Date().getFullYear()} Aqua River Park
+            <BsGrid1X2Fill />
+          </button>
         </div>
-      )}
+
+        {/* Enlaces */}
+        <nav>
+          {menuItems.map((item) => {
+            const isActive = activeTab === item.path;
+            return (
+              <button
+                key={item.path}
+                onClick={() => setActiveTab(item.path)}
+                className={`w-full flex items-center p-3 mb-2 rounded-lg transition-colors ${
+                  isActive
+                    ? "bg-accent1 text-textDark"
+                    : "text-gray-300 hover:bg-accent1 hover:text-textDark"
+                }`}
+              >
+                <span className="text-xl">{item.icon}</span>
+                {sidebarOpen && <span className="ml-3">{item.label}</span>}
+              </button>
+            );
+          })}
+        </nav>
+      </div>
     </motion.aside>
   );
 };

@@ -9,15 +9,16 @@ export const LoginRedirectHandler = () => {
   const { pathname } = useLocation();
 
   useEffect(() => {
-    if (!isLoggedIn) return; // solo actuamos tras login
+    if (!isLoggedIn) return;
 
-    // Admin siempre va a dashboard si no está ya allí
-    if (userRole === "admin" && pathname !== "/admin/dashboard") {
+    // Cuando el admin acaba de loguearse (o viene de /login o /), lo mandamos a dashboard:
+    if (
+      userRole === "admin" &&
+      (pathname === "/" || pathname === "/login" || pathname === "/register")
+    ) {
       navigate("/admin/dashboard", { replace: true });
-      return;
     }
-
-    // Cliente nunca debe ver login/register
+    // Cliente nunca debe ver login / register:
     if (
       userRole === "client" &&
       (pathname === "/login" || pathname === "/register")

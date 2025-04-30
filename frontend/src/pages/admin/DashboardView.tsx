@@ -9,7 +9,7 @@
 // }
 
 // const Dashboard: React.FC = () => {
-//   const [user, setUser] = useState<UserInfo | null>(null);
+
 //   const [error, setError] = useState<string>("");
 //   const navigate = useNavigate();
 //   const { isLoggedIn, userRole, logout } = useAuthStore();

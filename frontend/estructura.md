@@ -15,12 +15,14 @@
 │   ├── assets
 │   │   ├── hero-bg.jpg
 │   │   └── react.svg
+│   ├── auth
 │   ├── components
 │   │   ├── auth
 │   │   │   ├── AuthForm.tsx
 │   │   │   ├── AuthModal.tsx
 │   │   │   ├── AuthResendModal.tsx
 │   │   │   └── AuthSidePanel.tsx
+│   │   ├── AutoTokenManager.tsx
 │   │   ├── common
 │   │   │   ├── Alert.tsx
 │   │   │   ├── Avatar.tsx
@@ -38,25 +40,26 @@
 │   │   │   ├── PasswordWithStrengthInputForm.tsx
 │   │   │   ├── Spinner.tsx
 │   │   │   └── ToastNotification.tsx
+│   │   ├── GlobalLoadingOverlay.tsx
 │   │   ├── home
 │   │   │   ├── Attractions.tsx
 │   │   │   ├── Benefits.tsx
 │   │   │   ├── Hero.tsx
 │   │   │   ├── Location.tsx
 │   │   │   └── RegisterInvoice.tsx
+│   │   ├── LoginRedirectHandler.tsx
 │   │   ├── NavMenu.tsx
 │   │   ├── RouteModalHandler.tsx
+│   │   ├── StatCard.tsx
 │   │   └── ThemeToggle.tsx
 │   ├── context
 │   │   ├── AuthContext.tsx
 │   │   ├── ThemeContext.tsx
 │   │   └── ThemeProvider.tsx
 │   ├── hooks
-│   │   ├── useAuth.ts
 │   │   └── useTheme.ts
 │   ├── index.css
 │   ├── layout
-│   │   ├── Container.tsx
 │   │   ├── DashboardLayout.tsx
 │   │   ├── navigation
 │   │   │   ├── Footer.tsx
@@ -67,18 +70,23 @@
 │   │   └── PublicLayout.tsx
 │   ├── main.tsx
 │   ├── pages
-│   │   ├── ConfirmAccount.tsx
+│   │   ├── admin
+│   │   │   ├── AdminDashboard.tsx
+│   │   │   ├── DashboardView.tsx
+│   │   │   ├── EntriesView.tsx
+│   │   │   ├── InvoicesView.tsx
+│   │   │   ├── SettingsView.tsx
+│   │   │   └── UsersView.tsx
 │   │   ├── ConfirmationMail.tsx
-│   │   ├── Dashboard.tsx
 │   │   ├── Home.tsx
-│   │   ├── Login.tsx
 │   │   ├── NotFound.tsx
-│   │   ├── Register.tsx
 │   │   └── ResetPassword.tsx
 │   ├── router
 │   │   └── AppRouter.tsx
 │   ├── store
-│   │   └── useAuthModal.ts
+│   │   ├── useAuthModal.ts
+│   │   ├── useAuthStore.ts
+│   │   └── useGlobalLoading.ts
 │   ├── types
 │   │   └── simple-parallax-js.d.ts
 │   ├── utils

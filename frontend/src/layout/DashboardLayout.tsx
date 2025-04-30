@@ -1,19 +1,15 @@
 // src/layout/DashboardLayout.tsx
-import Sidebar    from "../layout/navigation/Sidebar";
-import HeaderMobile from "../layout/navigation/HeaderMobile";
-import { ReactNode, useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
+import { Outlet } from "react-router-dom";
 
-interface Props {
-  children: ReactNode;
-  activeTab: "dashboard"|"invoices"|"entries"|"users"|"settings";
-  onTabChange: (tab: Props["activeTab"]) => void;
-}
+import Sidebar from "@/layout/navigation/Sidebar";
+import HeaderMobile from "@/layout/navigation/HeaderMobile";
 
-const DashboardLayout = ({ children, activeTab, onTabChange }: Props) => {
-  const [isSidebarOpen, setSidebarOpen] = useState<boolean>(
-    () => localStorage.getItem("sidebarOpen") === "true"
+const DashboardLayout: React.FC = () => {
+  const [isSidebarOpen, setSidebarOpen] = useState(() =>
+    localStorage.getItem("sidebarOpen") === "true"
   );
-  const [isMobile, setIsMobile] = useState<boolean>(false);
+  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
@@ -23,7 +19,7 @@ const DashboardLayout = ({ children, activeTab, onTabChange }: Props) => {
   }, []);
 
   const toggleSidebar = () => {
-    setSidebarOpen(open => {
+    setSidebarOpen((open) => {
       const next = !open;
       localStorage.setItem("sidebarOpen", next.toString());
       return next;
@@ -31,28 +27,24 @@ const DashboardLayout = ({ children, activeTab, onTabChange }: Props) => {
   };
 
   return (
-    <div className="h-screen bg-bgLight dark:bg-bgDark transition-colors">
-      <Sidebar
-        isOpen={isSidebarOpen}
-        isMobile={isMobile}
-        onToggle={toggleSidebar}
-        activeTab={activeTab}
-        onTabChange={onTabChange}
-      />
-      <div className="flex flex-col flex-1 overflow-x-hidden">
+    <div className="h-screen flex bg-bgLight dark:bg-bgDark">
+      <Sidebar isOpen={isSidebarOpen} isMobile={isMobile} onToggle={toggleSidebar} />
+      <div className="flex-1 flex flex-col overflow-x-hidden">
         <HeaderMobile
           isSidebarOpen={isSidebarOpen}
           onToggle={toggleSidebar}
           isMobile={isMobile}
         />
         <main
-          className={`
-            flex-1 overflow-y-auto p-4
-            transition-all ease-in-out duration-300
-            ${isMobile ? "ml-0" : isSidebarOpen ? "md:ml-64" : "md:ml-20"}
-          `}
+          className={`flex-1 overflow-y-auto p-4 transition-all duration-300 ${
+            isMobile
+              ? "ml-0"
+              : isSidebarOpen
+              ? "md:ml-64"
+              : "md:ml-20"
+          }`}
         >
-          {children}
+          <Outlet />
         </main>
       </div>
     </div>

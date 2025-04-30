@@ -328,8 +328,8 @@ export const loginUser = async (
 
   if (!user) {
     throw createError(
-      errorMessages.emailNotRegistered,
-      errorCodes.EMAIL_NOT_REGISTERED,
+      errorMessages.invalidCredentials,
+      errorCodes.INVALID_CREDENTIALS,
       404
     );
   }
@@ -1782,13 +1782,7 @@ router.post("/check-token-status", checkTokenStatus);
 // ✅ Refresh token — asegurarte que devuelve void en el controller
 router.get("/refresh", refreshToken);
 
-// ✅ Ruta protegida de prueba
-router.get(
-  "/admin/dashboard",
-  authMiddleware,
-  checkRoleById([1, 2, 3, 5, 6]), // admin, staff, reception, editor, validador
-  (req, res) => getDashboard(req as AuthenticatedRequest, res)
-);
+
 
 export default router;
 
@@ -1801,11 +1795,16 @@ import { Router } from "express";
 import { getDashboard } from "@/interfaces/controllers/dashboard/dashboard.controller";
 import { authMiddleware } from "@/interfaces/middlewares/auth/auth.middleware";
 import { AuthenticatedRequest } from "@/types/express";
+import { checkRoleById } from "@/interfaces/middlewares/role/role.middleware";
 
 const router = Router();
 
-router.get("/dashboard", authMiddleware, (req, res) =>
-  getDashboard(req as AuthenticatedRequest, res)
+// ✅ Ruta protegida de prueba
+router.get(
+  "/admin/dashboard",
+  authMiddleware,
+  checkRoleById([1, 2, 3, 5, 6]), // admin, staff, reception, editor, validador
+  (req, res) => getDashboard(req as AuthenticatedRequest, res)
 );
 
 export default router;

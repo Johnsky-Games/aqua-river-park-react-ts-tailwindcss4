@@ -18,7 +18,7 @@ const HeaderMobile: React.FC<HeaderMobileProps> = ({
   isMobile,
 }) => {
   const { darkMode, toggleDarkMode } = useTheme();
-  const { isLoggedIn, logout, userRole } = useAuthStore();
+  const { isLoggedIn, logout, userRole, userName } = useAuthStore();
   const location = useLocation();
   const navigate = useNavigate();
   const menuRef = useRef<HTMLDivElement>(null);
@@ -80,6 +80,15 @@ const HeaderMobile: React.FC<HeaderMobileProps> = ({
         <Link to="/" className="flex items-center">
           <img src="/ARP logo.png" alt="Logo" className="h-8" />
         </Link>
+
+        {/* aquí mostramos rol y nombre */}
+
+        {!isMobile && isLoggedIn && (
+          <span className="ml-4 text-sm font-medium">
+            {`${userRole.charAt(0).toUpperCase() + userRole.slice(1)}:`}
+            <strong className="ml-1">{userName}</strong>
+          </span>
+        )}
       </div>
 
       <div className="flex items-center gap-4">

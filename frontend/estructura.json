@@ -16,6 +16,7 @@
       "hero-bg.jpg": null,
       "react.svg": null
     },
+    "auth": {},
     "components": {
       "auth": {
         "AuthForm.tsx": null,
@@ -23,6 +24,7 @@
         "AuthResendModal.tsx": null,
         "AuthSidePanel.tsx": null
       },
+      "AutoTokenManager.tsx": null,
       "common": {
         "Alert.tsx": null,
         "Avatar.tsx": null,
@@ -41,6 +43,7 @@
         "Spinner.tsx": null,
         "ToastNotification.tsx": null
       },
+      "GlobalLoadingOverlay.tsx": null,
       "home": {
         "Attractions.tsx": null,
         "Benefits.tsx": null,
@@ -48,8 +51,10 @@
         "Location.tsx": null,
         "RegisterInvoice.tsx": null
       },
+      "LoginRedirectHandler.tsx": null,
       "NavMenu.tsx": null,
       "RouteModalHandler.tsx": null,
+      "StatCard.tsx": null,
       "ThemeToggle.tsx": null
     },
     "context": {
@@ -58,12 +63,10 @@
       "ThemeProvider.tsx": null
     },
     "hooks": {
-      "useAuth.ts": null,
       "useTheme.ts": null
     },
     "index.css": null,
     "layout": {
-      "Container.tsx": null,
       "DashboardLayout.tsx": null,
       "navigation": {
         "Footer.tsx": null,
@@ -76,20 +79,26 @@
     },
     "main.tsx": null,
     "pages": {
-      "ConfirmAccount.tsx": null,
+      "admin": {
+        "AdminDashboard.tsx": null,
+        "DashboardView.tsx": null,
+        "EntriesView.tsx": null,
+        "InvoicesView.tsx": null,
+        "SettingsView.tsx": null,
+        "UsersView.tsx": null
+      },
       "ConfirmationMail.tsx": null,
-      "Dashboard.tsx": null,
       "Home.tsx": null,
-      "Login.tsx": null,
       "NotFound.tsx": null,
-      "Register.tsx": null,
       "ResetPassword.tsx": null
     },
     "router": {
       "AppRouter.tsx": null
     },
     "store": {
-      "useAuthModal.ts": null
+      "useAuthModal.ts": null,
+      "useAuthStore.ts": null,
+      "useGlobalLoading.ts": null
     },
     "types": {
       "simple-parallax-js.d.ts": null

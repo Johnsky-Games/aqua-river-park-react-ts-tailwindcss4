@@ -5,7 +5,7 @@ import DashboardLayout from "@/layout/DashboardLayout";
 import Home from "@/pages/Home";
 import ConfirmationMail from "@/pages/ConfirmationMail";
 import ResetPassword from "@/pages/ResetPassword";
-import Dashboard from "@/pages/Dashboard";
+import Dashboard from "@/pages/admin/DashboardView";
 import NotFound from "@/pages/NotFound";
 import PrivateRoute from "@/utils/PrivateRoute";
 

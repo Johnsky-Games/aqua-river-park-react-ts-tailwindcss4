@@ -49,6 +49,20 @@ app.use("/api", authRoutes);
 app.use("/api", userRoutes);
 app.use("/api", healthRoutes);
 app.use("/api", metricsRoutes);
+app.get("/", (_req, res) => {
+  res.json({
+    name: "Aqua River Park API",
+    version: process.env.npm_package_version || "dev",
+    uptime: process.uptime(),
+    timestamp: Date.now(),
+    routes: {
+      health: "/api/health",
+      metrics: "/api/metrics",
+      docs: "/docs"
+    }
+  });
+});
+
 
 // Errores
 app.use(notFound);
@@ -217,6 +231,20 @@ export interface User {
 
 ```
 
+## src\domain\ports\refreshToken.repository.ts
+
+```typescript
+// This file defines the RefreshTokenRepository interface, which is responsible for managing refresh tokens in the system.
+// It includes methods for saving, revoking, and finding refresh tokens in the database.
+
+export interface RefreshTokenRepository {
+  saveToken(jti: string, userId: number, expiresAt: Date): Promise<void>;
+  revokeToken(jti: string): Promise<void>;
+  findToken(jti: string): Promise<{ revoked: boolean; expiresAt: Date } | null>;
+}
+
+```
+
 ## src\domain\ports\role.repository.ts
 
 ```typescript
@@ -289,6 +317,7 @@ export interface UserRepository {
 // src/domain/services/auth/auth.service.ts
 
 import { UserRepository } from "@/domain/ports/user.repository";
+import { RefreshTokenRepository } from "@/domain/ports/refreshToken.repository";
 import sendConfirmationEmail from "@/infraestructure/mail/mailerConfirmation";
 import {
   validateEmail,
@@ -298,7 +327,8 @@ import {
 import {
   generateAccessToken,
   generateRefreshToken,
-  verifyRefreshToken,
+  verifyRefreshToken as jwtVerifyRefresh,
+  REFRESH_EXPIRES_IN,
 } from "@/shared/security/jwt";
 import { hashPassword } from "@/shared/hash";
 import { generateToken } from "@/shared/tokens";
@@ -307,6 +337,7 @@ import { errorCodes } from "@/shared/errors/errorCodes";
 import { createError } from "@/shared/errors/createError";
 import logger from "@/infraestructure/logger/logger";
 import bcrypt from "bcryptjs";
+import ms, { StringValue } from "ms";
 import {
   passwordResetCounter,
   userLoginCounter,
@@ -369,11 +400,14 @@ export const registerUser = async (
  * Inicio de sesión de usuario
  */
 export const loginUser = async (
-  deps: { userRepository: UserRepository },
+  deps: {
+    userRepository: UserRepository;
+    refreshTokenRepository: RefreshTokenRepository;
+  },
   email: string,
   password: string
 ) => {
-  const { userRepository } = deps;
+  const { userRepository, refreshTokenRepository } = deps;
   const user = await userRepository.findUserByEmail(email);
 
   if (!user) {
@@ -409,14 +443,20 @@ export const loginUser = async (
 
   userLoginCounter.inc();
 
-  // Payload mínimo para JWT
   const payload: TokenPayload = {
     sub: user.id,
     role: (user.role_name || "client") as RoleName,
   };
 
+  // Genera tokens
   const accessToken = generateAccessToken(payload);
-  const refreshToken = generateRefreshToken(payload);
+  const { token: refreshToken, jti } = generateRefreshToken(payload);
+
+  // Persiste el refresh token en BD
+  const expiresAt = new Date(
+    Date.now() + ms(REFRESH_EXPIRES_IN as StringValue)
+  );
+  await refreshTokenRepository.saveToken(jti, user.id, expiresAt);
 
   return {
     accessToken,
@@ -433,16 +473,33 @@ export const loginUser = async (
  * Refrescar token de acceso usando refresh token
  */
 export const refreshAccessToken = async (
-  deps: { userRepository: UserRepository },
+  deps: {
+    userRepository: UserRepository;
+    refreshTokenRepository: RefreshTokenRepository;
+  },
   refreshToken: string
 ) => {
   try {
-    const decoded = verifyRefreshToken(refreshToken);
+    // 1) Verifica firma y extrae payload + jti
+    const decoded = jwtVerifyRefresh(
+      refreshToken
+    ) as TokenPayload & { jti: string };
+    const { sub: userId, role, jti } = decoded;
 
-    const userId = decoded.sub;
-    const role = decoded.role;
+    // 2) Verifica registro en BD
+    const stored = await deps.refreshTokenRepository.findToken(jti);
+    if (
+      !stored ||
+      stored.revoked ||
+      stored.expiresAt.getTime() < Date.now()
+    ) {
+      throw new Error("Revocado o expirado");
+    }
+
+    // 3) Verifica que el usuario exista
     await deps.userRepository.findUserById(userId);
 
+    // 4) Emite nuevo access token
     const newPayload: TokenPayload = { sub: userId, role };
     const accessToken = generateAccessToken(newPayload);
 
@@ -521,9 +578,10 @@ export const checkResetToken = async (
     return false;
   }
 
-  const expires = user.reset_expires instanceof Date
-    ? user.reset_expires
-    : new Date(user.reset_expires);
+  const expires =
+    user.reset_expires instanceof Date
+      ? user.reset_expires
+      : new Date(user.reset_expires);
 
   return expires > new Date();
 };
@@ -695,6 +753,44 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   logger.info(`✅ Servidor iniciado en http://localhost:${PORT}`);
 });
+
+```
+
+## src\infraestructure\db\refreshToken.repository.ts
+
+```typescript
+// src/infraestructure/db/refreshToken.repository.ts
+import { db } from "@/config/db";
+import { RefreshTokenRepository } from "@/domain/ports/refreshToken.repository";
+
+export const refreshTokenRepository: RefreshTokenRepository = {
+  async saveToken(jti, userId, expiresAt) {
+    await db.query(
+      `INSERT INTO refresh_tokens (jti, user_id, expires_at, revoked)
+       VALUES (?, ?, ?, 0)`,
+      [jti, userId, expiresAt]
+    );
+  },
+
+  async revokeToken(jti) {
+    await db.query(
+      `UPDATE refresh_tokens SET revoked = 1 WHERE jti = ?`,
+      [jti]
+    );
+  },
+
+  async findToken(jti) {
+    const [rows]: any = await db.query(
+      `SELECT revoked, expires_at FROM refresh_tokens WHERE jti = ?`,
+      [jti]
+    );
+    if (!rows.length) return null;
+    return {
+      revoked: rows[0].revoked === 1,
+      expiresAt: new Date(rows[0].expires_at),
+    };
+  },
+};
 
 ```
 
@@ -1338,13 +1434,24 @@ export const loginLimiter = rateLimit({
 // src/interfaces/controllers/auth/auth.controller.ts
 
 import { Request, Response } from "express";
+import jwt from "jsonwebtoken";
 import * as authService from "@/domain/services/auth/auth.service";
 import { userRepository } from "@/infraestructure/db/user.repository";
+import { refreshTokenRepository } from "@/infraestructure/db/refreshToken.repository";
+import { PUBLIC_KEY } from "@/config/jwtKeys";
 import { logError } from "@/infraestructure/logger/errorHandler";
 import logger from "@/infraestructure/logger/logger";
 import { errorCodes } from "@/shared/errors/errorCodes";
 
 const isProd = process.env.NODE_ENV === "production";
+
+// Opciones comunes para todas las cookies
+const cookieOptions = {
+  httpOnly: true,
+  secure: isProd,                             // HTTPS solo en producción
+  sameSite: isProd ? ("none" as const) : ("lax" as const),
+  path: "/",
+};
 
 export const register = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -1361,37 +1468,28 @@ export const register = async (req: Request, res: Response): Promise<void> => {
   }
 };
 
-export const login = async (
-  req: Request,
-  res: Response
-): Promise<void> => {
+export const login = async (req: Request, res: Response): Promise<void> => {
   const { email, password } = req.body;
   try {
     const { accessToken, refreshToken, user } = await authService.loginUser(
-      { userRepository },
+      { userRepository, refreshTokenRepository },
       email,
       password
     );
 
-    // 1) Cookie del access token
+    // 1) Access Token
     res.cookie("auth_token", accessToken, {
-      httpOnly: true,
-      secure: isProd,
-      sameSite: "none",
-      path: "/",
+      ...cookieOptions,
       maxAge: 15 * 60 * 1000, // 15 minutos
     });
 
-    // 2) Cookie del refresh token
+    // 2) Refresh Token
     res.cookie("refresh_token", refreshToken, {
-      httpOnly: true,
-      secure: isProd,
-      sameSite: "none",
-      path: "/",
+      ...cookieOptions,
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 días
     });
 
-    // 3) Respuesta con el usuario
+    // 3) Respuesta
     res.status(200).json({ success: true, user });
     logger.info(`✅ Login exitoso: ${email}`);
   } catch (error: any) {
@@ -1414,21 +1512,26 @@ export const login = async (
   }
 };
 
-export const logout = (_req: Request, res: Response): void => {
-  res
-    .clearCookie("auth_token", {
-      httpOnly: true,
-      secure: isProd,
-      sameSite: "none",
-      path: "/",
-    })
-    .clearCookie("refresh_token", {
-      httpOnly: true,
-      secure: isProd,
-      sameSite: "none",
-      path: "/",
-    })
-    .json({ message: "Sesión cerrada correctamente." });
+export const logout = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const rt = req.cookies?.refresh_token;
+    if (rt) {
+      // Decodifica para obtener el jti y revocar
+      const decoded: any = jwt.verify(rt, PUBLIC_KEY as jwt.Secret, {
+        algorithms: ["RS256"],
+      });
+      if (decoded.jti) {
+        await refreshTokenRepository.revokeToken(decoded.jti);
+      }
+    }
+  } catch (err) {
+    logger.warn("No se pudo revocar refresh token:", err);
+  } finally {
+    res
+      .clearCookie("auth_token", cookieOptions)
+      .clearCookie("refresh_token", cookieOptions)
+      .json({ message: "Sesión cerrada correctamente." });
+  }
 };
 
 export const refreshToken = async (
@@ -1443,44 +1546,29 @@ export const refreshToken = async (
 
   try {
     const { accessToken } = await authService.refreshAccessToken(
-      { userRepository },
+      { userRepository, refreshTokenRepository },
       rt
     );
 
-    // Si todo OK, reemitimos nuevo access token
+    // Emitimos nuevo access token
     res
       .cookie("auth_token", accessToken, {
-        httpOnly: true,
-        secure: isProd,
-        sameSite: "none",
-        path: "/",
+        ...cookieOptions,
         maxAge: 15 * 60 * 1000, // 15 minutos
       })
       .json({ success: true });
   } catch (error: any) {
-    // Si expiró o es inválido, limpiamos sesión sin log de error
     if (error.code === errorCodes.TOKEN_INVALID_OR_EXPIRED) {
+      // Limpio ambas cookies al expirar o invalidar
       res
-        .clearCookie("auth_token", {
-          httpOnly: true,
-          secure: isProd,
-          sameSite: "none",
-          path: "/",
-        })
-        .clearCookie("refresh_token", {
-          httpOnly: true,
-          secure: isProd,
-          sameSite: "none",
-          path: "/",
-        })
+        .clearCookie("auth_token", cookieOptions)
+        .clearCookie("refresh_token", cookieOptions)
         .status(401)
         .json({
           message: "Sesión expirada. Por favor, inicia sesión nuevamente.",
         });
-      return; // <— evita doble envío de respuesta
+      return;
     }
-
-    // Otros errores internos sí los registramos
     logError("Refresh token", error);
     res.status(500).json({ message: "Error interno al refrescar token" });
   }
@@ -2098,12 +2186,13 @@ import { TokenPayload } from "@/types/express";
 import { errorMessages } from "@/shared/errors/errorMessages";
 import { errorCodes } from "@/shared/errors/errorCodes";
 import { PRIVATE_KEY, PUBLIC_KEY } from "@/config/jwtKeys";
+import { v4 as uuid } from "uuid";
 
 dotenv.config();
 
 // Duraciones leídas desde .env
 const ACCESS_EXPIRES_IN = process.env.JWT_ACCESS_EXPIRES_IN || "15m";
-const REFRESH_EXPIRES_IN = process.env.JWT_REFRESH_EXPIRES_IN || "7d";
+export const REFRESH_EXPIRES_IN = process.env.JWT_REFRESH_EXPIRES_IN || "7d";
 
 /**
  * Genera un JWT de acceso con payload { sub, role }.
@@ -2119,17 +2208,19 @@ export const generateAccessToken = (payload: TokenPayload): string =>
   );
 
 /**
- * Genera un JWT de refresco con payload { sub, role }.
+ * Genera un JWT de refresco con payload { sub, role } y un claim `jti`.
  */
-export const generateRefreshToken = (payload: TokenPayload): string =>
-  jwt.sign(
-    payload as object,
+export const generateRefreshToken = (
+  payload: TokenPayload
+): { token: string; jti: string } => {
+  const jti = uuid();
+  const token = jwt.sign(
+    { ...payload, jti },
     PRIVATE_KEY as Secret,
-    {
-      algorithm: "RS256",
-      expiresIn: REFRESH_EXPIRES_IN,
-    } as SignOptions
+    { algorithm: "RS256", expiresIn: REFRESH_EXPIRES_IN } as SignOptions
   );
+  return { token, jti };
+};
 
 /**
  * Verifica un JWT de acceso y retorna { sub, role }.
@@ -2168,21 +2259,24 @@ export const verifyAccessToken = (token: string): TokenPayload => {
 };
 
 /**
- * Verifica un JWT de refresco y retorna { sub, role }.
+ * Verifica un JWT de refresco y retorna { sub, role, jti }.
  * Lanza un error con código apropiado si es inválido o expirado.
  */
-export const verifyRefreshToken = (token: string): TokenPayload => {
+export const verifyRefreshToken = (
+  token: string
+): TokenPayload & { jti: string } => {
   try {
     const decodedRaw = jwt.verify(
       token,
       PUBLIC_KEY as Secret,
       { algorithms: ["RS256"] }
     );
-    const decoded = decodedRaw as JwtPayload;
+    const decoded = decodedRaw as JwtPayload & { jti?: string };
 
     if (
       (typeof decoded.sub !== "string" && typeof decoded.sub !== "number") ||
-      typeof decoded.role !== "string"
+      typeof decoded.role !== "string" ||
+      typeof decoded.jti !== "string"
     ) {
       const e = new Error(errorMessages.tokenInvalidOrExpired) as any;
       e.code = errorCodes.TOKEN_INVALID_OR_EXPIRED;
@@ -2195,6 +2289,7 @@ export const verifyRefreshToken = (token: string): TokenPayload => {
           ? decoded.sub
           : parseInt(decoded.sub as string, 10),
       role: decoded.role,
+      jti: decoded.jti,
     };
   } catch (err: any) {
     const e = new Error(errorMessages.tokenInvalidOrExpired) as any;

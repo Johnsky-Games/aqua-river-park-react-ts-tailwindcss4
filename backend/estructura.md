@@ -13,6 +13,7 @@
     │   └── mailer.ts
     ├── domain
     │   ├── models
+    │   │   ├── auth
     │   │   └── user
     │   │       ├── cart.model.ts
     │   │       ├── cartItem.model.ts
@@ -21,6 +22,7 @@
     │   │       ├── service.model.ts
     │   │       └── user.model.ts
     │   ├── ports
+    │   │   ├── refreshToken.repository.ts
     │   │   ├── role.repository.ts
     │   │   └── user.repository.ts
     │   └── services
@@ -31,6 +33,7 @@
     ├── index.ts
     ├── infraestructure
     │   ├── db
+    │   │   ├── refreshToken.repository.ts
     │   │   ├── role.repository.ts
     │   │   └── user.repository.ts
     │   ├── logger
@@ -95,6 +98,7 @@
     │   └── validations
     │       ├── auth.schema.ts
     │       └── validators.ts
-    └── types
-        └── express.d.ts
+    ├── types
+    │   └── express.d.ts
+    └── utils
 ```

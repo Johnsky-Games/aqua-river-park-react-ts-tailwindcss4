@@ -9,29 +9,34 @@ export const UserInitializer: React.FC = () => {
 
   useEffect(() => {
     const init = async () => {
+      // 0) Si no hay cookie refresh_token, no intentamos nada
+      if (!document.cookie.includes("refresh_token=")) {
+        return;
+      }
+
       // 1) Intentamos refrescar el access token
       try {
-        await api.get("/refresh");
+        await api.get("/refresh", { withCredentials: true });
       } catch (err) {
         if (isAxiosError(err) && err.response?.status === 401) {
-          console.warn("Refresh token inválido o expirado — no hay sesión activa");
+          // 401 esperado: sesión vencida o inexistente
+          console.debug("Refresh expirado o inválido, seguimos anónimos");
           return;
         }
         console.error("Error inesperado en /refresh:", err);
         return;
       }
 
-      // 2) Si refresh OK, traemos el perfil
+      // 2) Traemos perfil y guardamos en store
       try {
-        const { data } = await api.get<{ id: number; name: string; role: string }>("/me");
+        const { data } = await api.get<{ id: number; name: string; role: string }>(
+          "/me",
+          { withCredentials: true }
+        );
         login({ id: data.id, name: data.name, role: data.role });
-        console.log("✅ Usuario inicializado en el store:", {
-          id: data.id,
-          name: data.name,
-          role: data.role,
-        });
+        console.log("✅ Usuario logueado:", data);
       } catch (err) {
-        console.error("No se pudo obtener /me:", err);
+        console.error("Error obteniendo /me tras refresh:", err);
       }
     };
 

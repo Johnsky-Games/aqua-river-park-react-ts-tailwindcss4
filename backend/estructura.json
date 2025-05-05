@@ -13,6 +13,7 @@
     },
     "domain": {
       "models": {
+        "auth": {},
         "user": {
           "cart.model.ts": null,
           "cartItem.model.ts": null,
@@ -23,6 +24,7 @@
         }
       },
       "ports": {
+        "refreshToken.repository.ts": null,
         "role.repository.ts": null,
         "user.repository.ts": null
       },
@@ -37,6 +39,7 @@
     "index.ts": null,
     "infraestructure": {
       "db": {
+        "refreshToken.repository.ts": null,
         "role.repository.ts": null,
         "user.repository.ts": null
       },
@@ -130,6 +133,7 @@
     },
     "types": {
       "express.d.ts": null
-    }
+    },
+    "utils": {}
   }
 }

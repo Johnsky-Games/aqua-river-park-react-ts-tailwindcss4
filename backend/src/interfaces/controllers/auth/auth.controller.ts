@@ -1,8 +1,11 @@
 // src/interfaces/controllers/auth/auth.controller.ts
 
 import { Request, Response } from "express";
+import jwt from "jsonwebtoken";
 import * as authService from "@/domain/services/auth/auth.service";
 import { userRepository } from "@/infraestructure/db/user.repository";
+import { refreshTokenRepository } from "@/infraestructure/db/refreshToken.repository";
+import { PUBLIC_KEY } from "@/config/jwtKeys";
 import { logError } from "@/infraestructure/logger/errorHandler";
 import logger from "@/infraestructure/logger/logger";
 import { errorCodes } from "@/shared/errors/errorCodes";
@@ -12,8 +15,8 @@ const isProd = process.env.NODE_ENV === "production";
 // Opciones comunes para todas las cookies
 const cookieOptions = {
   httpOnly: true,
-  secure: isProd,                           // solo HTTPS en prod
-  sameSite: isProd ? "none" as const : "lax" as const,  
+  secure: isProd,                             // HTTPS solo en producción
+  sameSite: isProd ? ("none" as const) : ("lax" as const),
   path: "/",
 };
 
@@ -32,14 +35,11 @@ export const register = async (req: Request, res: Response): Promise<void> => {
   }
 };
 
-export const login = async (
-  req: Request,
-  res: Response
-): Promise<void> => {
+export const login = async (req: Request, res: Response): Promise<void> => {
   const { email, password } = req.body;
   try {
     const { accessToken, refreshToken, user } = await authService.loginUser(
-      { userRepository },
+      { userRepository, refreshTokenRepository },
       email,
       password
     );
@@ -47,7 +47,7 @@ export const login = async (
     // 1) Access Token
     res.cookie("auth_token", accessToken, {
       ...cookieOptions,
-      maxAge: 15 * 60 * 1000, // 15 min
+      maxAge: 15 * 60 * 1000, // 15 minutos
     });
 
     // 2) Refresh Token
@@ -79,11 +79,26 @@ export const login = async (
   }
 };
 
-export const logout = (_req: Request, res: Response): void => {
-  res
-    .clearCookie("auth_token", cookieOptions)
-    .clearCookie("refresh_token", cookieOptions)
-    .json({ message: "Sesión cerrada correctamente." });
+export const logout = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const rt = req.cookies?.refresh_token;
+    if (rt) {
+      // Decodifica para obtener el jti y revocar
+      const decoded: any = jwt.verify(rt, PUBLIC_KEY as jwt.Secret, {
+        algorithms: ["RS256"],
+      });
+      if (decoded.jti) {
+        await refreshTokenRepository.revokeToken(decoded.jti);
+      }
+    }
+  } catch (err) {
+    logger.warn("No se pudo revocar refresh token:", err);
+  } finally {
+    res
+      .clearCookie("auth_token", cookieOptions)
+      .clearCookie("refresh_token", cookieOptions)
+      .json({ message: "Sesión cerrada correctamente." });
+  }
 };
 
 export const refreshToken = async (
@@ -98,7 +113,7 @@ export const refreshToken = async (
 
   try {
     const { accessToken } = await authService.refreshAccessToken(
-      { userRepository },
+      { userRepository, refreshTokenRepository },
       rt
     );
 
@@ -106,12 +121,12 @@ export const refreshToken = async (
     res
       .cookie("auth_token", accessToken, {
         ...cookieOptions,
-        maxAge: 15 * 60 * 1000, // 15 min
+        maxAge: 15 * 60 * 1000, // 15 minutos
       })
       .json({ success: true });
   } catch (error: any) {
     if (error.code === errorCodes.TOKEN_INVALID_OR_EXPIRED) {
-      // Limpio ambas cookies al expirar
+      // Limpio ambas cookies al expirar o invalidar
       res
         .clearCookie("auth_token", cookieOptions)
         .clearCookie("refresh_token", cookieOptions)

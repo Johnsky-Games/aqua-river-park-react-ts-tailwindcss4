@@ -6,12 +6,13 @@ import { TokenPayload } from "@/types/express";
 import { errorMessages } from "@/shared/errors/errorMessages";
 import { errorCodes } from "@/shared/errors/errorCodes";
 import { PRIVATE_KEY, PUBLIC_KEY } from "@/config/jwtKeys";
+import { v4 as uuid } from "uuid";
 
 dotenv.config();
 
 // Duraciones leídas desde .env
 const ACCESS_EXPIRES_IN = process.env.JWT_ACCESS_EXPIRES_IN || "15m";
-const REFRESH_EXPIRES_IN = process.env.JWT_REFRESH_EXPIRES_IN || "7d";
+export const REFRESH_EXPIRES_IN = process.env.JWT_REFRESH_EXPIRES_IN || "7d";
 
 /**
  * Genera un JWT de acceso con payload { sub, role }.
@@ -27,17 +28,19 @@ export const generateAccessToken = (payload: TokenPayload): string =>
   );
 
 /**
- * Genera un JWT de refresco con payload { sub, role }.
+ * Genera un JWT de refresco con payload { sub, role } y un claim `jti`.
  */
-export const generateRefreshToken = (payload: TokenPayload): string =>
-  jwt.sign(
-    payload as object,
+export const generateRefreshToken = (
+  payload: TokenPayload
+): { token: string; jti: string } => {
+  const jti = uuid();
+  const token = jwt.sign(
+    { ...payload, jti },
     PRIVATE_KEY as Secret,
-    {
-      algorithm: "RS256",
-      expiresIn: REFRESH_EXPIRES_IN,
-    } as SignOptions
+    { algorithm: "RS256", expiresIn: REFRESH_EXPIRES_IN } as SignOptions
   );
+  return { token, jti };
+};
 
 /**
  * Verifica un JWT de acceso y retorna { sub, role }.
@@ -76,21 +79,24 @@ export const verifyAccessToken = (token: string): TokenPayload => {
 };
 
 /**
- * Verifica un JWT de refresco y retorna { sub, role }.
+ * Verifica un JWT de refresco y retorna { sub, role, jti }.
  * Lanza un error con código apropiado si es inválido o expirado.
  */
-export const verifyRefreshToken = (token: string): TokenPayload => {
+export const verifyRefreshToken = (
+  token: string
+): TokenPayload & { jti: string } => {
   try {
     const decodedRaw = jwt.verify(
       token,
       PUBLIC_KEY as Secret,
       { algorithms: ["RS256"] }
     );
-    const decoded = decodedRaw as JwtPayload;
+    const decoded = decodedRaw as JwtPayload & { jti?: string };
 
     if (
       (typeof decoded.sub !== "string" && typeof decoded.sub !== "number") ||
-      typeof decoded.role !== "string"
+      typeof decoded.role !== "string" ||
+      typeof decoded.jti !== "string"
     ) {
       const e = new Error(errorMessages.tokenInvalidOrExpired) as any;
       e.code = errorCodes.TOKEN_INVALID_OR_EXPIRED;
@@ -103,6 +109,7 @@ export const verifyRefreshToken = (token: string): TokenPayload => {
           ? decoded.sub
           : parseInt(decoded.sub as string, 10),
       role: decoded.role,
+      jti: decoded.jti,
     };
   } catch (err: any) {
     const e = new Error(errorMessages.tokenInvalidOrExpired) as any;

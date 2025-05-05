@@ -454,3 +454,34 @@
 [2025-05-04 19:52:34] [33mwarn[39m: 🚫 Ruta no encontrada: GET /healt
 [2025-05-04 19:52:42] [33mwarn[39m: 🚫 Ruta no encontrada: GET /api/healet
 [2025-05-04 19:53:13] [33mwarn[39m: 🚫 Ruta no encontrada: GET /docs
+[2025-05-05 09:37:06] [32minfo[39m: ✅ Servidor iniciado en http://localhost:3000
+[2025-05-05 09:37:19] [32minfo[39m: ✅ Login exitoso: jonathanboada1@gmail.com
+[2025-05-05 12:08:24] [32minfo[39m: ✅ Servidor iniciado en http://localhost:3000
+[2025-05-05 12:09:54] [32minfo[39m: ✅ Servidor iniciado en http://localhost:3000
+[2025-05-05 12:09:55] [32minfo[39m: ✅ Servidor iniciado en http://localhost:3000
+[2025-05-05 12:10:28] [32minfo[39m: ✅ Servidor iniciado en http://localhost:3000
+[2025-05-05 12:10:48] [32minfo[39m: ✅ Servidor iniciado en http://localhost:3000
+[2025-05-05 12:25:29] [32minfo[39m: ✅ Servidor iniciado en http://localhost:3000
+[2025-05-05 12:29:28] [32minfo[39m: ✅ Servidor iniciado en http://localhost:3000
+[2025-05-05 12:32:05] [32minfo[39m: ✅ Servidor iniciado en http://localhost:3000
+[2025-05-05 12:32:57] [32minfo[39m: ✅ Servidor iniciado en http://localhost:3000
+[2025-05-05 12:33:33] [31merror[39m: ❌ Login: Credenciales incorrectas | Code: 1003 | Status: 401
+[2025-05-05 12:33:40] [31merror[39m: ❌ Login: Credenciales incorrectas | Code: 1003 | Status: 401
+[2025-05-05 12:34:26] [31merror[39m: ❌ Login: Credenciales incorrectas | Code: 1003 | Status: 401
+[2025-05-05 12:34:53] [31merror[39m: ❌ Login: Credenciales incorrectas | Code: 1003 | Status: 401
+[2025-05-05 12:39:37] [31merror[39m: ❌ Login: Credenciales incorrectas | Code: 1003 | Status: 401
+[2025-05-05 12:49:13] [32minfo[39m: ✅ Login exitoso: jonathanboada1@gmail.com
+[2025-05-05 12:58:54] [32minfo[39m: ✅ Servidor iniciado en http://localhost:3000
+[2025-05-05 13:08:49] [32minfo[39m: ✅ Servidor iniciado en http://localhost:3000
+[2025-05-05 13:08:59] [32minfo[39m: ✅ Login exitoso: jonathanboada1@gmail.com
+[2025-05-05 13:11:42] [32minfo[39m: ✅ Login exitoso: jonathanboada1@gmail.com
+[2025-05-05 13:12:58] [32minfo[39m: ✅ Login exitoso: jonathanboada1@gmail.com
+[2025-05-05 15:44:15] [32minfo[39m: ✅ Login exitoso: jonathanboada1@gmail.com
+[2025-05-05 15:47:26] [32minfo[39m: ✅ Login exitoso: jonathanboada1@gmail.com
+[2025-05-05 15:49:01] [32minfo[39m: ✅ Login exitoso: jonathanboada1@gmail.com
+[2025-05-05 15:51:46] [32minfo[39m: ✅ Login exitoso: jonathanboada1@gmail.com
+[2025-05-05 15:52:28] [32minfo[39m: ✅ Login exitoso: jonathanboada1@gmail.com
+[2025-05-05 16:05:59] [32minfo[39m: ✅ Servidor iniciado en http://localhost:3000
+[2025-05-05 16:07:40] [32minfo[39m: ✅ Servidor iniciado en http://localhost:3000
+[2025-05-05 16:10:51] [32minfo[39m: ✅ Login exitoso: jonathanboada1@gmail.com
+[2025-05-05 16:59:45] [32minfo[39m: ✅ Login exitoso: jonathanboada1@gmail.com

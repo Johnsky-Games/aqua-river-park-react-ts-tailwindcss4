@@ -1,6 +1,7 @@
 // src/domain/services/auth/auth.service.ts
 
 import { UserRepository } from "@/domain/ports/user.repository";
+import { RefreshTokenRepository } from "@/domain/ports/refreshToken.repository";
 import sendConfirmationEmail from "@/infraestructure/mail/mailerConfirmation";
 import {
   validateEmail,
@@ -10,7 +11,8 @@ import {
 import {
   generateAccessToken,
   generateRefreshToken,
-  verifyRefreshToken,
+  verifyRefreshToken as jwtVerifyRefresh,
+  REFRESH_EXPIRES_IN,
 } from "@/shared/security/jwt";
 import { hashPassword } from "@/shared/hash";
 import { generateToken } from "@/shared/tokens";
@@ -19,6 +21,7 @@ import { errorCodes } from "@/shared/errors/errorCodes";
 import { createError } from "@/shared/errors/createError";
 import logger from "@/infraestructure/logger/logger";
 import bcrypt from "bcryptjs";
+import ms, { StringValue } from "ms";
 import {
   passwordResetCounter,
   userLoginCounter,
@@ -27,6 +30,9 @@ import {
 import { TokenPayload } from "@/types/express";
 
 type RoleName = "admin" | "client";
+
+const MAX_LOGIN_ATTEMPTS = 3;
+const LOCK_DURATION_MINUTES = 15;
 
 /**
  * Registro de nuevo usuario
@@ -38,19 +44,12 @@ export const registerUser = async (
     email,
     password,
     phone,
-  }: {
-    name: string;
-    email: string;
-    password: string;
-    phone: string;
-  }
+  }: { name: string; email: string; password: string; phone: string }
 ) => {
-  const { userRepository } = deps;
-
   validateEmail(email);
   validateNewPassword(password);
 
-  const existing = await userRepository.findUserByEmail(email);
+  const existing = await deps.userRepository.findUserByEmail(email);
   if (existing) {
     throw createError(
       errorMessages.emailAlreadyRegistered,
@@ -63,7 +62,7 @@ export const registerUser = async (
   const confirmation_token = generateToken();
   const confirmation_expires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24h
 
-  await userRepository.createUser({
+  await deps.userRepository.createUser({
     name,
     email,
     password_hash,
@@ -78,14 +77,17 @@ export const registerUser = async (
 };
 
 /**
- * Inicio de sesión de usuario
+ * Inicio de sesión de usuario con lockout y registro de last_login
  */
 export const loginUser = async (
-  deps: { userRepository: UserRepository },
+  deps: {
+    userRepository: UserRepository;
+    refreshTokenRepository: RefreshTokenRepository;
+  },
   email: string,
   password: string
 ) => {
-  const { userRepository } = deps;
+  const { userRepository, refreshTokenRepository } = deps;
   const user = await userRepository.findUserByEmail(email);
 
   if (!user) {
@@ -93,6 +95,15 @@ export const loginUser = async (
       errorMessages.invalidCredentials,
       errorCodes.INVALID_CREDENTIALS,
       404
+    );
+  }
+
+  // Check locked_until
+  if (user.locked_until && new Date(user.locked_until) > new Date()) {
+    throw createError(
+      `Cuenta bloqueada hasta ${user.locked_until}`,
+      errorCodes.INVALID_CREDENTIALS,
+      403
     );
   }
 
@@ -110,8 +121,19 @@ export const loginUser = async (
     throw e;
   }
 
+  // Verify password
   const match = await bcrypt.compare(password, user.password_hash);
   if (!match) {
+    // Increment failed attempts
+    const attempts = (user.login_attempts || 0) + 1;
+    await userRepository.updateLoginAttempts(user.id, attempts);
+
+    // If exceeded max, lock account
+    if (attempts >= MAX_LOGIN_ATTEMPTS) {
+      const until = new Date(Date.now() + LOCK_DURATION_MINUTES * 60000);
+      await userRepository.updateLockedUntil(user.id, until);
+    }
+
     throw createError(
       errorMessages.invalidCredentials,
       errorCodes.INVALID_CREDENTIALS,
@@ -119,16 +141,27 @@ export const loginUser = async (
     );
   }
 
+  // Reset attempts and lock
+  await userRepository.updateLoginAttempts(user.id, 0);
+  await userRepository.updateLockedUntil(user.id, null);
+
+  // Record last login
+  await userRepository.updateLastLogin(user.id, new Date());
+
   userLoginCounter.inc();
 
-  // Payload mínimo para JWT
   const payload: TokenPayload = {
     sub: user.id,
     role: (user.role_name || "client") as RoleName,
   };
 
+  // Genera tokens
   const accessToken = generateAccessToken(payload);
-  const refreshToken = generateRefreshToken(payload);
+  const { token: refreshToken, jti } = generateRefreshToken(payload);
+
+  // Persiste el refresh token en BD
+  const expiresAt = new Date(Date.now() + ms(REFRESH_EXPIRES_IN as StringValue));
+  await refreshTokenRepository.saveToken(jti, user.id, expiresAt);
 
   return {
     accessToken,
@@ -145,19 +178,25 @@ export const loginUser = async (
  * Refrescar token de acceso usando refresh token
  */
 export const refreshAccessToken = async (
-  deps: { userRepository: UserRepository },
+  deps: {
+    userRepository: UserRepository;
+    refreshTokenRepository: RefreshTokenRepository;
+  },
   refreshToken: string
 ) => {
   try {
-    const decoded = verifyRefreshToken(refreshToken);
+    const decoded = jwtVerifyRefresh(refreshToken) as TokenPayload & { jti: string };
+    const { sub: userId, role, jti } = decoded;
 
-    const userId = decoded.sub;
-    const role = decoded.role;
+    const stored = await deps.refreshTokenRepository.findToken(jti);
+    if (!stored || stored.revoked || stored.expiresAt < new Date()) {
+      throw new Error("Revocado o expirado");
+    }
+
     await deps.userRepository.findUserById(userId);
 
     const newPayload: TokenPayload = { sub: userId, role };
     const accessToken = generateAccessToken(newPayload);
-
     return { accessToken };
   } catch {
     throw createError(
@@ -232,10 +271,9 @@ export const checkResetToken = async (
   if (!user || !user.reset_expires) {
     return false;
   }
-
-  const expires = user.reset_expires instanceof Date
-    ? user.reset_expires
-    : new Date(user.reset_expires);
-
+  const expires =
+    user.reset_expires instanceof Date
+      ? user.reset_expires
+      : new Date(user.reset_expires);
   return expires > new Date();
 };

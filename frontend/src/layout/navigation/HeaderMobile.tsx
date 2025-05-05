@@ -70,7 +70,6 @@ export default function HeaderMobile({
   const handleLogout = async () => {
     try {
       await api.post("/logout");
-      console.log("Logout en backend exitoso");
     } catch (error: unknown) {
       if (isAxiosError(error)) {
         // 401 = sesión expirada, no lo tratamos como "error real"

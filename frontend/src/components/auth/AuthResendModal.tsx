@@ -8,7 +8,7 @@ interface Props {
   resendMsg: string;
   onClose: () => void;
   onEmailChange: (email: string) => void;
-  onResend: (e: React.FormEvent) => void;
+  onResend: (e: FormEvent) => void;
   type: "confirm" | "recover";
 }
 
@@ -22,27 +22,19 @@ export default function AuthResendModal({
   onResend,
   type,
 }: Props) {
-
   const [isSending, setIsSending] = useState(false);
 
+  if (!showModal) return null;
+  const isRecover = type === "recover";
+  const title = isRecover ? "Recuperar Contraseña" : "Verifica tu cuenta";
+
   const handleLocalResend = async (e: FormEvent) => {
+    e.preventDefault();
     if (isSending) return;
     setIsSending(true);
     await onResend(e);
     setIsSending(false);
   };
-
-  if (!showModal) return null;
-
-  const isRecover = type === "recover";
-  const title = isRecover ? "Recuperar Contraseña" : "Verifica tu cuenta";
-  const formTitle = isRecover ? "¿Necesitas un nuevo enlace?" : "Reenviar Enlace";
-  const formDescription = isRecover ? "Ingresa tu correo para recuperar tu contraseña." : "Verificación de usuario expirada, ingresa tu correo para recibir un nuevo enlace de confirmación:";
-  const successMsg =
-    resendMsg ||
-    (isRecover
-      ? "Enlace de recuperación enviado con éxito. Revisa tu correo."
-      : "Enlace de confirmación reenviado con éxito. Revisa tu correo.");
 
   return (
     <div
@@ -51,11 +43,11 @@ export default function AuthResendModal({
     >
       <div
         className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md relative text-center"
-        onMouseDown={(e) => e.stopPropagation()} // Esto evita que el click cierre el modal
+        onMouseDown={(e) => e.stopPropagation()}
       >
         <button
           onClick={onClose}
-          className="absolute top-2 right-3 text-gray-500 hover:text-red-500 text-lg font-bold"
+          className="absolute top-2 right-3 text-gray-500 hover:text-red-500"
         >
           &times;
         </button>
@@ -67,15 +59,13 @@ export default function AuthResendModal({
             <p className="text-sm text-gray-600 mb-4">
               {isRecover
                 ? "Ingresa tu correo para recuperar tu contraseña."
-                : "Aún no has confirmado tu cuenta. Revisa tu correo para activarla."}
+                : "Aún no has confirmado tu cuenta. Revisa tu correo."}
             </p>
           </>
         )}
 
         {modalStep === "form" && (
           <>
-            <h2 className="text-xl font-bold mb-2 text-sky-600">{formTitle}</h2>
-            <p className="text-sm text-gray-600 mb-4">{formDescription}</p>
             <form onSubmit={handleLocalResend} className="space-y-4">
               <input
                 type="email"
@@ -94,7 +84,9 @@ export default function AuthResendModal({
               >
                 {isSending ? "Enviando..." : "Reenviar enlace"}
               </button>
-              {resendMsg && <p className="text-sm text-red-500">{resendMsg}</p>}
+              {resendMsg && (
+                <p className="text-sm text-red-500">{resendMsg}</p>
+              )}
             </form>
           </>
         )}
@@ -102,9 +94,11 @@ export default function AuthResendModal({
         {modalStep === "success" && (
           <>
             <FaCheckCircle className="text-green-500 text-4xl mx-auto mb-2" />
-            <p className="text-green-600 text-sm font-medium">{successMsg}</p>
+            <p className="text-green-600 text-sm font-medium">
+              {resendMsg}
+            </p>
             <p className="text-sm text-gray-500 mt-2">
-              Serás redirigido al login...
+              Cierra este modal para continuar...
             </p>
           </>
         )}

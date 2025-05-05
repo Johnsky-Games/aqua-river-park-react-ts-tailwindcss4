@@ -15,7 +15,6 @@
 │   ├── assets
 │   │   ├── hero-bg.jpg
 │   │   └── react.svg
-│   ├── auth
 │   ├── components
 │   │   ├── auth
 │   │   │   ├── AuthForm.tsx
@@ -51,11 +50,13 @@
 │   │   ├── NavMenu.tsx
 │   │   ├── RouteModalHandler.tsx
 │   │   ├── StatCard.tsx
-│   │   └── ThemeToggle.tsx
+│   │   ├── ThemeToggle.tsx
+│   │   └── UserInitializer.tsx
 │   ├── context
 │   │   ├── AuthContext.tsx
 │   │   ├── ThemeContext.tsx
 │   │   └── ThemeProvider.tsx
+│   ├── data
 │   ├── hooks
 │   │   └── useTheme.ts
 │   ├── index.css
@@ -71,7 +72,6 @@
 │   ├── main.tsx
 │   ├── pages
 │   │   ├── admin
-│   │   │   ├── AdminDashboard.tsx
 │   │   │   ├── DashboardView.tsx
 │   │   │   ├── EntriesView.tsx
 │   │   │   ├── InvoicesView.tsx

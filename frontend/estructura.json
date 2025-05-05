@@ -16,7 +16,6 @@
       "hero-bg.jpg": null,
       "react.svg": null
     },
-    "auth": {},
     "components": {
       "auth": {
         "AuthForm.tsx": null,
@@ -55,13 +54,15 @@
       "NavMenu.tsx": null,
       "RouteModalHandler.tsx": null,
       "StatCard.tsx": null,
-      "ThemeToggle.tsx": null
+      "ThemeToggle.tsx": null,
+      "UserInitializer.tsx": null
     },
     "context": {
       "AuthContext.tsx": null,
       "ThemeContext.tsx": null,
       "ThemeProvider.tsx": null
     },
+    "data": {},
     "hooks": {
       "useTheme.ts": null
     },
@@ -80,7 +81,6 @@
     "main.tsx": null,
     "pages": {
       "admin": {
-        "AdminDashboard.tsx": null,
         "DashboardView.tsx": null,
         "EntriesView.tsx": null,
         "InvoicesView.tsx": null,

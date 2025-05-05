@@ -1,8 +1,17 @@
 // src/domain/services/auth/auth.service.ts
+
 import { UserRepository } from "@/domain/ports/user.repository";
 import sendConfirmationEmail from "@/infraestructure/mail/mailerConfirmation";
-import { validateEmail, validateNewPassword, validatePasswordChange } from "@/shared/validations/validators";
-import { generateAccessToken, generateRefreshToken, verifyRefreshToken } from "@/shared/security/jwt";
+import {
+  validateEmail,
+  validateNewPassword,
+  validatePasswordChange,
+} from "@/shared/validations/validators";
+import {
+  generateAccessToken,
+  generateRefreshToken,
+  verifyRefreshToken,
+} from "@/shared/security/jwt";
 import { hashPassword } from "@/shared/hash";
 import { generateToken } from "@/shared/tokens";
 import { errorMessages } from "@/shared/errors/errorMessages";
@@ -10,12 +19,17 @@ import { errorCodes } from "@/shared/errors/errorCodes";
 import { createError } from "@/shared/errors/createError";
 import logger from "@/infraestructure/logger/logger";
 import bcrypt from "bcryptjs";
-import { passwordResetCounter, userLoginCounter, userRegisterCounter } from "@/infraestructure/metrics/customMetrics";
+import {
+  passwordResetCounter,
+  userLoginCounter,
+  userRegisterCounter,
+} from "@/infraestructure/metrics/customMetrics";
+import { TokenPayload } from "@/types/express";
 
 type RoleName = "admin" | "client";
 
 /**
- * ✅ Registro de nuevo usuario
+ * Registro de nuevo usuario
  */
 export const registerUser = async (
   deps: { userRepository: UserRepository },
@@ -32,11 +46,12 @@ export const registerUser = async (
   }
 ) => {
   const { userRepository } = deps;
+
   validateEmail(email);
   validateNewPassword(password);
 
-  const existingUser = await userRepository.findUserByEmail(email);
-  if (existingUser) {
+  const existing = await userRepository.findUserByEmail(email);
+  if (existing) {
     throw createError(
       errorMessages.emailAlreadyRegistered,
       errorCodes.EMAIL_ALREADY_REGISTERED,
@@ -58,14 +73,12 @@ export const registerUser = async (
     confirmation_expires,
   });
 
-  // Incrementar contador 👇
-  userRegisterCounter.inc(); // Incrementa el contador de registro de usuarios
-
+  userRegisterCounter.inc();
   await sendConfirmationEmail(email, confirmation_token);
 };
 
 /**
- * ✅ Inicio de sesión de usuario
+ * Inicio de sesión de usuario
  */
 export const loginUser = async (
   deps: { userRepository: UserRepository },
@@ -84,22 +97,21 @@ export const loginUser = async (
   }
 
   if (!user.is_confirmed) {
-    const tokenExpired =
+    const expired =
       !user.confirmation_token ||
       !user.confirmation_expires ||
       new Date(user.confirmation_expires) < new Date();
-
-    const error = createError(
+    const e = createError(
       errorMessages.accountNotConfirmed,
       errorCodes.ACCOUNT_NOT_CONFIRMED,
       401
     );
-    (error as any).tokenExpired = tokenExpired;
-    throw error;
+    (e as any).tokenExpired = expired;
+    throw e;
   }
 
-  const isMatch = await bcrypt.compare(password, user.password_hash);
-  if (!isMatch) {
+  const match = await bcrypt.compare(password, user.password_hash);
+  if (!match) {
     throw createError(
       errorMessages.invalidCredentials,
       errorCodes.INVALID_CREDENTIALS,
@@ -107,15 +119,12 @@ export const loginUser = async (
     );
   }
 
-  // Incrementar contador 👇
   userLoginCounter.inc();
 
-  const payload = {
-    id: user.id,
-    email: user.email,
-    name: user.name,
+  // Payload mínimo para JWT
+  const payload: TokenPayload = {
+    sub: user.id,
     role: (user.role_name || "client") as RoleName,
-    roleId: user.role_id || 0,
   };
 
   const accessToken = generateAccessToken(payload);
@@ -125,42 +134,32 @@ export const loginUser = async (
     accessToken,
     refreshToken,
     user: {
-      email: user.email,
-      isConfirmed: Boolean(user.is_confirmed),
+      id: user.id,
+      name: user.name,
+      role: payload.role,
     },
   };
 };
 
 /**
- * ✅ Refrescar token de acceso usando el refresh token
+ * Refrescar token de acceso usando refresh token
  */
 export const refreshAccessToken = async (
   deps: { userRepository: UserRepository },
   refreshToken: string
 ) => {
   try {
-    const payload = verifyRefreshToken(refreshToken);
-    const { userRepository } = deps;
+    const decoded = verifyRefreshToken(refreshToken);
 
-    const user = await userRepository.findUserBasicByEmail(payload.email);
-    if (!user) {
-      throw createError(
-        errorMessages.userNotFound,
-        errorCodes.USER_NOT_FOUND,
-        404
-      );
-    }
+    const userId = decoded.sub;
+    const role = decoded.role;
+    await deps.userRepository.findUserById(userId);
 
-    const newAccessToken = generateAccessToken({
-      id: payload.id,
-      email: payload.email,
-      name: payload.name,
-      role: payload.role,
-      roleId: payload.roleId || 0,
-    });
+    const newPayload: TokenPayload = { sub: userId, role };
+    const accessToken = generateAccessToken(newPayload);
 
-    return { accessToken: newAccessToken };
-  } catch (error) {
+    return { accessToken };
+  } catch {
     throw createError(
       errorMessages.tokenInvalidOrExpired,
       errorCodes.TOKEN_INVALID_OR_EXPIRED,
@@ -170,7 +169,7 @@ export const refreshAccessToken = async (
 };
 
 /**
- * ✅ Enviar enlace de recuperación de contraseña
+ * Enviar enlace de recuperación de contraseña
  */
 export const sendResetPassword = async (
   deps: { userRepository: UserRepository },
@@ -178,7 +177,6 @@ export const sendResetPassword = async (
 ) => {
   const { userRepository } = deps;
   const user = await userRepository.findUserByEmail(email);
-
   if (!user) {
     throw createError(
       errorMessages.emailNotRegistered,
@@ -188,14 +186,15 @@ export const sendResetPassword = async (
   }
 
   const token = generateToken();
-  const expires = new Date(Date.now() + 60 * 60 * 1000); // 1 hora
-
+  const expires = new Date(Date.now() + 60 * 60 * 1000); // 1h
   await userRepository.updateResetToken(email, token, expires);
+
+  passwordResetCounter.inc();
   logger.info(`📧 Enlace de recuperación enviado a ${email}`);
 };
 
 /**
- * ✅ Cambiar la contraseña usando un token válido
+ * Cambiar contraseña usando token válido
  */
 export const resetPassword = async (
   deps: { userRepository: UserRepository },
@@ -205,7 +204,6 @@ export const resetPassword = async (
   const { userRepository } = deps;
   const user = await userRepository.findUserByResetToken(token);
 
-  // Incrementar contador 👇
   passwordResetCounter.inc();
 
   if (!user) {
@@ -217,25 +215,27 @@ export const resetPassword = async (
   }
 
   await validatePasswordChange(newPassword, user.email, user.password_hash);
-
   const password_hash = await hashPassword(newPassword);
   await userRepository.updatePassword(user.id, password_hash);
 };
 
 /**
- * ✅ Verificar si un token de recuperación es válido
+ * Verificar si un token de recuperación es válido
  */
 export const checkResetToken = async (
   deps: { userRepository: UserRepository },
   token: string
-) => {
+): Promise<boolean> => {
   const { userRepository } = deps;
   const user = await userRepository.findUserByResetToken(token);
 
-  return (
-    !!user &&
-    user.reset_expires !== null &&
-    user.reset_expires !== undefined &&
-    new Date(user.reset_expires) > new Date()
-  );
+  if (!user || !user.reset_expires) {
+    return false;
+  }
+
+  const expires = user.reset_expires instanceof Date
+    ? user.reset_expires
+    : new Date(user.reset_expires);
+
+  return expires > new Date();
 };

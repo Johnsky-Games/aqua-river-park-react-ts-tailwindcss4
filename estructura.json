@@ -1,0 +1,261 @@
+{
+  ".vscode": {
+    "settings.json": null
+  },
+  "backend": {
+    "contenido_archivos.json": null,
+    "contenido_archivos.md": null,
+    "estructura.json": null,
+    "estructura.md": null,
+    "logs": {
+      "app.log": null
+    },
+    "src": {
+      "app.ts": null,
+      "config": {
+        "db.ts": null,
+        "mailer.ts": null
+      },
+      "domain": {
+        "models": {
+          "user": {
+            "cart.model.ts": null,
+            "cartItem.model.ts": null,
+            "permission.model.ts": null,
+            "role.model.ts": null,
+            "service.model.ts": null,
+            "user.model.ts": null
+          }
+        },
+        "ports": {
+          "role.repository.ts": null,
+          "user.repository.ts": null
+        },
+        "services": {
+          "auth": {
+            "auth.service.ts": null,
+            "confirm.service.ts": null,
+            "recovery.service.ts": null
+          }
+        }
+      },
+      "index.ts": null,
+      "infraestructure": {
+        "db": {
+          "role.repository.ts": null,
+          "user.repository.ts": null
+        },
+        "logger": {
+          "errorHandler.ts": null,
+          "logger.ts": null
+        },
+        "mail": {
+          "mailerConfirmation.ts": null,
+          "mailerRecovery.ts": null,
+          "mailService.ts": null
+        },
+        "metrics": {
+          "customMetrics.ts": null,
+          "metrics.ts": null,
+          "requestDurationHistogram.ts": null
+        },
+        "security": {
+          "rateLimit.ts": null
+        }
+      },
+      "interfaces": {
+        "controllers": {
+          "auth": {
+            "auth.controller.ts": null,
+            "confirm.controller.ts": null,
+            "recover.controller.ts": null
+          },
+          "dashboard": {
+            "dashboard.controller.ts": null
+          },
+          "health": {
+            "health.controller.ts": null
+          }
+        },
+        "middlewares": {
+          "auth": {
+            "auth.middleware.ts": null
+          },
+          "error": {
+            "errorHandler.middleware.ts": null,
+            "notFound.middleware.ts": null
+          },
+          "role": {
+            "role.middleware.ts": null
+          },
+          "sanitize": {
+            "sanitizeRequest.ts": null
+          },
+          "validate": {
+            "validateInput.ts": null
+          }
+        },
+        "routes": {
+          "auth": {
+            "auth.routes.ts": null
+          },
+          "dashboard": {
+            "dashboard.routes.ts": null
+          },
+          "health": {
+            "health.routes.ts": null,
+            "metrics.routes.ts": null
+          },
+          "metrics": {
+            "metrics.routes.ts": null
+          }
+        }
+      },
+      "shared": {
+        "errors": {
+          "createError.ts": null,
+          "errorCodes.ts": null,
+          "errorMessages.ts": null
+        },
+        "hash.ts": null,
+        "sanitize.ts": null,
+        "security": {
+          "jwt.ts": null
+        },
+        "succes": {
+          "successMessages.ts": null
+        },
+        "tokens.ts": null,
+        "validations": {
+          "auth.schema.ts": null,
+          "validators.ts": null
+        }
+      },
+      "types": {
+        "express.d.ts": null
+      }
+    }
+  },
+  "frontend": {
+    "contenido_archivos.json": null,
+    "contenido_archivos.md": null,
+    "eslint.config.js": null,
+    "estructura.json": null,
+    "estructura.md": null,
+    "index.html": null,
+    "public": {
+      "ARP logo.png": null,
+      "hero-bg.jpg": null
+    },
+    "README.md": null,
+    "src": {
+      "api": {
+        "axios.ts": null
+      },
+      "App.css": null,
+      "App.tsx": null,
+      "assets": {
+        "hero-bg.jpg": null,
+        "react.svg": null
+      },
+      "components": {
+        "auth": {
+          "AuthForm.tsx": null,
+          "AuthModal.tsx": null,
+          "AuthResendModal.tsx": null,
+          "AuthSidePanel.tsx": null
+        },
+        "AutoTokenManager.tsx": null,
+        "common": {
+          "Alert.tsx": null,
+          "Avatar.tsx": null,
+          "Breadcrumb.tsx": null,
+          "Button.tsx": null,
+          "Card.tsx": null,
+          "CardGrid.tsx": null,
+          "CustomToast.tsx": null,
+          "DropdownMenu.tsx": null,
+          "FormField.tsx": null,
+          "Input.tsx": null,
+          "InputWithLabel.tsx": null,
+          "Modal.tsx": null,
+          "PasswordField.tsx": null,
+          "PasswordWithStrengthInputForm.tsx": null,
+          "Spinner.tsx": null,
+          "ToastNotification.tsx": null
+        },
+        "GlobalLoadingOverlay.tsx": null,
+        "home": {
+          "Attractions.tsx": null,
+          "Benefits.tsx": null,
+          "Hero.tsx": null,
+          "Location.tsx": null,
+          "RegisterInvoice.tsx": null
+        },
+        "LoginRedirectHandler.tsx": null,
+        "NavMenu.tsx": null,
+        "RouteModalHandler.tsx": null,
+        "StatCard.tsx": null,
+        "ThemeToggle.tsx": null
+      },
+      "context": {
+        "AuthContext.tsx": null,
+        "ThemeContext.tsx": null,
+        "ThemeProvider.tsx": null
+      },
+      "data": {},
+      "hooks": {
+        "useTheme.ts": null
+      },
+      "index.css": null,
+      "layout": {
+        "DashboardLayout.tsx": null,
+        "navigation": {
+          "Footer.tsx": null,
+          "Header.tsx": null,
+          "HeaderMobile.tsx": null,
+          "MiniFooter.tsx": null,
+          "Sidebar.tsx": null
+        },
+        "PublicLayout.tsx": null
+      },
+      "main.tsx": null,
+      "pages": {
+        "admin": {
+          "DashboardView.tsx": null,
+          "EntriesView.tsx": null,
+          "InvoicesView.tsx": null,
+          "SettingsView.tsx": null,
+          "UsersView.tsx": null
+        },
+        "ConfirmationMail.tsx": null,
+        "Home.tsx": null,
+        "NotFound.tsx": null,
+        "ResetPassword.tsx": null
+      },
+      "router": {
+        "AppRouter.tsx": null
+      },
+      "store": {
+        "useAuthModal.ts": null,
+        "useAuthStore.ts": null,
+        "useGlobalLoading.ts": null
+      },
+      "types": {
+        "simple-parallax-js.d.ts": null
+      },
+      "utils": {
+        "PrivateRoute.tsx": null,
+        "validationHelpersForm.ts": null
+      },
+      "vite-env.d.ts": null
+    },
+    "tsconfig.app.json": null,
+    "tsconfig.node.json": null,
+    "vite.config.ts": null
+  },
+  "monitoring": {
+    "docker-compose.yml": null,
+    "prometheus.yml": null
+  }
+}

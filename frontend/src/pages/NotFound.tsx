@@ -86,7 +86,7 @@ const NotFound = () => {
             Ir al inicio
           </Link>
           <Link
-            to="/dashboard"
+            to="/admin/dashboard"
             className="px-6 py-3 border border-gray-400 text-gray-700 dark:text-gray-200 dark:border-gray-500 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 transition-all"
           >
             Ir al panel

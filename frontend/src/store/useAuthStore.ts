@@ -1,49 +1,29 @@
 // src/store/useAuthStore.ts
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { toast } from "react-toastify";
+
+export interface User {
+  id: number;
+  name: string;
+  role: "admin" | "client" | "staff" | "reception" | "editor" | "validator" | string;
+}
 
 interface AuthState {
-  isLoggedIn: boolean;
-  userRole: "admin" | "client" | "staff" | "editor" | "reception" | "validador" | "";
-  userName: string;        // <--- nuevo
-  login: (token: string) => void;
-  logout: (expired?: boolean) => void;
+  user: User | null;
+  login: (user: User) => void;   // ahora sólo id,name,role
+  logout: () => void;
 }
 
 export const useAuthStore = create<AuthState>()(
   persist(
     (set) => ({
-      isLoggedIn: false,
-      userRole: "",
-      userName: "",        // <--- inicializamos
-      login: (token) => {
-        try {
-          const payload = JSON.parse(atob(token.split(".")[1]));
-          const role = (payload?.role as AuthState["userRole"]) || "";
-          const name = (payload?.name as string) || "";  // <--- leemos el nombre
-          localStorage.setItem("token", token);
-          set({ isLoggedIn: true, userRole: role, userName: name });
-        } catch (error) {
-          console.error("Error decoding token:", error);
-          set({ isLoggedIn: false, userRole: "", userName: "" });
-        }
-      },
-      logout: (expired = false) => {
-        localStorage.removeItem("token");
-        set({ isLoggedIn: false, userRole: "", userName: "" });
-        if (expired) {
-          toast.info("Tu sesión ha expirado. Por favor, inicia sesión de nuevo.");
-        }
-      },
+      user: null,
+      login: (user) => set({ user }),
+      logout: () => set({ user: null }),
     }),
     {
       name: "auth-storage",
-      partialize: (state) => ({
-        isLoggedIn: state.isLoggedIn,
-        userRole: state.userRole,
-        userName: state.userName,    // <--- persistimos también el nombre
-      }),
+      partialize: (state) => ({ user: state.user }),
     }
   )
 );

@@ -1,26 +1,20 @@
-// src/router/AppRouter.tsx
 import React from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
-
 import PublicLayout from "@/layout/PublicLayout";
 import DashboardLayout from "@/layout/DashboardLayout";
-
 import Home from "@/pages/Home";
 import ConfirmationMail from "@/pages/ConfirmationMail";
 import ResetPassword from "@/pages/ResetPassword";
-
 import DashboardView from "@/pages/admin/DashboardView";
 import InvoicesView from "@/pages/admin/InvoicesView";
 import EntriesView from "@/pages/admin/EntriesView";
 import UsersView from "@/pages/admin/UsersView";
 import SettingsView from "@/pages/admin/SettingsView";
-
 import NotFound from "@/pages/NotFound";
 import PrivateRoute from "@/utils/PrivateRoute";
 
 const AppRouter: React.FC = () => (
   <Routes>
-    {/* Rutas públicas */}
     <Route element={<PublicLayout />}>
       <Route path="/" element={<Home />} />
       <Route path="/login" element={<Home />} />
@@ -29,7 +23,6 @@ const AppRouter: React.FC = () => (
       <Route path="/reset-password" element={<ResetPassword />} />
     </Route>
 
-    {/* Rutas protegidas admin */}
     <Route
       path="/admin/*"
       element={
@@ -46,7 +39,6 @@ const AppRouter: React.FC = () => (
       <Route path="settings" element={<SettingsView />} />
     </Route>
 
-    {/* 404 */}
     <Route path="*" element={<NotFound />} />
   </Routes>
 );

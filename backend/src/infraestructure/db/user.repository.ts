@@ -1,15 +1,16 @@
+// src/infraestructure/db/user.repository.ts
 import db from "@/config/db";
 import { RowDataPacket, ResultSetHeader } from "mysql2";
 import { User } from "@/domain/models/user/user.model";
 import { UserRepository } from "@/domain/ports/user.repository";
 
 export const userRepository: UserRepository = {
-  async findUserByEmail(email) {
+  async findUserByEmail(email: string) {
     const [rows] = await db.query<RowDataPacket[]>(
-      `SELECT u.*, r.name as role_name 
-       FROM users u 
-       LEFT JOIN roles r ON u.role_id = r.id 
-       WHERE u.email = ?`,
+      `SELECT u.*, r.name AS role_name
+         FROM users u
+         LEFT JOIN roles r ON u.role_id = r.id
+        WHERE u.email = ?`,
       [email]
     );
     return (rows[0] as User & { role_name?: string }) || null;
@@ -27,8 +28,9 @@ export const userRepository: UserRepository = {
     } = user;
 
     const [result] = await db.query<ResultSetHeader>(
-      `INSERT INTO users (name, email, password_hash, phone, role_id, confirmation_token, confirmation_expires)
-       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO users
+         (name, email, password_hash, phone, role_id, confirmation_token, confirmation_expires)
+       VALUES (?,     ?,     ?,             ?,     ?,       ?,                   ?)`,
       [
         name,
         email,
@@ -45,36 +47,40 @@ export const userRepository: UserRepository = {
 
   async updateConfirmationToken(email, token, expires) {
     await db.query(
-      `UPDATE users SET confirmation_token = ?, confirmation_expires = ? WHERE email = ?`,
+      `UPDATE users
+          SET confirmation_token = ?, confirmation_expires = ?
+        WHERE email = ?`,
       [token, expires, email]
     );
   },
 
   async updateResetToken(email, token, expires) {
     await db.query(
-      `UPDATE users SET reset_token = ?, reset_expires = ? WHERE email = ?`,
+      `UPDATE users
+          SET reset_token = ?, reset_expires = ?
+        WHERE email = ?`,
       [token, expires, email]
     );
   },
 
   async findUserByResetToken(token) {
     const [rows] = await db.query<RowDataPacket[]>(
-      `SELECT id, email, password_hash, reset_expires 
-       FROM users 
-       WHERE reset_token = ? AND reset_expires > NOW()`,
+      `SELECT id, email, password_hash, reset_expires
+         FROM users
+        WHERE reset_token = ? AND reset_expires > NOW()`,
       [token]
     );
     return (
-      (rows[0] as Pick<
-        User,
-        "id" | "email" | "password_hash" | "reset_expires"
-      >) || null
+      (rows[0] as Pick<User, "id" | "email" | "password_hash" | "reset_expires">) ||
+      null
     );
   },
 
   async updatePassword(userId, newPasswordHash) {
     await db.query(
-      `UPDATE users SET password_hash = ?, reset_token = NULL, reset_expires = NULL WHERE id = ?`,
+      `UPDATE users
+          SET password_hash = ?, reset_token = NULL, reset_expires = NULL
+        WHERE id = ?`,
       [newPasswordHash, userId]
     );
   },
@@ -97,9 +103,11 @@ export const userRepository: UserRepository = {
 
   async confirmUserById(id) {
     await db.query(
-      `UPDATE users 
-       SET is_confirmed = 1, confirmation_token = NULL, confirmation_expires = NULL 
-       WHERE id = ?`,
+      `UPDATE users
+          SET is_confirmed = 1,
+              confirmation_token = NULL,
+              confirmation_expires = NULL
+        WHERE id = ?`,
       [id]
     );
   },
@@ -118,5 +126,17 @@ export const userRepository: UserRepository = {
       [token]
     );
     return (rows[0] as Pick<User, "reset_expires">) || null;
+  },
+
+  // Nuevo método para lookup por ID (para /me)
+  async findUserById(id) {
+    const [rows] = await db.query<RowDataPacket[]>(
+      `SELECT u.*, r.name AS role_name
+         FROM users u
+         LEFT JOIN roles r ON u.role_id = r.id
+        WHERE u.id = ?`,
+      [id]
+    );
+    return (rows[0] as User & { role_name?: string }) || null;
   },
 };

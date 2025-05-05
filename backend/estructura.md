@@ -1,11 +1,15 @@
 # Estructura del Proyecto
 
 ```
+├── keys
+│   ├── private.key
+│   └── public.key
 ├── logs
 └── src
     ├── app.ts
     ├── config
     │   ├── db.ts
+    │   ├── jwtKeys.ts
     │   └── mailer.ts
     ├── domain
     │   ├── models
@@ -50,8 +54,9 @@
     │   │   │   └── recover.controller.ts
     │   │   ├── dashboard
     │   │   │   └── dashboard.controller.ts
-    │   │   └── health
-    │   │       └── health.controller.ts
+    │   │   ├── health
+    │   │   │   └── health.controller.ts
+    │   │   └── user.controller.ts
     │   ├── middlewares
     │   │   ├── auth
     │   │   │   └── auth.middleware.ts
@@ -72,8 +77,9 @@
     │       ├── health
     │       │   ├── health.routes.ts
     │       │   └── metrics.routes.ts
-    │       └── metrics
-    │           └── metrics.routes.ts
+    │       ├── metrics
+    │       │   └── metrics.routes.ts
+    │       └── user.routes.ts
     ├── shared
     │   ├── errors
     │   │   ├── createError.ts
@@ -89,7 +95,6 @@
     │   └── validations
     │       ├── auth.schema.ts
     │       └── validators.ts
-    ├── types
-    │   └── express.d.ts
-    └── utils
+    └── types
+        └── express.d.ts
 ```

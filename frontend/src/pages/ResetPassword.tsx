@@ -89,7 +89,7 @@ export default function ResetPassword() {
     }
 
     try {
-      await api.post(`/reset-password/${token}`, { password });
+      await api.post("/reset-password", { token, password });
       toast.success("Contraseña actualizada correctamente");
 
       setTimeout(() => {

@@ -23,10 +23,9 @@ export interface UserRepository {
   updateResetToken(email: string, token: string, expires: Date): Promise<void>;
   findUserByResetToken(
     token: string
-  ): Promise<Pick<
-    User,
-    "id" | "email" | "password_hash" | "reset_expires"
-  > | null>;
+  ): Promise<
+    Pick<User, "id" | "email" | "password_hash" | "reset_expires"> | null
+  >;
   updatePassword(userId: number, newPasswordHash: string): Promise<void>;
   findUserByToken(token: string): Promise<User | null>;
   checkConfirmedByEmail(
@@ -37,4 +36,9 @@ export interface UserRepository {
   getResetTokenExpiration(
     token: string
   ): Promise<Pick<User, "reset_expires"> | null>;
+
+  // ←  NUEVO MÉTODO
+  findUserById(
+    id: number
+  ): Promise<(User & { role_name?: string }) | null>;
 }

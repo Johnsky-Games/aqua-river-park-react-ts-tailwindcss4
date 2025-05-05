@@ -1,51 +1,58 @@
 # Contenido de Archivos
 
+## keys\private.key
+
+## keys\public.key
+
 ## src\app.ts
 
 ```typescript
 import express from "express";
-import dashboardRoutes from "@/interfaces/routes/dashboard/dashboard.routes";
-import authRoutes from "@/interfaces/routes/auth/auth.routes";
 import cors from "cors";
-import notFound from "@/interfaces/middlewares/error/notFound.middleware";
-import errorHandler from "@/interfaces/middlewares/error/errorHandler.middleware";
-import { sanitizeRequest } from "@/interfaces/middlewares/sanitize/sanitizeRequest";
 import helmet from "helmet";
 import cookieParser from "cookie-parser";
+
+import dashboardRoutes from "@/interfaces/routes/dashboard/dashboard.routes";
+import authRoutes from "@/interfaces/routes/auth/auth.routes";
+import userRoutes from "@/interfaces/routes/user.routes";
 import healthRoutes from "@/interfaces/routes/health/health.routes";
 import metricsRoutes from "@/interfaces/routes/health/metrics.routes";
-import { metricsMiddleware } from "@/infraestructure/metrics/requestDurationHistogram";
 
+import { metricsMiddleware } from "@/infraestructure/metrics/requestDurationHistogram";
+import { sanitizeRequest } from "@/interfaces/middlewares/sanitize/sanitizeRequest";
+import notFound from "@/interfaces/middlewares/error/notFound.middleware";
+import errorHandler from "@/interfaces/middlewares/error/errorHandler.middleware";
 
 const app = express();
+const FRONTEND = process.env.FRONTEND_ORIGIN || "http://localhost:5173";
+
 app.use(cookieParser());
-app.use(express.json({ limit: "10kb" })); // Evita ataques de payloads masivos (DoS)
+app.use(express.json({ limit: "10kb" }));
 app.use(
   helmet.hsts({
-    maxAge: 60 * 60 * 24 * 365, // 1 año
+    maxAge: 60 * 60 * 24 * 365,
     includeSubDomains: true,
   })
-); // 🔒 Agrega cabeceras de seguridad
+);
 app.use(
   cors({
-    origin: "http://localhost:5173", // 👈 Asegúrate que coincida con el frontend
+    origin: FRONTEND,
     credentials: true,
   })
 );
 app.use(sanitizeRequest);
+app.use(metricsMiddleware);
 
-app.use(metricsMiddleware); // 👉 Middleware para métricas de duración de requests
-
-
-// Agrupar rutas protegidas bajo /api
+// Rutas
 app.use("/api", dashboardRoutes);
 app.use("/api", authRoutes);
-app.use("/api", healthRoutes); // 👉 Endpoint de salud
-app.use("/api", metricsRoutes); // 👉 Endpoint de métricas
+app.use("/api", userRoutes);
+app.use("/api", healthRoutes);
+app.use("/api", metricsRoutes);
 
-// Middleware para manejar errores de forma centralizada
-app.use(notFound); // 👉 Para rutas no encontradas
-app.use(errorHandler); // 👉 Para manejar errores de forma centralizada
+// Errores
+app.use(notFound);
+app.use(errorHandler);
 
 export default app;
 
@@ -75,6 +82,32 @@ export const db = mysql.createPool({
 
 
 export default db;
+
+```
+
+## src\config\jwtKeys.ts
+
+```typescript
+// backend/src/config/jwtKeys.ts
+import fs from "fs";
+import path from "path";
+import dotenv from "dotenv";
+dotenv.config();
+
+// si env es absoluto, lo usamos; si no, lo resolvemos desde process.cwd()
+const keysDirEnv = process.env.JWT_KEYS_DIR || "keys";
+const keysDir = path.isAbsolute(keysDirEnv)
+  ? keysDirEnv
+  : path.resolve(process.cwd(), keysDirEnv);
+
+export const PRIVATE_KEY = fs.readFileSync(
+  path.join(keysDir, "private.key"),
+  "utf-8"
+);
+export const PUBLIC_KEY = fs.readFileSync(
+  path.join(keysDir, "public.key"),
+  "utf-8"
+);
 
 ```
 
@@ -228,10 +261,9 @@ export interface UserRepository {
   updateResetToken(email: string, token: string, expires: Date): Promise<void>;
   findUserByResetToken(
     token: string
-  ): Promise<Pick<
-    User,
-    "id" | "email" | "password_hash" | "reset_expires"
-  > | null>;
+  ): Promise<
+    Pick<User, "id" | "email" | "password_hash" | "reset_expires"> | null
+  >;
   updatePassword(userId: number, newPasswordHash: string): Promise<void>;
   findUserByToken(token: string): Promise<User | null>;
   checkConfirmedByEmail(
@@ -242,6 +274,11 @@ export interface UserRepository {
   getResetTokenExpiration(
     token: string
   ): Promise<Pick<User, "reset_expires"> | null>;
+
+  // ←  NUEVO MÉTODO
+  findUserById(
+    id: number
+  ): Promise<(User & { role_name?: string }) | null>;
 }
 
 ```
@@ -250,10 +287,19 @@ export interface UserRepository {
 
 ```typescript
 // src/domain/services/auth/auth.service.ts
+
 import { UserRepository } from "@/domain/ports/user.repository";
 import sendConfirmationEmail from "@/infraestructure/mail/mailerConfirmation";
-import { validateEmail, validateNewPassword, validatePasswordChange } from "@/shared/validations/validators";
-import { generateAccessToken, generateRefreshToken, verifyRefreshToken } from "@/shared/security/jwt";
+import {
+  validateEmail,
+  validateNewPassword,
+  validatePasswordChange,
+} from "@/shared/validations/validators";
+import {
+  generateAccessToken,
+  generateRefreshToken,
+  verifyRefreshToken,
+} from "@/shared/security/jwt";
 import { hashPassword } from "@/shared/hash";
 import { generateToken } from "@/shared/tokens";
 import { errorMessages } from "@/shared/errors/errorMessages";
@@ -261,12 +307,17 @@ import { errorCodes } from "@/shared/errors/errorCodes";
 import { createError } from "@/shared/errors/createError";
 import logger from "@/infraestructure/logger/logger";
 import bcrypt from "bcryptjs";
-import { passwordResetCounter, userLoginCounter, userRegisterCounter } from "@/infraestructure/metrics/customMetrics";
+import {
+  passwordResetCounter,
+  userLoginCounter,
+  userRegisterCounter,
+} from "@/infraestructure/metrics/customMetrics";
+import { TokenPayload } from "@/types/express";
 
 type RoleName = "admin" | "client";
 
 /**
- * ✅ Registro de nuevo usuario
+ * Registro de nuevo usuario
  */
 export const registerUser = async (
   deps: { userRepository: UserRepository },
@@ -283,11 +334,12 @@ export const registerUser = async (
   }
 ) => {
   const { userRepository } = deps;
+
   validateEmail(email);
   validateNewPassword(password);
 
-  const existingUser = await userRepository.findUserByEmail(email);
-  if (existingUser) {
+  const existing = await userRepository.findUserByEmail(email);
+  if (existing) {
     throw createError(
       errorMessages.emailAlreadyRegistered,
       errorCodes.EMAIL_ALREADY_REGISTERED,
@@ -309,14 +361,12 @@ export const registerUser = async (
     confirmation_expires,
   });
 
-  // Incrementar contador 👇
-  userRegisterCounter.inc(); // Incrementa el contador de registro de usuarios
-
+  userRegisterCounter.inc();
   await sendConfirmationEmail(email, confirmation_token);
 };
 
 /**
- * ✅ Inicio de sesión de usuario
+ * Inicio de sesión de usuario
  */
 export const loginUser = async (
   deps: { userRepository: UserRepository },
@@ -335,22 +385,21 @@ export const loginUser = async (
   }
 
   if (!user.is_confirmed) {
-    const tokenExpired =
+    const expired =
       !user.confirmation_token ||
       !user.confirmation_expires ||
       new Date(user.confirmation_expires) < new Date();
-
-    const error = createError(
+    const e = createError(
       errorMessages.accountNotConfirmed,
       errorCodes.ACCOUNT_NOT_CONFIRMED,
       401
     );
-    (error as any).tokenExpired = tokenExpired;
-    throw error;
+    (e as any).tokenExpired = expired;
+    throw e;
   }
 
-  const isMatch = await bcrypt.compare(password, user.password_hash);
-  if (!isMatch) {
+  const match = await bcrypt.compare(password, user.password_hash);
+  if (!match) {
     throw createError(
       errorMessages.invalidCredentials,
       errorCodes.INVALID_CREDENTIALS,
@@ -358,15 +407,12 @@ export const loginUser = async (
     );
   }
 
-  // Incrementar contador 👇
   userLoginCounter.inc();
 
-  const payload = {
-    id: user.id,
-    email: user.email,
-    name: user.name,
+  // Payload mínimo para JWT
+  const payload: TokenPayload = {
+    sub: user.id,
     role: (user.role_name || "client") as RoleName,
-    roleId: user.role_id || 0,
   };
 
   const accessToken = generateAccessToken(payload);
@@ -376,42 +422,32 @@ export const loginUser = async (
     accessToken,
     refreshToken,
     user: {
-      email: user.email,
-      isConfirmed: Boolean(user.is_confirmed),
+      id: user.id,
+      name: user.name,
+      role: payload.role,
     },
   };
 };
 
 /**
- * ✅ Refrescar token de acceso usando el refresh token
+ * Refrescar token de acceso usando refresh token
  */
 export const refreshAccessToken = async (
   deps: { userRepository: UserRepository },
   refreshToken: string
 ) => {
   try {
-    const payload = verifyRefreshToken(refreshToken);
-    const { userRepository } = deps;
+    const decoded = verifyRefreshToken(refreshToken);
 
-    const user = await userRepository.findUserBasicByEmail(payload.email);
-    if (!user) {
-      throw createError(
-        errorMessages.userNotFound,
-        errorCodes.USER_NOT_FOUND,
-        404
-      );
-    }
+    const userId = decoded.sub;
+    const role = decoded.role;
+    await deps.userRepository.findUserById(userId);
 
-    const newAccessToken = generateAccessToken({
-      id: payload.id,
-      email: payload.email,
-      name: payload.name,
-      role: payload.role,
-      roleId: payload.roleId || 0,
-    });
+    const newPayload: TokenPayload = { sub: userId, role };
+    const accessToken = generateAccessToken(newPayload);
 
-    return { accessToken: newAccessToken };
-  } catch (error) {
+    return { accessToken };
+  } catch {
     throw createError(
       errorMessages.tokenInvalidOrExpired,
       errorCodes.TOKEN_INVALID_OR_EXPIRED,
@@ -421,7 +457,7 @@ export const refreshAccessToken = async (
 };
 
 /**
- * ✅ Enviar enlace de recuperación de contraseña
+ * Enviar enlace de recuperación de contraseña
  */
 export const sendResetPassword = async (
   deps: { userRepository: UserRepository },
@@ -429,7 +465,6 @@ export const sendResetPassword = async (
 ) => {
   const { userRepository } = deps;
   const user = await userRepository.findUserByEmail(email);
-
   if (!user) {
     throw createError(
       errorMessages.emailNotRegistered,
@@ -439,14 +474,15 @@ export const sendResetPassword = async (
   }
 
   const token = generateToken();
-  const expires = new Date(Date.now() + 60 * 60 * 1000); // 1 hora
-
+  const expires = new Date(Date.now() + 60 * 60 * 1000); // 1h
   await userRepository.updateResetToken(email, token, expires);
+
+  passwordResetCounter.inc();
   logger.info(`📧 Enlace de recuperación enviado a ${email}`);
 };
 
 /**
- * ✅ Cambiar la contraseña usando un token válido
+ * Cambiar contraseña usando token válido
  */
 export const resetPassword = async (
   deps: { userRepository: UserRepository },
@@ -456,7 +492,6 @@ export const resetPassword = async (
   const { userRepository } = deps;
   const user = await userRepository.findUserByResetToken(token);
 
-  // Incrementar contador 👇
   passwordResetCounter.inc();
 
   if (!user) {
@@ -468,27 +503,29 @@ export const resetPassword = async (
   }
 
   await validatePasswordChange(newPassword, user.email, user.password_hash);
-
   const password_hash = await hashPassword(newPassword);
   await userRepository.updatePassword(user.id, password_hash);
 };
 
 /**
- * ✅ Verificar si un token de recuperación es válido
+ * Verificar si un token de recuperación es válido
  */
 export const checkResetToken = async (
   deps: { userRepository: UserRepository },
   token: string
-) => {
+): Promise<boolean> => {
   const { userRepository } = deps;
   const user = await userRepository.findUserByResetToken(token);
 
-  return (
-    !!user &&
-    user.reset_expires !== null &&
-    user.reset_expires !== undefined &&
-    new Date(user.reset_expires) > new Date()
-  );
+  if (!user || !user.reset_expires) {
+    return false;
+  }
+
+  const expires = user.reset_expires instanceof Date
+    ? user.reset_expires
+    : new Date(user.reset_expires);
+
+  return expires > new Date();
 };
 
 ```
@@ -709,18 +746,19 @@ export const roleRepository: RoleRepository = {
 ## src\infraestructure\db\user.repository.ts
 
 ```typescript
+// src/infraestructure/db/user.repository.ts
 import db from "@/config/db";
 import { RowDataPacket, ResultSetHeader } from "mysql2";
 import { User } from "@/domain/models/user/user.model";
 import { UserRepository } from "@/domain/ports/user.repository";
 
 export const userRepository: UserRepository = {
-  async findUserByEmail(email) {
+  async findUserByEmail(email: string) {
     const [rows] = await db.query<RowDataPacket[]>(
-      `SELECT u.*, r.name as role_name 
-       FROM users u 
-       LEFT JOIN roles r ON u.role_id = r.id 
-       WHERE u.email = ?`,
+      `SELECT u.*, r.name AS role_name
+         FROM users u
+         LEFT JOIN roles r ON u.role_id = r.id
+        WHERE u.email = ?`,
       [email]
     );
     return (rows[0] as User & { role_name?: string }) || null;
@@ -738,8 +776,9 @@ export const userRepository: UserRepository = {
     } = user;
 
     const [result] = await db.query<ResultSetHeader>(
-      `INSERT INTO users (name, email, password_hash, phone, role_id, confirmation_token, confirmation_expires)
-       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO users
+         (name, email, password_hash, phone, role_id, confirmation_token, confirmation_expires)
+       VALUES (?,     ?,     ?,             ?,     ?,       ?,                   ?)`,
       [
         name,
         email,
@@ -756,36 +795,40 @@ export const userRepository: UserRepository = {
 
   async updateConfirmationToken(email, token, expires) {
     await db.query(
-      `UPDATE users SET confirmation_token = ?, confirmation_expires = ? WHERE email = ?`,
+      `UPDATE users
+          SET confirmation_token = ?, confirmation_expires = ?
+        WHERE email = ?`,
       [token, expires, email]
     );
   },
 
   async updateResetToken(email, token, expires) {
     await db.query(
-      `UPDATE users SET reset_token = ?, reset_expires = ? WHERE email = ?`,
+      `UPDATE users
+          SET reset_token = ?, reset_expires = ?
+        WHERE email = ?`,
       [token, expires, email]
     );
   },
 
   async findUserByResetToken(token) {
     const [rows] = await db.query<RowDataPacket[]>(
-      `SELECT id, email, password_hash, reset_expires 
-       FROM users 
-       WHERE reset_token = ? AND reset_expires > NOW()`,
+      `SELECT id, email, password_hash, reset_expires
+         FROM users
+        WHERE reset_token = ? AND reset_expires > NOW()`,
       [token]
     );
     return (
-      (rows[0] as Pick<
-        User,
-        "id" | "email" | "password_hash" | "reset_expires"
-      >) || null
+      (rows[0] as Pick<User, "id" | "email" | "password_hash" | "reset_expires">) ||
+      null
     );
   },
 
   async updatePassword(userId, newPasswordHash) {
     await db.query(
-      `UPDATE users SET password_hash = ?, reset_token = NULL, reset_expires = NULL WHERE id = ?`,
+      `UPDATE users
+          SET password_hash = ?, reset_token = NULL, reset_expires = NULL
+        WHERE id = ?`,
       [newPasswordHash, userId]
     );
   },
@@ -808,9 +851,11 @@ export const userRepository: UserRepository = {
 
   async confirmUserById(id) {
     await db.query(
-      `UPDATE users 
-       SET is_confirmed = 1, confirmation_token = NULL, confirmation_expires = NULL 
-       WHERE id = ?`,
+      `UPDATE users
+          SET is_confirmed = 1,
+              confirmation_token = NULL,
+              confirmation_expires = NULL
+        WHERE id = ?`,
       [id]
     );
   },
@@ -829,6 +874,18 @@ export const userRepository: UserRepository = {
       [token]
     );
     return (rows[0] as Pick<User, "reset_expires">) || null;
+  },
+
+  // Nuevo método para lookup por ID (para /me)
+  async findUserById(id) {
+    const [rows] = await db.query<RowDataPacket[]>(
+      `SELECT u.*, r.name AS role_name
+         FROM users u
+         LEFT JOIN roles r ON u.role_id = r.id
+        WHERE u.id = ?`,
+      [id]
+    );
+    return (rows[0] as User & { role_name?: string }) || null;
   },
 };
 
@@ -1278,6 +1335,8 @@ export const loginLimiter = rateLimit({
 ## src\interfaces\controllers\auth\auth.controller.ts
 
 ```typescript
+// src/interfaces/controllers/auth/auth.controller.ts
+
 import { Request, Response } from "express";
 import * as authService from "@/domain/services/auth/auth.service";
 import { userRepository } from "@/infraestructure/db/user.repository";
@@ -1285,26 +1344,28 @@ import { logError } from "@/infraestructure/logger/errorHandler";
 import logger from "@/infraestructure/logger/logger";
 import { errorCodes } from "@/shared/errors/errorCodes";
 
-// ✅ REGISTRO
-export const register = async (req: Request, res: Response) => {
+const isProd = process.env.NODE_ENV === "production";
+
+export const register = async (req: Request, res: Response): Promise<void> => {
   try {
     await authService.registerUser({ userRepository }, req.body);
     res.status(201).json({
       message: "Registro exitoso. Revisa tu correo para confirmar tu cuenta.",
-    }); // Incrementar el contador de usuarios registrados
+    });
     logger.info(`✅ Usuario registrado: ${req.body.email}`);
-
   } catch (error: any) {
     logError("Registro", error);
-    const status = error.code === errorCodes.EMAIL_ALREADY_REGISTERED ? 409 : 400;
+    const status =
+      error.code === errorCodes.EMAIL_ALREADY_REGISTERED ? 409 : 400;
     res.status(status).json({ message: error.message });
   }
 };
 
-// ✅ LOGIN
-export const login = async (req: Request, res: Response): Promise<void> => {
+export const login = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   const { email, password } = req.body;
-
   try {
     const { accessToken, refreshToken, user } = await authService.loginUser(
       { userRepository },
@@ -1312,21 +1373,29 @@ export const login = async (req: Request, res: Response): Promise<void> => {
       password
     );
 
-    res.cookie("refreshToken", refreshToken, {
+    // 1) Cookie del access token
+    res.cookie("auth_token", accessToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
+      secure: isProd,
+      sameSite: "none",
+      path: "/",
+      maxAge: 15 * 60 * 1000, // 15 minutos
     });
 
-    res.status(200).json({
-      token: accessToken,
-      user,
+    // 2) Cookie del refresh token
+    res.cookie("refresh_token", refreshToken, {
+      httpOnly: true,
+      secure: isProd,
+      sameSite: "none",
+      path: "/",
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 días
     });
+
+    // 3) Respuesta con el usuario
+    res.status(200).json({ success: true, user });
     logger.info(`✅ Login exitoso: ${email}`);
   } catch (error: any) {
     logError("Login", error);
-
     if (error.code === errorCodes.ACCOUNT_NOT_CONFIRMED) {
       res.status(401).json({
         message: error.message,
@@ -1334,64 +1403,40 @@ export const login = async (req: Request, res: Response): Promise<void> => {
       });
       return;
     }
-
     const status =
       error.code === errorCodes.EMAIL_NOT_REGISTERED ||
-        error.code === errorCodes.INVALID_CREDENTIALS
+      error.code === errorCodes.INVALID_CREDENTIALS
         ? 401
         : 400;
-
     res.status(status).json({
       message: error.message || "Error al iniciar sesión",
     });
   }
 };
 
-// ✅ LOGOUT - elimina cookie
-export const logout = (_req: Request, res: Response) => {
-  res.clearCookie("refreshToken", {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "strict",
-  });
-  res.json({ message: "Sesión cerrada correctamente." });
+export const logout = (_req: Request, res: Response): void => {
+  res
+    .clearCookie("auth_token", {
+      httpOnly: true,
+      secure: isProd,
+      sameSite: "none",
+      path: "/",
+    })
+    .clearCookie("refresh_token", {
+      httpOnly: true,
+      secure: isProd,
+      sameSite: "none",
+      path: "/",
+    })
+    .json({ message: "Sesión cerrada correctamente." });
 };
 
-// ✅ ENVIAR CORREO DE RECUPERACIÓN
-export const sendRecovery = async (req: Request, res: Response) => {
-  const { email } = req.body;
-
-  try {
-    await authService.sendResetPassword({ userRepository }, email);
-    res.json({ message: "Correo de recuperación enviado." });
-    logger.info(`✅ Correo de recuperación enviado: ${email}`);
-  } catch (error: any) {
-    logError("Enviar recuperación", error);
-    const status = error.code === errorCodes.EMAIL_NOT_REGISTERED ? 404 : 400;
-    res.status(status).json({ message: error.message });
-  }
-};
-
-// ✅ CAMBIAR CONTRASEÑA
-export const resetPassword = async (req: Request, res: Response) => {
-  const { token, password } = req.body;
-
-  try {
-    await authService.resetPassword({ userRepository }, token, password);
-    res.json({ message: "Contraseña actualizada con éxito." });
-    logger.info(`✅ Clave actualizada con éxito`);
-  } catch (error: any) {
-    logError("Reset password", error);
-    const status = error.code === errorCodes.INVALID_OR_EXPIRED_TOKEN ? 400 : 500;
-    res.status(status).json({ message: error.message });
-  }
-};
-
-// ✅ REFRESH TOKEN
-export const refreshToken = async (req: Request, res: Response): Promise<void> => {
-  const refreshToken = req.cookies?.refreshToken;
-
-  if (!refreshToken) {
+export const refreshToken = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  const rt = req.cookies?.refresh_token;
+  if (!rt) {
     res.status(401).json({ message: "No se encontró token de refresco" });
     return;
   }
@@ -1399,13 +1444,45 @@ export const refreshToken = async (req: Request, res: Response): Promise<void> =
   try {
     const { accessToken } = await authService.refreshAccessToken(
       { userRepository },
-      refreshToken
+      rt
     );
-    res.json({ token: accessToken });
+
+    // Si todo OK, reemitimos nuevo access token
+    res
+      .cookie("auth_token", accessToken, {
+        httpOnly: true,
+        secure: isProd,
+        sameSite: "none",
+        path: "/",
+        maxAge: 15 * 60 * 1000, // 15 minutos
+      })
+      .json({ success: true });
   } catch (error: any) {
+    // Si expiró o es inválido, limpiamos sesión sin log de error
+    if (error.code === errorCodes.TOKEN_INVALID_OR_EXPIRED) {
+      res
+        .clearCookie("auth_token", {
+          httpOnly: true,
+          secure: isProd,
+          sameSite: "none",
+          path: "/",
+        })
+        .clearCookie("refresh_token", {
+          httpOnly: true,
+          secure: isProd,
+          sameSite: "none",
+          path: "/",
+        })
+        .status(401)
+        .json({
+          message: "Sesión expirada. Por favor, inicia sesión nuevamente.",
+        });
+      return; // <— evita doble envío de respuesta
+    }
+
+    // Otros errores internos sí los registramos
     logError("Refresh token", error);
-    const status = error.code === errorCodes.TOKEN_INVALID_OR_EXPIRED ? 403 : 500;
-    res.status(status).json({ message: error.message || "Token inválido" });
+    res.status(500).json({ message: "Error interno al refrescar token" });
   }
 };
 
@@ -1537,25 +1614,36 @@ export const resetPassword = async (req: Request, res: Response): Promise<void> 
 ## src\interfaces\controllers\dashboard\dashboard.controller.ts
 
 ```typescript
-// backend/src/controllers/dashboard.controller.ts
+// src/interfaces/controllers/dashboard/dashboard.controller.ts
+
 import { Response } from "express";
 import { AuthenticatedRequest } from "@/types/express";
+import { userRepository } from "@/infraestructure/db/user.repository";
 
 export const getDashboard = async (
   req: AuthenticatedRequest,
   res: Response
 ): Promise<void> => {
-  const user = req.user;
-
-  if (!user) {
+  if (!req.user) {
     res.status(401).json({ message: "No autorizado" });
     return;
   }
 
-  res.json({
-    message: `Hola ${user.name}, bienvenido al dashboard.`,
-    role: user.role,
-  });
+  try {
+    const user = await userRepository.findUserById(req.user.sub);
+    if (!user) {
+      res.status(404).json({ message: "Usuario no encontrado" });
+      return;
+    }
+
+    res.json({
+      message: `Hola ${user.name}, bienvenido al dashboard.`,
+      role: user.role_name || "client",
+    });
+  } catch (err) {
+    console.error("Error al obtener dashboard:", err);
+    res.status(500).json({ message: "Error del servidor" });
+  }
 };
 
 ```
@@ -1577,13 +1665,53 @@ export const healthCheck = async (_req: Request, res: Response) => {
 
 ```
 
+## src\interfaces\controllers\user.controller.ts
+
+```typescript
+// src/interfaces/controllers/user.controller.ts
+
+import { Response, NextFunction } from "express";
+import { AuthenticatedRequest } from "@/types/express";
+import { userRepository } from "@/infraestructure/db/user.repository";
+import { errorMessages } from "@/shared/errors/errorMessages";
+
+export const getMe = async (
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    if (!req.user) {
+      res.status(401).json({ message: "Token no proporcionado" });
+      return;
+    }
+
+    const user = await userRepository.findUserById(req.user.sub);
+    if (!user) {
+      res.status(404).json({ message: errorMessages.userNotFound });
+      return;
+    }
+
+    res.json({
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role_name || "client",
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+```
+
 ## src\interfaces\middlewares\auth\auth.middleware.ts
 
 ```typescript
-// src/interfaces/middlewares/auth/auth.middleware.ts
 import { Request, Response, NextFunction } from "express";
 import { verifyAccessToken } from "@/shared/security/jwt";
 import { AuthenticatedRequest } from "@/types/express";
+import { errorCodes } from "@/shared/errors/errorCodes";
 
 export const authMiddleware = (
   req: Request,
@@ -1591,28 +1719,28 @@ export const authMiddleware = (
   next: NextFunction
 ): void => {
   const authHeader = req.headers.authorization;
+  const token =
+    authHeader?.startsWith("Bearer ")
+      ? authHeader.slice(7)
+      : (req as any).cookies?.auth_token;
 
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+  if (!token) {
     res.status(401).json({ message: "Token no proporcionado" });
     return;
   }
 
-  const token = authHeader.split(" ")[1];
-
   try {
-    const decoded = verifyAccessToken(token);
+    // verifyAccessToken retorna { sub, role }
+    const payload = verifyAccessToken(token);
 
-    (req as AuthenticatedRequest).user = {
-      id: decoded.id,
-      email: decoded.email,
-      name: decoded.name,
-      role: decoded.role,
-      roleId: decoded.roleId, // ✅ ya está validado por tipo TokenPayload
-    };
+    // Inyectamos directamente el payload (TokenPayload) en req.user
+    (req as AuthenticatedRequest).user = payload;
 
     next();
-  } catch {
-    res.status(401).json({ message: "Token inválido o expirado" });
+  } catch (err: any) {
+    const status =
+      err.code === errorCodes.TOKEN_INVALID_OR_EXPIRED ? 401 : 500;
+    res.status(status).json({ message: err.message });
   }
 };
 
@@ -1669,12 +1797,16 @@ export default notFound;
 import { Request, Response, NextFunction } from "express";
 import { AuthenticatedRequest } from "@/types/express";
 
-export const checkRoleById = (allowedIds: number[]) => {
+/**
+ * Middleware que permite sólo a ciertos roles acceder
+ * @param allowedRoles Lista de roles ("admin", "client", etc.)
+ */
+export const checkRole = (allowedRoles: string[]) => {
   return (req: Request, res: Response, next: NextFunction): void => {
     const user = (req as AuthenticatedRequest).user;
-    if (!user || !allowedIds.includes(user.roleId)) {
+    if (!user || !allowedRoles.includes(user.role)) {
       res.status(403).json({ message: "Acceso denegado" });
-      return; // ✅ Asegura que se retorna void
+      return;
     }
     next();
   };
@@ -1737,13 +1869,9 @@ export const validate = (schema: ZodSchema) => async (
 ## src\interfaces\routes\auth\auth.routes.ts
 
 ```typescript
+// src/interfaces/routes/auth/auth.routes.ts
 import { Router } from "express";
-import {
-  login,
-  register,
-  logout,
-  refreshToken,
-} from "@/interfaces/controllers/auth/auth.controller";
+import * as authController from "@/interfaces/controllers/auth/auth.controller";
 import {
   confirmUser,
   resendConfirmation,
@@ -1753,36 +1881,29 @@ import {
   checkTokenStatus,
   resetPassword,
 } from "@/interfaces/controllers/auth/recover.controller";
-
 import { authMiddleware } from "@/interfaces/middlewares/auth/auth.middleware";
-import { checkRoleById } from "@/interfaces/middlewares/role/role.middleware";
-import { getDashboard } from "@/interfaces/controllers/dashboard/dashboard.controller";
+import { loginLimiter } from "@/infraestructure/security/rateLimit";
 import { validate } from "@/interfaces/middlewares/validate/validateInput";
 import { registerSchema, loginSchema } from "@/shared/validations/auth.schema";
-import { loginLimiter } from "@/infraestructure/security/rateLimit";
-import { AuthenticatedRequest } from "@/types/express";
 
 const router = Router();
 
-// ✅ Registro y autenticación
-router.post("/register", validate(registerSchema), register);
-router.post("/login", loginLimiter, validate(loginSchema), login);
-router.post("/logout", logout);
+// Registro y autenticación
+router.post("/register", validate(registerSchema), authController.register);
+router.post("/login", loginLimiter, validate(loginSchema), authController.login);
+router.post("/logout", authMiddleware, authController.logout);
 
-// ✅ Confirmación de cuenta
+// Confirmación de cuenta
 router.get("/confirm/:token", confirmUser);
 router.post("/resend-confirmation", loginLimiter, resendConfirmation);
 
-// ✅ Recuperación de contraseña
+// Recuperación de contraseña
 router.post("/send-recovery", loginLimiter, sendRecovery);
 router.post("/reset-password", resetPassword);
-router.post("/reset-password/:token", resetPassword); // vía URL directa
 router.post("/check-token-status", checkTokenStatus);
 
-// ✅ Refresh token — asegurarte que devuelve void en el controller
-router.get("/refresh", refreshToken);
-
-
+// Refresh token
+router.get("/refresh", authController.refreshToken);
 
 export default router;
 
@@ -1791,20 +1912,19 @@ export default router;
 ## src\interfaces\routes\dashboard\dashboard.routes.ts
 
 ```typescript
+// src/interfaces/routes/dashboard/dashboard.routes.ts
 import { Router } from "express";
 import { getDashboard } from "@/interfaces/controllers/dashboard/dashboard.controller";
 import { authMiddleware } from "@/interfaces/middlewares/auth/auth.middleware";
-import { AuthenticatedRequest } from "@/types/express";
-import { checkRoleById } from "@/interfaces/middlewares/role/role.middleware";
+import { checkRole } from "@/interfaces/middlewares/role/role.middleware";
 
 const router = Router();
 
-// ✅ Ruta protegida de prueba
 router.get(
   "/admin/dashboard",
   authMiddleware,
-  checkRoleById([1, 2, 3, 5, 6]), // admin, staff, reception, editor, validador
-  (req, res) => getDashboard(req as AuthenticatedRequest, res)
+  checkRole(["admin"]),       // <-- now matches on the string role
+  (req, res) => getDashboard(req, res)
 );
 
 export default router;
@@ -1862,6 +1982,23 @@ router.get("/metrics", async (req, res) => {
   res.set("Content-Type", register.contentType);
   res.end(await register.metrics());
 });
+
+export default router;
+
+```
+
+## src\interfaces\routes\user.routes.ts
+
+```typescript
+// src/interfaces/routes/user.routes.ts
+import { Router }             from "express";
+import { getMe }              from "@/interfaces/controllers/user.controller";
+import { authMiddleware }     from "@/interfaces/middlewares/auth/auth.middleware";
+
+const router = Router();
+
+// GET /api/me → devuelve datos básicos del usuario logueado
+router.get("/me", authMiddleware, getMe);
 
 export default router;
 
@@ -1954,42 +2091,115 @@ export const sanitize = (input: string): string => {
 
 ```typescript
 // src/shared/security/jwt.ts
-import jwt from "jsonwebtoken";
+
+import jwt, { JwtPayload, Secret, SignOptions } from "jsonwebtoken";
 import dotenv from "dotenv";
 import { TokenPayload } from "@/types/express";
 import { errorMessages } from "@/shared/errors/errorMessages";
 import { errorCodes } from "@/shared/errors/errorCodes";
+import { PRIVATE_KEY, PUBLIC_KEY } from "@/config/jwtKeys";
 
 dotenv.config();
 
-const ACCESS_TOKEN_SECRET = process.env.JWT_ACCESS_SECRET || "accesssecret";
-const REFRESH_TOKEN_SECRET = process.env.JWT_REFRESH_SECRET || "refreshsecret";
+// Duraciones leídas desde .env
+const ACCESS_EXPIRES_IN = process.env.JWT_ACCESS_EXPIRES_IN || "15m";
+const REFRESH_EXPIRES_IN = process.env.JWT_REFRESH_EXPIRES_IN || "7d";
 
-export const generateAccessToken = (payload: TokenPayload): string => {
-  return jwt.sign(payload, ACCESS_TOKEN_SECRET, { expiresIn: "15m" });
-};
+/**
+ * Genera un JWT de acceso con payload { sub, role }.
+ */
+export const generateAccessToken = (payload: TokenPayload): string =>
+  jwt.sign(
+    payload as object,
+    PRIVATE_KEY as Secret,
+    {
+      algorithm: "RS256",
+      expiresIn: ACCESS_EXPIRES_IN,
+    } as SignOptions
+  );
 
-export const generateRefreshToken = (payload: TokenPayload): string => {
-  return jwt.sign(payload, REFRESH_TOKEN_SECRET, { expiresIn: "7d" });
-};
+/**
+ * Genera un JWT de refresco con payload { sub, role }.
+ */
+export const generateRefreshToken = (payload: TokenPayload): string =>
+  jwt.sign(
+    payload as object,
+    PRIVATE_KEY as Secret,
+    {
+      algorithm: "RS256",
+      expiresIn: REFRESH_EXPIRES_IN,
+    } as SignOptions
+  );
 
+/**
+ * Verifica un JWT de acceso y retorna { sub, role }.
+ * Lanza un error con código apropiado si es inválido o expirado.
+ */
 export const verifyAccessToken = (token: string): TokenPayload => {
   try {
-    return jwt.verify(token, ACCESS_TOKEN_SECRET) as TokenPayload;
-  } catch (error: any) {
-    const err = new Error(errorMessages.tokenInvalidOrExpired) as any;
-    err.code = errorCodes.TOKEN_INVALID_OR_EXPIRED;
-    throw err;
+    const decodedRaw = jwt.verify(
+      token,
+      PUBLIC_KEY as Secret,
+      { algorithms: ["RS256"] }
+    );
+    const decoded = decodedRaw as JwtPayload;
+
+    if (
+      (typeof decoded.sub !== "string" && typeof decoded.sub !== "number") ||
+      typeof decoded.role !== "string"
+    ) {
+      const e = new Error(errorMessages.tokenInvalidOrExpired) as any;
+      e.code = errorCodes.TOKEN_INVALID_OR_EXPIRED;
+      throw e;
+    }
+
+    return {
+      sub:
+        typeof decoded.sub === "number"
+          ? decoded.sub
+          : parseInt(decoded.sub as string, 10),
+      role: decoded.role,
+    };
+  } catch (err: any) {
+    const e = new Error(errorMessages.tokenInvalidOrExpired) as any;
+    e.code = errorCodes.TOKEN_INVALID_OR_EXPIRED;
+    throw e;
   }
 };
 
+/**
+ * Verifica un JWT de refresco y retorna { sub, role }.
+ * Lanza un error con código apropiado si es inválido o expirado.
+ */
 export const verifyRefreshToken = (token: string): TokenPayload => {
   try {
-    return jwt.verify(token, REFRESH_TOKEN_SECRET) as TokenPayload;
-  } catch (error: any) {
-    const err = new Error(errorMessages.tokenInvalidOrExpired) as any;
-    err.code = errorCodes.TOKEN_INVALID_OR_EXPIRED;
-    throw err;
+    const decodedRaw = jwt.verify(
+      token,
+      PUBLIC_KEY as Secret,
+      { algorithms: ["RS256"] }
+    );
+    const decoded = decodedRaw as JwtPayload;
+
+    if (
+      (typeof decoded.sub !== "string" && typeof decoded.sub !== "number") ||
+      typeof decoded.role !== "string"
+    ) {
+      const e = new Error(errorMessages.tokenInvalidOrExpired) as any;
+      e.code = errorCodes.TOKEN_INVALID_OR_EXPIRED;
+      throw e;
+    }
+
+    return {
+      sub:
+        typeof decoded.sub === "number"
+          ? decoded.sub
+          : parseInt(decoded.sub as string, 10),
+      role: decoded.role,
+    };
+  } catch (err: any) {
+    const e = new Error(errorMessages.tokenInvalidOrExpired) as any;
+    e.code = errorCodes.TOKEN_INVALID_OR_EXPIRED;
+    throw e;
   }
 };
 
@@ -2110,14 +2320,12 @@ export const validatePasswordChange = async (
 
 ```typescript
 // src/types/express.d.ts
+
 import { Request } from "express";
 
 export interface TokenPayload {
-  id: number;
-  email: string;
-  name: string;
+  sub: number;
   role: string;
-  roleId: number; // ✅ Asegúrate de que esta propiedad esté presente
 }
 
 export interface AuthenticatedRequest extends Request {

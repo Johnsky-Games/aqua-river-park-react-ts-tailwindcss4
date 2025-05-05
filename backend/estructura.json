@@ -1,9 +1,14 @@
 {
+  "keys": {
+    "private.key": null,
+    "public.key": null
+  },
   "logs": {},
   "src": {
     "app.ts": null,
     "config": {
       "db.ts": null,
+      "jwtKeys.ts": null,
       "mailer.ts": null
     },
     "domain": {
@@ -65,7 +70,8 @@
         },
         "health": {
           "health.controller.ts": null
-        }
+        },
+        "user.controller.ts": null
       },
       "middlewares": {
         "auth": {
@@ -98,7 +104,8 @@
         },
         "metrics": {
           "metrics.routes.ts": null
-        }
+        },
+        "user.routes.ts": null
       }
     },
     "shared": {
@@ -123,7 +130,6 @@
     },
     "types": {
       "express.d.ts": null
-    },
-    "utils": {}
+    }
   }
 }

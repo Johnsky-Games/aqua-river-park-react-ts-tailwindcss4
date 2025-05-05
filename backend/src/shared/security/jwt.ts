@@ -1,39 +1,112 @@
 // src/shared/security/jwt.ts
-import jwt from "jsonwebtoken";
+
+import jwt, { JwtPayload, Secret, SignOptions } from "jsonwebtoken";
 import dotenv from "dotenv";
 import { TokenPayload } from "@/types/express";
 import { errorMessages } from "@/shared/errors/errorMessages";
 import { errorCodes } from "@/shared/errors/errorCodes";
+import { PRIVATE_KEY, PUBLIC_KEY } from "@/config/jwtKeys";
 
 dotenv.config();
 
-const ACCESS_TOKEN_SECRET = process.env.JWT_ACCESS_SECRET || "accesssecret";
-const REFRESH_TOKEN_SECRET = process.env.JWT_REFRESH_SECRET || "refreshsecret";
+// Duraciones leídas desde .env
+const ACCESS_EXPIRES_IN = process.env.JWT_ACCESS_EXPIRES_IN || "15m";
+const REFRESH_EXPIRES_IN = process.env.JWT_REFRESH_EXPIRES_IN || "7d";
 
-export const generateAccessToken = (payload: TokenPayload): string => {
-  return jwt.sign(payload, ACCESS_TOKEN_SECRET, { expiresIn: "15m" });
-};
+/**
+ * Genera un JWT de acceso con payload { sub, role }.
+ */
+export const generateAccessToken = (payload: TokenPayload): string =>
+  jwt.sign(
+    payload as object,
+    PRIVATE_KEY as Secret,
+    {
+      algorithm: "RS256",
+      expiresIn: ACCESS_EXPIRES_IN,
+    } as SignOptions
+  );
 
-export const generateRefreshToken = (payload: TokenPayload): string => {
-  return jwt.sign(payload, REFRESH_TOKEN_SECRET, { expiresIn: "7d" });
-};
+/**
+ * Genera un JWT de refresco con payload { sub, role }.
+ */
+export const generateRefreshToken = (payload: TokenPayload): string =>
+  jwt.sign(
+    payload as object,
+    PRIVATE_KEY as Secret,
+    {
+      algorithm: "RS256",
+      expiresIn: REFRESH_EXPIRES_IN,
+    } as SignOptions
+  );
 
+/**
+ * Verifica un JWT de acceso y retorna { sub, role }.
+ * Lanza un error con código apropiado si es inválido o expirado.
+ */
 export const verifyAccessToken = (token: string): TokenPayload => {
   try {
-    return jwt.verify(token, ACCESS_TOKEN_SECRET) as TokenPayload;
-  } catch (error: any) {
-    const err = new Error(errorMessages.tokenInvalidOrExpired) as any;
-    err.code = errorCodes.TOKEN_INVALID_OR_EXPIRED;
-    throw err;
+    const decodedRaw = jwt.verify(
+      token,
+      PUBLIC_KEY as Secret,
+      { algorithms: ["RS256"] }
+    );
+    const decoded = decodedRaw as JwtPayload;
+
+    if (
+      (typeof decoded.sub !== "string" && typeof decoded.sub !== "number") ||
+      typeof decoded.role !== "string"
+    ) {
+      const e = new Error(errorMessages.tokenInvalidOrExpired) as any;
+      e.code = errorCodes.TOKEN_INVALID_OR_EXPIRED;
+      throw e;
+    }
+
+    return {
+      sub:
+        typeof decoded.sub === "number"
+          ? decoded.sub
+          : parseInt(decoded.sub as string, 10),
+      role: decoded.role,
+    };
+  } catch (err: any) {
+    const e = new Error(errorMessages.tokenInvalidOrExpired) as any;
+    e.code = errorCodes.TOKEN_INVALID_OR_EXPIRED;
+    throw e;
   }
 };
 
+/**
+ * Verifica un JWT de refresco y retorna { sub, role }.
+ * Lanza un error con código apropiado si es inválido o expirado.
+ */
 export const verifyRefreshToken = (token: string): TokenPayload => {
   try {
-    return jwt.verify(token, REFRESH_TOKEN_SECRET) as TokenPayload;
-  } catch (error: any) {
-    const err = new Error(errorMessages.tokenInvalidOrExpired) as any;
-    err.code = errorCodes.TOKEN_INVALID_OR_EXPIRED;
-    throw err;
+    const decodedRaw = jwt.verify(
+      token,
+      PUBLIC_KEY as Secret,
+      { algorithms: ["RS256"] }
+    );
+    const decoded = decodedRaw as JwtPayload;
+
+    if (
+      (typeof decoded.sub !== "string" && typeof decoded.sub !== "number") ||
+      typeof decoded.role !== "string"
+    ) {
+      const e = new Error(errorMessages.tokenInvalidOrExpired) as any;
+      e.code = errorCodes.TOKEN_INVALID_OR_EXPIRED;
+      throw e;
+    }
+
+    return {
+      sub:
+        typeof decoded.sub === "number"
+          ? decoded.sub
+          : parseInt(decoded.sub as string, 10),
+      role: decoded.role,
+    };
+  } catch (err: any) {
+    const e = new Error(errorMessages.tokenInvalidOrExpired) as any;
+    e.code = errorCodes.TOKEN_INVALID_OR_EXPIRED;
+    throw e;
   }
 };

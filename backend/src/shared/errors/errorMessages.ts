@@ -13,5 +13,6 @@ export const errorMessages = {
     userNotFound: "Usuario no encontrado",
     tokenInvalidOrExpired: "Token de refresco inválido o expirado",
     internalServerError: "Error interno del servidor",
+    accountAttempsBlocked: "Intentos de inicio de sesión fallidos. Cuenta bloqueada hasta ",
   };
   

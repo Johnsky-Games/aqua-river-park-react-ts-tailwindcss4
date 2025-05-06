@@ -53,6 +53,7 @@ export default function AuthForm({
   const [passwordStrength, setPasswordStrength] = useState(0);
   const [resendMsg, setResendMsg] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
 
   const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -105,6 +106,7 @@ export default function AuthForm({
           {
             email: formData.email,
             password: formData.password,
+            rememberMe, // envío del checkbox
           }
         );
 
@@ -236,20 +238,34 @@ export default function AuthForm({
         )}
 
         {isLogin && (
-          <div className="flex justify-end text-sm text-blue-600">
-            <button
-              type="button"
-              className="hover:underline"
-              onClick={() => {
-                setModalType("recover");
-                setModalStep("form");
-                setShowModal(true);
-                setFormEmail(formData.email);
-              }}
-            >
-              Forgot Password?
-            </button>
-          </div>
+          <>
+            <div className="flex items-center">
+              <input
+                id="rememberMe"
+                type="checkbox"
+                checked={rememberMe}
+                onChange={e => setRememberMe(e.target.checked)}
+                className="mr-2"
+              />
+              <label htmlFor="rememberMe" className="text-sm">
+                Recuérdame
+              </label>
+            </div>
+            <div className="flex justify-end text-sm text-blue-600">
+              <button
+                type="button"
+                className="hover:underline"
+                onClick={() => {
+                  setModalType("recover");
+                  setModalStep("form");
+                  setShowModal(true);
+                  setFormEmail(formData.email);
+                }}
+              >
+                Forgot Password?
+              </button>
+            </div>
+          </>
         )}
 
         <button

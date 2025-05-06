@@ -4,6 +4,7 @@ import { z } from "zod";
 export const loginSchema = z.object({
   email: z.string().email(),
   password: z.string().min(8),
+  rememberMe: z.boolean().optional(),
 });
 
 export const registerSchema = z

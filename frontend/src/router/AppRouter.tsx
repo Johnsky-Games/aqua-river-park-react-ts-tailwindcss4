@@ -11,7 +11,7 @@ import EntriesView from "@/pages/admin/EntriesView";
 import UsersView from "@/pages/admin/UsersView";
 import SettingsView from "@/pages/admin/SettingsView";
 import NotFound from "@/pages/NotFound";
-import PrivateRoute from "@/utils/PrivateRoute";
+import PrivateRoute from "@/router/PrivateRoute";
 
 const AppRouter: React.FC = () => (
   <Routes>

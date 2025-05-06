@@ -12,5 +12,6 @@ export const errorCodes = {
     USER_NOT_FOUND: 1009,
     TOKEN_INVALID_OR_EXPIRED: 1010,
     INTERNAL_SERVER_ERROR: 1500,
+    ACCOUNT_BLOCKED: 2001,
   };
   

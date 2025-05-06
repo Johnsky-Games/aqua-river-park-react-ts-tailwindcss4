@@ -3,9 +3,7 @@ import { useSearchParams, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import api from "../api/axios";
 import { useAuthModal } from "../store/useAuthModal";
-import {
-  validatePasswordSecurity,
-} from "../utils/validationHelpersForm";
+import { validatePasswordSecurity } from "../utils/validationHelpersForm";
 import PasswordWithStrengthInput from "../components/common/PasswordWithStrengthInputForm";
 import InputWithLabel from "../components/common/InputWithLabel";
 
@@ -118,7 +116,9 @@ export default function ResetPassword() {
     }
   };
 
-  if (loading) return <p className="text-center mt-8 dark:text-white">Cargando...</p>;
+  if (loading) {
+    return <p className="text-center mt-8 dark:text-white">Cargando...</p>;
+  }
 
   if (!valid) {
     return (
@@ -171,8 +171,8 @@ export default function ResetPassword() {
           value={password}
           onChange={handlePasswordChange}
           error={passwordError}
-          showTooltip={true}
-          showStrengthBar={true}
+          showTooltip
+          showStrengthBar
         />
 
         <InputWithLabel
@@ -187,7 +187,7 @@ export default function ResetPassword() {
 
         <button
           type="submit"
-          disabled={isSending || passwordError !== "" || confirmPasswordError !== ""}
+          disabled={isSending || !!passwordError || !!confirmPasswordError}
           className={`w-full bg-sky-600 text-white py-2 rounded hover:bg-sky-700 transition ${
             isSending ? "opacity-50 cursor-not-allowed" : ""
           }`}

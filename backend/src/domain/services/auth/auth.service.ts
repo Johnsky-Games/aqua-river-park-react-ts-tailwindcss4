@@ -99,11 +99,22 @@ export const loginUser = async (
   }
 
   // Check locked_until
-  if (user.locked_until && new Date(user.locked_until) > new Date()) {
+  const now = new Date();
+  if (user.locked_until && new Date(user.locked_until) > now) {
+    const until = new Date(user.locked_until);
+    // Formateamos la fecha en español 'es-EC'
+    const friendly = until.toLocaleString("es-EC", {
+      weekday: "long",
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
     throw createError(
-      `Cuenta bloqueada hasta ${user.locked_until}`,
-      errorCodes.INVALID_CREDENTIALS,
-      403
+      `${errorMessages.accountAttempsBlocked} ${friendly}`,
+      errorCodes.ACCOUNT_BLOCKED,
+      2001
     );
   }
 
@@ -160,7 +171,9 @@ export const loginUser = async (
   const { token: refreshToken, jti } = generateRefreshToken(payload);
 
   // Persiste el refresh token en BD
-  const expiresAt = new Date(Date.now() + ms(REFRESH_EXPIRES_IN as StringValue));
+  const expiresAt = new Date(
+    Date.now() + ms(REFRESH_EXPIRES_IN as StringValue)
+  );
   await refreshTokenRepository.saveToken(jti, user.id, expiresAt);
 
   return {
@@ -185,7 +198,9 @@ export const refreshAccessToken = async (
   refreshToken: string
 ) => {
   try {
-    const decoded = jwtVerifyRefresh(refreshToken) as TokenPayload & { jti: string };
+    const decoded = jwtVerifyRefresh(refreshToken) as TokenPayload & {
+      jti: string;
+    };
     const { sub: userId, role, jti } = decoded;
 
     const stored = await deps.refreshTokenRepository.findToken(jti);

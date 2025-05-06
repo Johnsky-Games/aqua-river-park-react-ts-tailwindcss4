@@ -485,3 +485,69 @@
 [2025-05-05 16:07:40] [32minfo[39m: ✅ Servidor iniciado en http://localhost:3000
 [2025-05-05 16:10:51] [32minfo[39m: ✅ Login exitoso: jonathanboada1@gmail.com
 [2025-05-05 16:59:45] [32minfo[39m: ✅ Login exitoso: jonathanboada1@gmail.com
+[2025-05-05 19:48:52] [32minfo[39m: ✅ Servidor iniciado en http://localhost:3000
+[2025-05-05 19:49:11] [32minfo[39m: ✅ Login exitoso: jonathanboada1@gmail.com
+[2025-05-05 19:57:23] [32minfo[39m: ✅ Servidor iniciado en http://localhost:3000
+[2025-05-05 19:58:58] [32minfo[39m: ✅ Servidor iniciado en http://localhost:3000
+[2025-05-05 20:04:14] [32minfo[39m: ✅ Login exitoso: jonathanboada1@gmail.com (rememberMe=sí)
+[2025-05-05 20:56:38] [32minfo[39m: ✅ Login exitoso: jonathanboada1@gmail.com (rememberMe=sí)
+[2025-05-05 20:59:37] [32minfo[39m: ✅ Servidor iniciado en http://localhost:3000
+[2025-05-05 21:19:13] [32minfo[39m: ✅ Servidor iniciado en http://localhost:3000
+[2025-05-05 21:24:30] [32minfo[39m: ✅ Servidor iniciado en http://localhost:3000
+[2025-05-05 21:26:42] [32minfo[39m: ✅ Servidor iniciado en http://localhost:3000
+[2025-05-05 21:31:45] [32minfo[39m: ✅ Login exitoso: jonathanboada1@gmail.com (rememberMe=sí)
+[2025-05-05 21:58:44] [32minfo[39m: ✅ Login exitoso: jonathanboada1@gmail.com (rememberMe=no)
+[2025-05-05 21:59:02] [31merror[39m: ❌ Login: Credenciales incorrectas | Code: 1003 | Status: 401
+[2025-05-05 21:59:03] [31merror[39m: ❌ Login: Credenciales incorrectas | Code: 1003 | Status: 401
+[2025-05-05 21:59:04] [31merror[39m: ❌ Login: Credenciales incorrectas | Code: 1003 | Status: 401
+[2025-05-05 21:59:05] [31merror[39m: ❌ Login: Cuenta bloqueada hasta Mon May 05 2025 22:14:04 GMT-0500 (hora de Ecuador) | Code: 1003 | Status: 403
+[2025-05-05 22:01:56] [32minfo[39m: ✅ Servidor iniciado en http://localhost:3000
+[2025-05-05 22:04:15] [32minfo[39m: ✅ Servidor iniciado en http://localhost:3000
+[2025-05-05 22:04:18] [32minfo[39m: ✅ Servidor iniciado en http://localhost:3000
+[2025-05-05 22:04:24] [32minfo[39m: ✅ Servidor iniciado en http://localhost:3000
+[2025-05-05 22:05:05] [32minfo[39m: ✅ Servidor iniciado en http://localhost:3000
+[2025-05-05 22:06:06] [32minfo[39m: ✅ Servidor iniciado en http://localhost:3000
+[2025-05-05 22:06:40] [32minfo[39m: ✅ Servidor iniciado en http://localhost:3000
+[2025-05-05 22:07:23] [32minfo[39m: ✅ Servidor iniciado en http://localhost:3000
+[2025-05-05 22:07:51] [32minfo[39m: ✅ Servidor iniciado en http://localhost:3000
+[2025-05-05 22:11:59] [32minfo[39m: ✅ Servidor iniciado en http://localhost:3000
+[2025-05-05 22:12:01] [31merror[39m: ❌ Login: Credenciales incorrectas | Code: 1003 | Status: 401
+[2025-05-05 22:12:03] [31merror[39m: ❌ Login: Credenciales incorrectas | Code: 1003 | Status: 401
+[2025-05-05 22:12:04] [31merror[39m: ❌ Login: Credenciales incorrectas | Code: 1003 | Status: 401
+[2025-05-05 22:12:05] [31merror[39m: ❌ Login: [object Object] Cuenta bloqueada hasta Mon May 05 2025 22:27:05 GMT-0500 (hora de Ecuador) | Code: 2001 | Status: 2001
+[2025-05-05 22:12:49] [32minfo[39m: ✅ Servidor iniciado en http://localhost:3000
+[2025-05-05 22:13:14] [31merror[39m: ❌ Login: Credenciales incorrectas | Code: 1003 | Status: 401
+[2025-05-05 22:13:15] [31merror[39m: ❌ Login: Credenciales incorrectas | Code: 1003 | Status: 401
+[2025-05-05 22:13:16] [31merror[39m: ❌ Login: Credenciales incorrectas | Code: 1003 | Status: 401
+[2025-05-05 22:13:20] [31merror[39m: ❌ Login: Intentos de inicio de sesión fallidos. Cuenta bloqueada hasta el %s Mon May 05 2025 22:28:16 GMT-0500 (hora de Ecuador) | Code: 2001 | Status: 2001
+[2025-05-05 22:14:22] [32minfo[39m: ✅ Servidor iniciado en http://localhost:3000
+[2025-05-05 22:19:42] [32minfo[39m: ✅ Servidor iniciado en http://localhost:3000
+[2025-05-05 22:19:52] [32minfo[39m: ✅ Servidor iniciado en http://localhost:3000
+[2025-05-05 22:20:13] [31merror[39m: ❌ Login: Credenciales incorrectas | Code: 1003 | Status: 401
+[2025-05-05 22:20:14] [31merror[39m: ❌ Login: Credenciales incorrectas | Code: 1003 | Status: 401
+[2025-05-05 22:20:15] [31merror[39m: ❌ Login: Credenciales incorrectas | Code: 1003 | Status: 401
+[2025-05-05 22:20:20] [31merror[39m: ❌ Login: Intentos de inicio de sesión fallidos. Cuenta bloqueada hasta  lunes, 5 de mayo de 2025, 10:35 p. m. | Code: 2001 | Status: 2001
+[2025-05-05 22:20:41] [31merror[39m: ❌ Login: Intentos de inicio de sesión fallidos. Cuenta bloqueada hasta  lunes, 5 de mayo de 2025, 10:35 p. m. | Code: 2001 | Status: 2001
+[2025-05-05 22:22:44] [32minfo[39m: ✅ Servidor iniciado en http://localhost:3000
+[2025-05-05 22:22:46] [31merror[39m: ❌ Login: Intentos de inicio de sesión fallidos. Cuenta bloqueada hasta  lunes, 5 de mayo de 2025, 10:35 p. m. | Code: 2001 | Status: 2001
+[2025-05-05 22:24:15] [31merror[39m: ❌ Login: Intentos de inicio de sesión fallidos. Cuenta bloqueada hasta  lunes, 5 de mayo de 2025, 10:35 p. m. | Code: 2001 | Status: 2001
+[2025-05-05 22:25:02] [32minfo[39m: 📨 Correo enviado a jonathanboada1@gmail.com: Recupera tu contraseña - Aqua River Park
+[2025-05-05 22:26:14] [31merror[39m: ❌ Resetear contraseña: Token inválido o expirado | Code: 1006 | Status: 400
+[2025-05-05 22:26:18] [31merror[39m: ❌ Resetear contraseña: Token inválido o expirado | Code: 1006 | Status: 400
+[2025-05-05 22:26:19] [31merror[39m: ❌ Resetear contraseña: Token inválido o expirado | Code: 1006 | Status: 400
+[2025-05-05 22:26:19] [31merror[39m: ❌ Resetear contraseña: Token inválido o expirado | Code: 1006 | Status: 400
+[2025-05-05 22:26:20] [31merror[39m: ❌ Resetear contraseña: Token inválido o expirado | Code: 1006 | Status: 400
+[2025-05-05 22:26:20] [31merror[39m: ❌ Resetear contraseña: Token inválido o expirado | Code: 1006 | Status: 400
+[2025-05-05 22:26:27] [31merror[39m: ❌ Resetear contraseña: Token inválido o expirado | Code: 1006 | Status: 400
+[2025-05-05 22:26:35] [31merror[39m: ❌ Resetear contraseña: Token inválido o expirado | Code: 1006 | Status: 400
+[2025-05-05 22:26:56] [31merror[39m: ❌ Resetear contraseña: Token inválido o expirado | Code: 1006 | Status: 400
+[2025-05-05 22:27:10] [31merror[39m: ❌ Resetear contraseña: Token inválido o expirado | Code: 1006 | Status: 400
+[2025-05-05 22:29:46] [32minfo[39m: ✅ Servidor iniciado en http://localhost:3000
+[2025-05-05 22:29:52] [33mwarn[39m: 🚫 Ruta no encontrada: POST /api/reset-password
+[2025-05-05 22:30:09] [32minfo[39m: ✅ Servidor iniciado en http://localhost:3000
+[2025-05-06 08:39:25] [32minfo[39m: 📨 Correo enviado a jonathanboada1@gmail.com: Recupera tu contraseña - Aqua River Park
+[2025-05-06 08:40:19] [33mwarn[39m: 🚫 Ruta no encontrada: POST /api/reset-password/b26bbb46e799ede57873d72717ef9decf1c339e1df4656661bf5acec5284a74e
+[2025-05-06 08:40:31] [33mwarn[39m: 🚫 Ruta no encontrada: POST /api/reset-password/b26bbb46e799ede57873d72717ef9decf1c339e1df4656661bf5acec5284a74e
+[2025-05-06 08:43:41] [32minfo[39m: ✅ Servidor iniciado en http://localhost:3000
+[2025-05-06 08:43:49] [33mwarn[39m: 🚫 Ruta no encontrada: POST /api/reset-password/b26bbb46e799ede57873d72717ef9decf1c339e1df4656661bf5acec5284a74e
+[2025-05-06 08:46:23] [32minfo[39m: 📨 Correo enviado a jonathanboada1@gmail.com: Recupera tu contraseña - Aqua River Park

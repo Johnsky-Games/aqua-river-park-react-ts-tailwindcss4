@@ -36,7 +36,12 @@ export const register = async (req: Request, res: Response): Promise<void> => {
 };
 
 export const login = async (req: Request, res: Response): Promise<void> => {
-  const { email, password } = req.body;
+  const { email, password, rememberMe = false } = req.body as {
+    email: string;
+    password: string;
+    rememberMe?: boolean;
+  };
+
   try {
     const { accessToken, refreshToken, user } = await authService.loginUser(
       { userRepository, refreshTokenRepository },
@@ -44,21 +49,29 @@ export const login = async (req: Request, res: Response): Promise<void> => {
       password
     );
 
+    // Duraciones
+    const accessMaxAge = 1 * 60 * 1000; // 15 minutos
+    const refreshMaxAge = rememberMe
+      ? 30 * 24 * 60 * 60 * 1000  // 30 días si "Recuérdame"
+      : 7 * 24 * 60 * 60 * 1000;  // 7 días por defecto
+
     // 1) Access Token
     res.cookie("auth_token", accessToken, {
       ...cookieOptions,
-      maxAge: 15 * 60 * 1000, // 15 minutos
+      maxAge: accessMaxAge,
     });
 
     // 2) Refresh Token
     res.cookie("refresh_token", refreshToken, {
       ...cookieOptions,
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 días
+      maxAge: refreshMaxAge,
     });
 
     // 3) Respuesta
     res.status(200).json({ success: true, user });
-    logger.info(`✅ Login exitoso: ${email}`);
+    logger.info(
+      `✅ Login exitoso: ${email} (rememberMe=${rememberMe ? "sí" : "no"})`
+    );
   } catch (error: any) {
     logError("Login", error);
     if (error.code === errorCodes.ACCOUNT_NOT_CONFIRMED) {

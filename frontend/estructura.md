@@ -15,6 +15,7 @@
 │   ├── assets
 │   │   ├── hero-bg.jpg
 │   │   └── react.svg
+│   ├── auth
 │   ├── components
 │   │   ├── auth
 │   │   │   ├── AuthForm.tsx
@@ -52,11 +53,11 @@
 │   │   ├── StatCard.tsx
 │   │   ├── ThemeToggle.tsx
 │   │   └── UserInitializer.tsx
+│   ├── config
 │   ├── context
 │   │   ├── AuthContext.tsx
 │   │   ├── ThemeContext.tsx
 │   │   └── ThemeProvider.tsx
-│   ├── data
 │   ├── hooks
 │   │   └── useTheme.ts
 │   ├── index.css
@@ -82,7 +83,9 @@
 │   │   ├── NotFound.tsx
 │   │   └── ResetPassword.tsx
 │   ├── router
-│   │   └── AppRouter.tsx
+│   │   ├── AppRouter.tsx
+│   │   └── PrivateRoute.tsx
+│   ├── services
 │   ├── store
 │   │   ├── useAuthModal.ts
 │   │   ├── useAuthStore.ts
@@ -90,7 +93,6 @@
 │   ├── types
 │   │   └── simple-parallax-js.d.ts
 │   ├── utils
-│   │   ├── PrivateRoute.tsx
 │   │   └── validationHelpersForm.ts
 │   └── vite-env.d.ts
 ├── tsconfig.app.json

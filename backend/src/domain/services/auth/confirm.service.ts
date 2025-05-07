@@ -1,6 +1,6 @@
 // src/domain/services/auth/confirm.service.ts
 import { UserRepository } from "@/domain/ports/user.repository";
-import sendConfirmationEmail from "@/infraestructure/mail/mailerConfirmation";
+import sendConfirmationEmail from "@/infrastructure/mail/mailerConfirmation";
 import { generateToken } from "@/shared/tokens";
 import { errorMessages } from "@/shared/errors/errorMessages";
 import { errorCodes } from "@/shared/errors/errorCodes";

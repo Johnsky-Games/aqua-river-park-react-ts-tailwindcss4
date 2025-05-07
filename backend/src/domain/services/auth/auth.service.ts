@@ -2,7 +2,7 @@
 
 import { UserRepository } from "@/domain/ports/user.repository";
 import { RefreshTokenRepository } from "@/domain/ports/refreshToken.repository";
-import sendConfirmationEmail from "@/infraestructure/mail/mailerConfirmation";
+import sendConfirmationEmail from "@/infrastructure/mail/mailerConfirmation";
 import {
   validateEmail,
   validateNewPassword,
@@ -19,14 +19,14 @@ import { generateToken } from "@/shared/tokens";
 import { errorMessages } from "@/shared/errors/errorMessages";
 import { errorCodes } from "@/shared/errors/errorCodes";
 import { createError } from "@/shared/errors/createError";
-import logger from "@/infraestructure/logger/logger";
+import logger from "@/infrastructure/logger/logger";
 import bcrypt from "bcryptjs";
 import ms, { StringValue } from "ms";
 import {
   passwordResetCounter,
   userLoginCounter,
   userRegisterCounter,
-} from "@/infraestructure/metrics/customMetrics";
+} from "@/infrastructure/metrics/customMetrics";
 import { TokenPayload } from "@/types/express";
 
 type RoleName = "admin" | "client";

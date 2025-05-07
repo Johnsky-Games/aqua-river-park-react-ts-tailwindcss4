@@ -551,3 +551,20 @@
 [2025-05-06 08:43:41] [32minfo[39m: ✅ Servidor iniciado en http://localhost:3000
 [2025-05-06 08:43:49] [33mwarn[39m: 🚫 Ruta no encontrada: POST /api/reset-password/b26bbb46e799ede57873d72717ef9decf1c339e1df4656661bf5acec5284a74e
 [2025-05-06 08:46:23] [32minfo[39m: 📨 Correo enviado a jonathanboada1@gmail.com: Recupera tu contraseña - Aqua River Park
+[2025-05-07 17:29:44] [32minfo[39m: ✅ Servidor iniciado en http://localhost:3000
+[2025-05-07 17:29:57] [32minfo[39m: ✅ Servidor iniciado en http://localhost:3000
+[2025-05-07 17:30:25] [31merror[39m: ❌ Error global: Validación de reCAPTCHA fallida
+[2025-05-07 17:31:31] [31merror[39m: ❌ Error global: Validación de reCAPTCHA fallida
+[2025-05-07 17:32:05] [31merror[39m: ❌ Error global: Validación de reCAPTCHA fallida
+[2025-05-07 17:32:46] [32minfo[39m: ✅ Servidor iniciado en http://localhost:3000
+[2025-05-07 17:33:08] [31merror[39m: ❌ Error global: Validación de reCAPTCHA fallida
+[2025-05-07 17:33:45] [32minfo[39m: ✅ Servidor iniciado en http://localhost:3000
+[2025-05-07 17:33:48] [31merror[39m: ❌ Error global: Validación de reCAPTCHA fallida
+[2025-05-07 17:34:06] [31merror[39m: ❌ Error global: Validación de reCAPTCHA fallida
+[2025-05-07 17:38:21] [32minfo[39m: ✅ Servidor iniciado en http://localhost:3000
+[2025-05-07 17:38:35] [32minfo[39m: 📨 Correo enviado a jonathanboada1@gmail.com: Recupera tu contraseña - Aqua River Park
+[2025-05-07 17:39:05] [31merror[39m: ❌ Resetear contraseña: La nueva contraseña no puede ser igual a la anterior.
+[2025-05-07 17:39:33] [31merror[39m: ❌ Error global: Validación de reCAPTCHA fallida
+[2025-05-07 17:40:14] [31merror[39m: ❌ Error global: Validación de reCAPTCHA fallida
+[2025-05-07 17:41:01] [32minfo[39m: ✅ Servidor iniciado en http://localhost:3000
+[2025-05-07 17:41:04] [31merror[39m: ❌ Error global: Validación de reCAPTCHA fallida

@@ -3,11 +3,11 @@
 import { Request, Response } from "express";
 import jwt from "jsonwebtoken";
 import * as authService from "@/domain/services/auth/auth.service";
-import { userRepository } from "@/infraestructure/db/user.repository";
-import { refreshTokenRepository } from "@/infraestructure/db/refreshToken.repository";
+import { userRepository } from "@/infrastructure/db/user.repository";
+import { refreshTokenRepository } from "@/infrastructure/db/refreshToken.repository";
 import { PUBLIC_KEY } from "@/config/jwtKeys";
-import { logError } from "@/infraestructure/logger/errorHandler";
-import logger from "@/infraestructure/logger/logger";
+import { logError } from "@/infrastructure/logger/errorHandler";
+import logger from "@/infrastructure/logger/logger";
 import { errorCodes } from "@/shared/errors/errorCodes";
 
 const isProd = process.env.NODE_ENV === "production";
@@ -83,7 +83,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
     }
     const status =
       error.code === errorCodes.EMAIL_NOT_REGISTERED ||
-      error.code === errorCodes.INVALID_CREDENTIALS
+        error.code === errorCodes.INVALID_CREDENTIALS
         ? 401
         : 400;
     res.status(status).json({

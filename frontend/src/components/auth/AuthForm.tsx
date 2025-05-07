@@ -5,6 +5,7 @@ import api from "@/api/axios";
 import { toast } from "react-toastify";
 import { useAuthModal } from "@/store/useAuthModal";
 import { useAuthStore, User } from "@/store/useAuthStore";
+import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
 import AuthResendModal from "@/components/auth/AuthResendModal";
 import {
   getPasswordScore,
@@ -20,9 +21,7 @@ interface Props {
   showModal: boolean;
   modalType: "confirm" | "recover";
   setFormEmail: React.Dispatch<React.SetStateAction<string>>;
-  setModalStep: React.Dispatch<
-    React.SetStateAction<"notice" | "form" | "success">
-  >;
+  setModalStep: React.Dispatch<React.SetStateAction<"notice" | "form" | "success">>;
   setShowModal: React.Dispatch<React.SetStateAction<boolean>>;
   setModalType: React.Dispatch<React.SetStateAction<"confirm" | "recover">>;
 }
@@ -47,6 +46,7 @@ export default function AuthForm({
   const { view, closeModal, toggleView } = useAuthModal();
   const login = useAuthStore((s) => s.login);
   const isLogin = view === "login";
+  const { executeRecaptcha } = useGoogleReCaptcha();
 
   const [formData, setFormData] = useState(initialForm);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -93,12 +93,23 @@ export default function AuthForm({
     e.preventDefault();
     if (isSubmitting) return;
     setIsSubmitting(true);
+
     if (!validate()) {
       setIsSubmitting(false);
       return;
     }
 
+    if (!executeRecaptcha) {
+      toast.error("reCAPTCHA no disponible");
+      setIsSubmitting(false);
+      return;
+    }
+
     try {
+      // Ejecutar reCAPTCHA v3
+      const recaptchaToken = await executeRecaptcha("auth");
+      api.defaults.headers["X-ReCaptcha-Token"] = recaptchaToken;
+
       if (isLogin) {
         // Login: cookies set by server → returns { success, user }
         const { data } = await api.post<{ success: boolean; user: User }>(
@@ -106,17 +117,14 @@ export default function AuthForm({
           {
             email: formData.email,
             password: formData.password,
-            rememberMe, // envío del checkbox
+            rememberMe,
           }
         );
-
-        // **only** id/name/role go into your store
         login({
           id: data.user.id,
           name: data.user.name,
           role: data.user.role,
         });
-
         closeModal();
         toast.success("¡Login exitoso!");
       } else {
@@ -244,7 +252,7 @@ export default function AuthForm({
                 id="rememberMe"
                 type="checkbox"
                 checked={rememberMe}
-                onChange={e => setRememberMe(e.target.checked)}
+                onChange={(e) => setRememberMe(e.target.checked)}
                 className="mr-2"
               />
               <label htmlFor="rememberMe" className="text-sm">

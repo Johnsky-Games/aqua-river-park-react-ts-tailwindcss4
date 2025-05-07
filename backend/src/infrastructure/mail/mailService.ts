@@ -1,6 +1,6 @@
 // src/infraestructure/mail/mailService.ts
 import { transporter } from "@/config/mailer";
-import logger from "@/infraestructure/logger/logger";
+import logger from "@/infrastructure/logger/logger";
 
 export const sendEmail = async ({
   to,

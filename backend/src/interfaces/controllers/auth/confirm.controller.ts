@@ -3,9 +3,9 @@ import {
   confirmAccountService,
   resendConfirmationService,
 } from "@/domain/services/auth/confirm.service";
-import { userRepository } from "@/infraestructure/db/user.repository";
-import logger from "@/infraestructure/logger/logger";
-import { logError } from "@/infraestructure/logger/errorHandler";
+import { userRepository } from "@/infrastructure/db/user.repository";
+import logger from "@/infrastructure/logger/logger";
+import { logError } from "@/infrastructure/logger/errorHandler";
 import { errorCodes } from "@/shared/errors/errorCodes";
 
 // ✅ CONFIRMAR USUARIO
@@ -43,7 +43,7 @@ export const resendConfirmation = async (req: Request, res: Response): Promise<v
 
     const status =
       error.code === errorCodes.EMAIL_NOT_REGISTERED
-      || error.code === errorCodes.ACCOUNT_ALREADY_CONFIRMED
+        || error.code === errorCodes.ACCOUNT_ALREADY_CONFIRMED
         ? 409
         : 400;
 

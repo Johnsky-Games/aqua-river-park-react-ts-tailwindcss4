@@ -11,15 +11,29 @@ import {
   resetPassword,
 } from "@/interfaces/controllers/auth/recover.controller";
 import { authMiddleware } from "@/interfaces/middlewares/auth/auth.middleware";
-import { loginLimiter } from "@/infraestructure/security/rateLimit";
+import { loginLimiter } from "@/infrastructure/security/rateLimit";
 import { validate } from "@/interfaces/middlewares/validate/validateInput";
 import { registerSchema, loginSchema } from "@/shared/validations/auth.schema";
+// nuevo middleware para validar el token reCAPTCHA v3
+import { verifyRecaptcha } from "@/interfaces/middlewares/validate/recaptcha.middleware";
+
 
 const router = Router();
 
 // Registro y autenticación
-router.post("/register", validate(registerSchema), authController.register);
-router.post("/login", loginLimiter, validate(loginSchema), authController.login);
+router.post(
+  "/register",
+  verifyRecaptcha,                   // <-- verificar reCAPTCHA antes de validar inputs
+  validate(registerSchema),
+  authController.register
+);
+router.post(
+  "/login",
+  loginLimiter,
+  verifyRecaptcha,                   // <-- verificar reCAPTCHA también en login
+  validate(loginSchema),
+  authController.login
+);
 router.post("/logout", authMiddleware, authController.logout);
 
 // Confirmación de cuenta

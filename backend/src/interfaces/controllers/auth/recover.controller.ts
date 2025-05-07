@@ -2,8 +2,8 @@
 
 import { Request, Response } from "express";
 import * as recoveryService from "@/domain/services/auth/recovery.service";
-import { userRepository } from "@/infraestructure/db/user.repository";
-import { logError } from "@/infraestructure/logger/errorHandler";
+import { userRepository } from "@/infrastructure/db/user.repository";
+import { logError } from "@/infrastructure/logger/errorHandler";
 import { errorCodes } from "@/shared/errors/errorCodes";
 
 // ✅ 1. Enviar correo de recuperación

@@ -264,12 +264,14 @@ export interface RoleRepository {
 ## src\domain\ports\user.repository.ts
 
 ```typescript
+// src/domain/ports/user.repository.ts
 import { User } from "@/domain/models/user/user.model";
 
 export interface UserRepository {
   findUserByEmail(
     email: string
   ): Promise<(User & { role_name?: string }) | null>;
+
   createUser(
     user: Omit<
       User,
@@ -281,32 +283,49 @@ export interface UserRepository {
       | "locked_until"
     >
   ): Promise<number>;
+
   updateConfirmationToken(
     email: string,
     token: string,
     expires: Date
   ): Promise<void>;
-  updateResetToken(email: string, token: string, expires: Date): Promise<void>;
+
+  updateResetToken(
+    email: string,
+    token: string,
+    expires: Date
+  ): Promise<void>;
+
   findUserByResetToken(
     token: string
   ): Promise<
     Pick<User, "id" | "email" | "password_hash" | "reset_expires"> | null
   >;
+
   updatePassword(userId: number, newPasswordHash: string): Promise<void>;
+
   findUserByToken(token: string): Promise<User | null>;
+
   checkConfirmedByEmail(
     email: string
   ): Promise<Pick<User, "is_confirmed"> | null>;
+
   confirmUserById(id: number): Promise<void>;
+
   findUserBasicByEmail(email: string): Promise<Pick<User, "id"> | null>;
+
   getResetTokenExpiration(
     token: string
   ): Promise<Pick<User, "reset_expires"> | null>;
 
-  // ←  NUEVO MÉTODO
   findUserById(
     id: number
   ): Promise<(User & { role_name?: string }) | null>;
+
+  // Nuevos métodos para control de intentos y bloqueo
+  updateLoginAttempts(userId: number, attempts: number): Promise<void>;
+  updateLockedUntil(userId: number, until: Date | null): Promise<void>;
+  updateLastLogin(userId: number, when: Date): Promise<void>;
 }
 
 ```
@@ -347,6 +366,9 @@ import { TokenPayload } from "@/types/express";
 
 type RoleName = "admin" | "client";
 
+const MAX_LOGIN_ATTEMPTS = 3;
+const LOCK_DURATION_MINUTES = 15;
+
 /**
  * Registro de nuevo usuario
  */
@@ -357,19 +379,12 @@ export const registerUser = async (
     email,
     password,
     phone,
-  }: {
-    name: string;
-    email: string;
-    password: string;
-    phone: string;
-  }
+  }: { name: string; email: string; password: string; phone: string }
 ) => {
-  const { userRepository } = deps;
-
   validateEmail(email);
   validateNewPassword(password);
 
-  const existing = await userRepository.findUserByEmail(email);
+  const existing = await deps.userRepository.findUserByEmail(email);
   if (existing) {
     throw createError(
       errorMessages.emailAlreadyRegistered,
@@ -382,7 +397,7 @@ export const registerUser = async (
   const confirmation_token = generateToken();
   const confirmation_expires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24h
 
-  await userRepository.createUser({
+  await deps.userRepository.createUser({
     name,
     email,
     password_hash,
@@ -397,7 +412,7 @@ export const registerUser = async (
 };
 
 /**
- * Inicio de sesión de usuario
+ * Inicio de sesión de usuario con lockout y registro de last_login
  */
 export const loginUser = async (
   deps: {
@@ -418,6 +433,26 @@ export const loginUser = async (
     );
   }
 
+  // Check locked_until
+  const now = new Date();
+  if (user.locked_until && new Date(user.locked_until) > now) {
+    const until = new Date(user.locked_until);
+    // Formateamos la fecha en español 'es-EC'
+    const friendly = until.toLocaleString("es-EC", {
+      weekday: "long",
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+    throw createError(
+      `${errorMessages.accountAttempsBlocked} ${friendly}`,
+      errorCodes.ACCOUNT_BLOCKED,
+      2001
+    );
+  }
+
   if (!user.is_confirmed) {
     const expired =
       !user.confirmation_token ||
@@ -432,14 +467,32 @@ export const loginUser = async (
     throw e;
   }
 
+  // Verify password
   const match = await bcrypt.compare(password, user.password_hash);
   if (!match) {
+    // Increment failed attempts
+    const attempts = (user.login_attempts || 0) + 1;
+    await userRepository.updateLoginAttempts(user.id, attempts);
+
+    // If exceeded max, lock account
+    if (attempts >= MAX_LOGIN_ATTEMPTS) {
+      const until = new Date(Date.now() + LOCK_DURATION_MINUTES * 60000);
+      await userRepository.updateLockedUntil(user.id, until);
+    }
+
     throw createError(
       errorMessages.invalidCredentials,
       errorCodes.INVALID_CREDENTIALS,
       401
     );
   }
+
+  // Reset attempts and lock
+  await userRepository.updateLoginAttempts(user.id, 0);
+  await userRepository.updateLockedUntil(user.id, null);
+
+  // Record last login
+  await userRepository.updateLastLogin(user.id, new Date());
 
   userLoginCounter.inc();
 
@@ -480,29 +533,20 @@ export const refreshAccessToken = async (
   refreshToken: string
 ) => {
   try {
-    // 1) Verifica firma y extrae payload + jti
-    const decoded = jwtVerifyRefresh(
-      refreshToken
-    ) as TokenPayload & { jti: string };
+    const decoded = jwtVerifyRefresh(refreshToken) as TokenPayload & {
+      jti: string;
+    };
     const { sub: userId, role, jti } = decoded;
 
-    // 2) Verifica registro en BD
     const stored = await deps.refreshTokenRepository.findToken(jti);
-    if (
-      !stored ||
-      stored.revoked ||
-      stored.expiresAt.getTime() < Date.now()
-    ) {
+    if (!stored || stored.revoked || stored.expiresAt < new Date()) {
       throw new Error("Revocado o expirado");
     }
 
-    // 3) Verifica que el usuario exista
     await deps.userRepository.findUserById(userId);
 
-    // 4) Emite nuevo access token
     const newPayload: TokenPayload = { sub: userId, role };
     const accessToken = generateAccessToken(newPayload);
-
     return { accessToken };
   } catch {
     throw createError(
@@ -577,12 +621,10 @@ export const checkResetToken = async (
   if (!user || !user.reset_expires) {
     return false;
   }
-
   const expires =
     user.reset_expires instanceof Date
       ? user.reset_expires
       : new Date(user.reset_expires);
-
   return expires > new Date();
 };
 
@@ -849,7 +891,7 @@ import { User } from "@/domain/models/user/user.model";
 import { UserRepository } from "@/domain/ports/user.repository";
 
 export const userRepository: UserRepository = {
-  async findUserByEmail(email: string) {
+  async findUserByEmail(email: string): Promise<(User & { role_name?: string }) | null> {
     const [rows] = await db.query<RowDataPacket[]>(
       `SELECT u.*, r.name AS role_name
          FROM users u
@@ -860,7 +902,17 @@ export const userRepository: UserRepository = {
     return (rows[0] as User & { role_name?: string }) || null;
   },
 
-  async createUser(user) {
+  async createUser(
+    user: Omit<
+      User,
+      | "id"
+      | "created_at"
+      | "last_login"
+      | "avatar_url"
+      | "login_attempts"
+      | "locked_until"
+    >
+  ): Promise<number> {
     const {
       name,
       email,
@@ -875,21 +927,13 @@ export const userRepository: UserRepository = {
       `INSERT INTO users
          (name, email, password_hash, phone, role_id, confirmation_token, confirmation_expires)
        VALUES (?,     ?,     ?,             ?,     ?,       ?,                   ?)`,
-      [
-        name,
-        email,
-        password_hash,
-        phone,
-        role_id,
-        confirmation_token,
-        confirmation_expires,
-      ]
+      [name, email, password_hash, phone, role_id, confirmation_token, confirmation_expires]
     );
 
     return result.insertId;
   },
 
-  async updateConfirmationToken(email, token, expires) {
+  async updateConfirmationToken(email: string, token: string, expires: Date): Promise<void> {
     await db.query(
       `UPDATE users
           SET confirmation_token = ?, confirmation_expires = ?
@@ -898,7 +942,7 @@ export const userRepository: UserRepository = {
     );
   },
 
-  async updateResetToken(email, token, expires) {
+  async updateResetToken(email: string, token: string, expires: Date): Promise<void> {
     await db.query(
       `UPDATE users
           SET reset_token = ?, reset_expires = ?
@@ -907,20 +951,19 @@ export const userRepository: UserRepository = {
     );
   },
 
-  async findUserByResetToken(token) {
+  async findUserByResetToken(
+    token: string
+  ): Promise<Pick<User, "id" | "email" | "password_hash" | "reset_expires"> | null> {
     const [rows] = await db.query<RowDataPacket[]>(
       `SELECT id, email, password_hash, reset_expires
          FROM users
         WHERE reset_token = ? AND reset_expires > NOW()`,
       [token]
     );
-    return (
-      (rows[0] as Pick<User, "id" | "email" | "password_hash" | "reset_expires">) ||
-      null
-    );
+    return (rows[0] as Pick<User, "id" | "email" | "password_hash" | "reset_expires">) || null;
   },
 
-  async updatePassword(userId, newPasswordHash) {
+  async updatePassword(userId: number, newPasswordHash: string): Promise<void> {
     await db.query(
       `UPDATE users
           SET password_hash = ?, reset_token = NULL, reset_expires = NULL
@@ -929,7 +972,7 @@ export const userRepository: UserRepository = {
     );
   },
 
-  async findUserByToken(token) {
+  async findUserByToken(token: string): Promise<User | null> {
     const [rows] = await db.query<RowDataPacket[]>(
       `SELECT * FROM users WHERE confirmation_token = ?`,
       [token]
@@ -937,7 +980,7 @@ export const userRepository: UserRepository = {
     return (rows[0] as User) || null;
   },
 
-  async checkConfirmedByEmail(email) {
+  async checkConfirmedByEmail(email: string): Promise<Pick<User, "is_confirmed"> | null> {
     const [rows] = await db.query<RowDataPacket[]>(
       `SELECT is_confirmed FROM users WHERE email = ?`,
       [email]
@@ -945,7 +988,7 @@ export const userRepository: UserRepository = {
     return (rows[0] as Pick<User, "is_confirmed">) || null;
   },
 
-  async confirmUserById(id) {
+  async confirmUserById(id: number): Promise<void> {
     await db.query(
       `UPDATE users
           SET is_confirmed = 1,
@@ -956,7 +999,7 @@ export const userRepository: UserRepository = {
     );
   },
 
-  async findUserBasicByEmail(email) {
+  async findUserBasicByEmail(email: string): Promise<Pick<User, "id"> | null> {
     const [rows] = await db.query<RowDataPacket[]>(
       `SELECT id FROM users WHERE email = ?`,
       [email]
@@ -964,7 +1007,7 @@ export const userRepository: UserRepository = {
     return (rows[0] as Pick<User, "id">) || null;
   },
 
-  async getResetTokenExpiration(token) {
+  async getResetTokenExpiration(token: string): Promise<Pick<User, "reset_expires"> | null> {
     const [rows] = await db.query<RowDataPacket[]>(
       `SELECT reset_expires FROM users WHERE reset_token = ?`,
       [token]
@@ -972,8 +1015,7 @@ export const userRepository: UserRepository = {
     return (rows[0] as Pick<User, "reset_expires">) || null;
   },
 
-  // Nuevo método para lookup por ID (para /me)
-  async findUserById(id) {
+  async findUserById(id: number): Promise<(User & { role_name?: string }) | null> {
     const [rows] = await db.query<RowDataPacket[]>(
       `SELECT u.*, r.name AS role_name
          FROM users u
@@ -982,6 +1024,30 @@ export const userRepository: UserRepository = {
       [id]
     );
     return (rows[0] as User & { role_name?: string }) || null;
+  },
+
+  /** Incrementa el contador de intentos fallidos */
+  async updateLoginAttempts(userId: number, attempts: number): Promise<void> {
+    await db.query(
+      `UPDATE users SET login_attempts = ? WHERE id = ?`,
+      [attempts, userId]
+    );
+  },
+
+  /** Fija locked_until */
+  async updateLockedUntil(userId: number, until: Date | null): Promise<void> {
+    await db.query(
+      `UPDATE users SET locked_until = ? WHERE id = ?`,
+      [until, userId]
+    );
+  },
+
+  /** Graba la fecha del último login exitoso */
+  async updateLastLogin(userId: number, when: Date): Promise<void> {
+    await db.query(
+      `UPDATE users SET last_login = ? WHERE id = ?`,
+      [when, userId]
+    );
   },
 };
 
@@ -1469,7 +1535,12 @@ export const register = async (req: Request, res: Response): Promise<void> => {
 };
 
 export const login = async (req: Request, res: Response): Promise<void> => {
-  const { email, password } = req.body;
+  const { email, password, rememberMe = false } = req.body as {
+    email: string;
+    password: string;
+    rememberMe?: boolean;
+  };
+
   try {
     const { accessToken, refreshToken, user } = await authService.loginUser(
       { userRepository, refreshTokenRepository },
@@ -1477,21 +1548,29 @@ export const login = async (req: Request, res: Response): Promise<void> => {
       password
     );
 
+    // Duraciones
+    const accessMaxAge = 1 * 60 * 1000; // 15 minutos
+    const refreshMaxAge = rememberMe
+      ? 30 * 24 * 60 * 60 * 1000  // 30 días si "Recuérdame"
+      : 7 * 24 * 60 * 60 * 1000;  // 7 días por defecto
+
     // 1) Access Token
     res.cookie("auth_token", accessToken, {
       ...cookieOptions,
-      maxAge: 15 * 60 * 1000, // 15 minutos
+      maxAge: accessMaxAge,
     });
 
     // 2) Refresh Token
     res.cookie("refresh_token", refreshToken, {
       ...cookieOptions,
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 días
+      maxAge: refreshMaxAge,
     });
 
     // 3) Respuesta
     res.status(200).json({ success: true, user });
-    logger.info(`✅ Login exitoso: ${email}`);
+    logger.info(
+      `✅ Login exitoso: ${email} (rememberMe=${rememberMe ? "sí" : "no"})`
+    );
   } catch (error: any) {
     logError("Login", error);
     if (error.code === errorCodes.ACCOUNT_NOT_CONFIRMED) {
@@ -1639,6 +1718,8 @@ export const resendConfirmation = async (req: Request, res: Response): Promise<v
 ## src\interfaces\controllers\auth\recover.controller.ts
 
 ```typescript
+// src/interfaces/controllers/auth/recover.controller.ts
+
 import { Request, Response } from "express";
 import * as recoveryService from "@/domain/services/auth/recovery.service";
 import { userRepository } from "@/infraestructure/db/user.repository";
@@ -1648,18 +1729,12 @@ import { errorCodes } from "@/shared/errors/errorCodes";
 // ✅ 1. Enviar correo de recuperación
 export const sendRecovery = async (req: Request, res: Response): Promise<void> => {
   const { email } = req.body;
-
   try {
     await recoveryService.sendRecoveryService({ userRepository }, email);
     res.status(200).json({ message: "Correo de recuperación enviado. Revisa tu bandeja." });
   } catch (error: any) {
     logError("Enviar recuperación", error);
-
-    const status =
-      error.code === errorCodes.EMAIL_NOT_REGISTERED
-        ? 404
-        : 400;
-
+    const status = error.code === errorCodes.EMAIL_NOT_REGISTERED ? 404 : 400;
     res.status(status).json({ message: error.message || "Error al enviar recuperación" });
   }
 };
@@ -1667,7 +1742,6 @@ export const sendRecovery = async (req: Request, res: Response): Promise<void> =
 // ✅ 2. Verificar token
 export const checkTokenStatus = async (req: Request, res: Response): Promise<void> => {
   const { token } = req.body;
-
   try {
     const isValid = await recoveryService.checkTokenStatusService({ userRepository }, token);
     res.status(200).json({ valid: isValid });
@@ -1679,20 +1753,24 @@ export const checkTokenStatus = async (req: Request, res: Response): Promise<voi
 
 // ✅ 3. Cambiar contraseña
 export const resetPassword = async (req: Request, res: Response): Promise<void> => {
-  const { token } = req.params;
+  // permitimos recibir el token en params o en el body
+  const tokenFromParams = req.params.token as string | undefined;
+  const tokenFromBody = (req.body as any).token as string | undefined;
+  const token = tokenFromParams ?? tokenFromBody;
+
   const { password } = req.body;
+
+  if (!token) {
+    res.status(400).json({ message: "Falta el token de recuperación" });
+    return;
+  }
 
   try {
     await recoveryService.resetPasswordService({ userRepository }, token, password);
     res.status(200).json({ message: "Contraseña actualizada correctamente" });
   } catch (error: any) {
     logError("Resetear contraseña", error);
-
-    const status =
-      error.code === errorCodes.INVALID_OR_EXPIRED_TOKEN
-        ? 400
-        : 500;
-
+    const status = error.code === errorCodes.INVALID_OR_EXPIRED_TOKEN ? 400 : 500;
     res.status(status).json({ message: error.message || "Error al cambiar contraseña" });
   }
 };
@@ -2122,6 +2200,7 @@ export const errorCodes = {
     USER_NOT_FOUND: 1009,
     TOKEN_INVALID_OR_EXPIRED: 1010,
     INTERNAL_SERVER_ERROR: 1500,
+    ACCOUNT_BLOCKED: 2001,
   };
   
 ```
@@ -2144,6 +2223,7 @@ export const errorMessages = {
     userNotFound: "Usuario no encontrado",
     tokenInvalidOrExpired: "Token de refresco inválido o expirado",
     internalServerError: "Error interno del servidor",
+    accountAttempsBlocked: "Intentos de inicio de sesión fallidos. Cuenta bloqueada hasta ",
   };
   
 ```
@@ -2338,6 +2418,7 @@ import { z } from "zod";
 export const loginSchema = z.object({
   email: z.string().email(),
   password: z.string().min(8),
+  rememberMe: z.boolean().optional(),
 });
 
 export const registerSchema = z

@@ -2,7 +2,7 @@
 
 import { Response } from "express";
 import { AuthenticatedRequest } from "@/types/express";
-import { userRepository } from "@/infraestructure/db/user.repository";
+import { userRepository } from "@/infrastructure/db/user.repository";
 
 export const getDashboard = async (
   req: AuthenticatedRequest,

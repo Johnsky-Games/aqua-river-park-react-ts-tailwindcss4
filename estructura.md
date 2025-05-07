@@ -8,15 +8,20 @@
 │   ├── contenido_archivos.md
 │   ├── estructura.json
 │   ├── estructura.md
+│   ├── keys
+│   │   ├── private.key
+│   │   └── public.key
 │   ├── logs
 │   │   └── app.log
 │   └── src
 │       ├── app.ts
 │       ├── config
 │       │   ├── db.ts
+│       │   ├── jwtKeys.ts
 │       │   └── mailer.ts
 │       ├── domain
 │       │   ├── models
+│       │   │   ├── auth
 │       │   │   └── user
 │       │   │       ├── cart.model.ts
 │       │   │       ├── cartItem.model.ts
@@ -25,6 +30,7 @@
 │       │   │       ├── service.model.ts
 │       │   │       └── user.model.ts
 │       │   ├── ports
+│       │   │   ├── refreshToken.repository.ts
 │       │   │   ├── role.repository.ts
 │       │   │   └── user.repository.ts
 │       │   └── services
@@ -35,6 +41,7 @@
 │       ├── index.ts
 │       ├── infraestructure
 │       │   ├── db
+│       │   │   ├── refreshToken.repository.ts
 │       │   │   ├── role.repository.ts
 │       │   │   └── user.repository.ts
 │       │   ├── logger
@@ -58,8 +65,9 @@
 │       │   │   │   └── recover.controller.ts
 │       │   │   ├── dashboard
 │       │   │   │   └── dashboard.controller.ts
-│       │   │   └── health
-│       │   │       └── health.controller.ts
+│       │   │   ├── health
+│       │   │   │   └── health.controller.ts
+│       │   │   └── user.controller.ts
 │       │   ├── middlewares
 │       │   │   ├── auth
 │       │   │   │   └── auth.middleware.ts
@@ -80,8 +88,9 @@
 │       │       ├── health
 │       │       │   ├── health.routes.ts
 │       │       │   └── metrics.routes.ts
-│       │       └── metrics
-│       │           └── metrics.routes.ts
+│       │       ├── metrics
+│       │       │   └── metrics.routes.ts
+│       │       └── user.routes.ts
 │       ├── shared
 │       │   ├── errors
 │       │   │   ├── createError.ts
@@ -97,8 +106,9 @@
 │       │   └── validations
 │       │       ├── auth.schema.ts
 │       │       └── validators.ts
-│       └── types
-│           └── express.d.ts
+│       ├── types
+│       │   └── express.d.ts
+│       └── utils
 ├── frontend
 │   ├── contenido_archivos.json
 │   ├── contenido_archivos.md
@@ -118,6 +128,7 @@
 │   │   ├── assets
 │   │   │   ├── hero-bg.jpg
 │   │   │   └── react.svg
+│   │   ├── auth
 │   │   ├── components
 │   │   │   ├── auth
 │   │   │   │   ├── AuthForm.tsx
@@ -153,12 +164,13 @@
 │   │   │   ├── NavMenu.tsx
 │   │   │   ├── RouteModalHandler.tsx
 │   │   │   ├── StatCard.tsx
-│   │   │   └── ThemeToggle.tsx
+│   │   │   ├── ThemeToggle.tsx
+│   │   │   └── UserInitializer.tsx
+│   │   ├── config
 │   │   ├── context
 │   │   │   ├── AuthContext.tsx
 │   │   │   ├── ThemeContext.tsx
 │   │   │   └── ThemeProvider.tsx
-│   │   ├── data
 │   │   ├── hooks
 │   │   │   └── useTheme.ts
 │   │   ├── index.css
@@ -184,7 +196,9 @@
 │   │   │   ├── NotFound.tsx
 │   │   │   └── ResetPassword.tsx
 │   │   ├── router
-│   │   │   └── AppRouter.tsx
+│   │   │   ├── AppRouter.tsx
+│   │   │   └── PrivateRoute.tsx
+│   │   ├── services
 │   │   ├── store
 │   │   │   ├── useAuthModal.ts
 │   │   │   ├── useAuthStore.ts
@@ -192,7 +206,6 @@
 │   │   ├── types
 │   │   │   └── simple-parallax-js.d.ts
 │   │   ├── utils
-│   │   │   ├── PrivateRoute.tsx
 │   │   │   └── validationHelpersForm.ts
 │   │   └── vite-env.d.ts
 │   ├── tsconfig.app.json

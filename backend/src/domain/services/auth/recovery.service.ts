@@ -1,5 +1,5 @@
 // src/domain/services/auth/recovery.service.ts
-import sendRecoveryEmail from "@/infraestructure/mail/mailerRecovery";
+import sendRecoveryEmail from "@/infrastructure/mail/mailerRecovery";
 import { UserRepository } from "@/domain/ports/user.repository";
 import { validatePasswordChange } from "@/shared/validations/validators";
 import { hashPassword } from "@/shared/hash";

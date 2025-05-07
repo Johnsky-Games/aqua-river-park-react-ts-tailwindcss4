@@ -1,6 +1,6 @@
 // src/interfaces/middlewares/error/errorHandler.middleware.ts
 import { Request, Response, NextFunction } from "express";
-import logger from "@/infraestructure/logger/logger";
+import logger from "@/infrastructure/logger/logger";
 import { errorMessages } from "@/shared/errors/errorMessages";
 import { errorCodes } from "@/shared/errors/errorCodes";
 

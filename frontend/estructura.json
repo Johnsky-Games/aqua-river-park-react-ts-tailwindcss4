@@ -16,6 +16,7 @@
       "hero-bg.jpg": null,
       "react.svg": null
     },
+    "auth": {},
     "components": {
       "auth": {
         "AuthForm.tsx": null,
@@ -57,12 +58,12 @@
       "ThemeToggle.tsx": null,
       "UserInitializer.tsx": null
     },
+    "config": {},
     "context": {
       "AuthContext.tsx": null,
       "ThemeContext.tsx": null,
       "ThemeProvider.tsx": null
     },
-    "data": {},
     "hooks": {
       "useTheme.ts": null
     },
@@ -93,8 +94,10 @@
       "ResetPassword.tsx": null
     },
     "router": {
-      "AppRouter.tsx": null
+      "AppRouter.tsx": null,
+      "PrivateRoute.tsx": null
     },
+    "services": {},
     "store": {
       "useAuthModal.ts": null,
       "useAuthStore.ts": null,
@@ -104,7 +107,6 @@
       "simple-parallax-js.d.ts": null
     },
     "utils": {
-      "PrivateRoute.tsx": null,
       "validationHelpersForm.ts": null
     },
     "vite-env.d.ts": null

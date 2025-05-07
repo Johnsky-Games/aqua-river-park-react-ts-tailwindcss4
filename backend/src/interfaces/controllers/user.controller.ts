@@ -2,7 +2,7 @@
 
 import { Response, NextFunction } from "express";
 import { AuthenticatedRequest } from "@/types/express";
-import { userRepository } from "@/infraestructure/db/user.repository";
+import { userRepository } from "@/infrastructure/db/user.repository";
 import { errorMessages } from "@/shared/errors/errorMessages";
 
 export const getMe = async (

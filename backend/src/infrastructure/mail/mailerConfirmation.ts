@@ -1,5 +1,5 @@
 // backend/utils/mailerConfirmation.ts
-import { sendEmail } from "@/infraestructure/mail/mailService";
+import { sendEmail } from "@/infrastructure/mail/mailService";
 
 const sendConfirmationEmail = async (email: string, token: string) => {
   const link = `${process.env.FRONTEND_URL}/confirm/${token}?email=${encodeURIComponent(email)}`;

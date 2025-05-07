@@ -7,6 +7,10 @@
     "contenido_archivos.md": null,
     "estructura.json": null,
     "estructura.md": null,
+    "keys": {
+      "private.key": null,
+      "public.key": null
+    },
     "logs": {
       "app.log": null
     },
@@ -14,10 +18,12 @@
       "app.ts": null,
       "config": {
         "db.ts": null,
+        "jwtKeys.ts": null,
         "mailer.ts": null
       },
       "domain": {
         "models": {
+          "auth": {},
           "user": {
             "cart.model.ts": null,
             "cartItem.model.ts": null,
@@ -28,6 +34,7 @@
           }
         },
         "ports": {
+          "refreshToken.repository.ts": null,
           "role.repository.ts": null,
           "user.repository.ts": null
         },
@@ -42,6 +49,7 @@
       "index.ts": null,
       "infraestructure": {
         "db": {
+          "refreshToken.repository.ts": null,
           "role.repository.ts": null,
           "user.repository.ts": null
         },
@@ -75,7 +83,8 @@
           },
           "health": {
             "health.controller.ts": null
-          }
+          },
+          "user.controller.ts": null
         },
         "middlewares": {
           "auth": {
@@ -108,7 +117,8 @@
           },
           "metrics": {
             "metrics.routes.ts": null
-          }
+          },
+          "user.routes.ts": null
         }
       },
       "shared": {
@@ -133,7 +143,8 @@
       },
       "types": {
         "express.d.ts": null
-      }
+      },
+      "utils": {}
     }
   },
   "frontend": {
@@ -158,6 +169,7 @@
         "hero-bg.jpg": null,
         "react.svg": null
       },
+      "auth": {},
       "components": {
         "auth": {
           "AuthForm.tsx": null,
@@ -196,14 +208,15 @@
         "NavMenu.tsx": null,
         "RouteModalHandler.tsx": null,
         "StatCard.tsx": null,
-        "ThemeToggle.tsx": null
+        "ThemeToggle.tsx": null,
+        "UserInitializer.tsx": null
       },
+      "config": {},
       "context": {
         "AuthContext.tsx": null,
         "ThemeContext.tsx": null,
         "ThemeProvider.tsx": null
       },
-      "data": {},
       "hooks": {
         "useTheme.ts": null
       },
@@ -234,8 +247,10 @@
         "ResetPassword.tsx": null
       },
       "router": {
-        "AppRouter.tsx": null
+        "AppRouter.tsx": null,
+        "PrivateRoute.tsx": null
       },
+      "services": {},
       "store": {
         "useAuthModal.ts": null,
         "useAuthStore.ts": null,
@@ -245,7 +260,6 @@
         "simple-parallax-js.d.ts": null
       },
       "utils": {
-        "PrivateRoute.tsx": null,
         "validationHelpersForm.ts": null
       },
       "vite-env.d.ts": null

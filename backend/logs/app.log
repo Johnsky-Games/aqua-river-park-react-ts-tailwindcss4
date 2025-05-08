@@ -568,3 +568,29 @@
 [2025-05-07 17:40:14] [31merror[39m: ❌ Error global: Validación de reCAPTCHA fallida
 [2025-05-07 17:41:01] [32minfo[39m: ✅ Servidor iniciado en http://localhost:3000
 [2025-05-07 17:41:04] [31merror[39m: ❌ Error global: Validación de reCAPTCHA fallida
+[2025-05-07 19:30:29] [32minfo[39m: ✅ Servidor iniciado en http://localhost:3000
+[2025-05-07 19:34:39] [31merror[39m: ❌ Error global: Validación de reCAPTCHA fallida
+[2025-05-07 19:36:50] [33mwarn[39m: 🚫 Ruta no encontrada: GET /api/login
+[2025-05-07 19:36:53] [33mwarn[39m: 🚫 Ruta no encontrada: GET /favicon.ico
+[2025-05-07 19:39:17] [31merror[39m: ❌ Error global: Validación de reCAPTCHA fallida
+[2025-05-07 19:39:23] [31merror[39m: ❌ Error global: Validación de reCAPTCHA fallida
+[2025-05-07 19:42:10] [31merror[39m: ❌ Error global: Validación de reCAPTCHA fallida
+[2025-05-07 19:44:21] [32minfo[39m: ✅ Servidor iniciado en http://localhost:3000
+[2025-05-07 19:44:28] [31merror[39m: ❌ Error global: Validación de reCAPTCHA fallida
+[2025-05-07 19:46:15] [31merror[39m: ❌ Error global: Validación de reCAPTCHA fallida
+[2025-05-07 19:46:23] [31merror[39m: ❌ Error global: Validación de reCAPTCHA fallida
+[2025-05-07 20:59:46] [32minfo[39m: ✅ Servidor iniciado en http://localhost:3000
+[2025-05-07 21:00:04] [31merror[39m: ❌ Error global: Validación de reCAPTCHA fallida
+[2025-05-07 21:02:42] [32minfo[39m: ✅ Servidor iniciado en http://localhost:3000
+[2025-05-07 21:02:46] [32minfo[39m: ✅ Login exitoso: jonathanboada1@gmail.com (rememberMe=no)
+[2025-05-07 21:03:27] [32minfo[39m: ✅ Servidor iniciado en http://localhost:3000
+[2025-05-07 21:03:50] [31merror[39m: ❌ Error global: Validación de reCAPTCHA fallida
+[2025-05-07 21:04:09] [32minfo[39m: ✅ Servidor iniciado en http://localhost:3000
+[2025-05-07 21:04:15] [32minfo[39m: ✅ Servidor iniciado en http://localhost:3000
+[2025-05-07 21:22:44] [31merror[39m: ❌ Error global: Validación de reCAPTCHA fallida
+[2025-05-07 21:30:54] [32minfo[39m: ✅ Servidor iniciado en http://localhost:3000
+[2025-05-07 21:31:38] [32minfo[39m: ✅ Servidor iniciado en http://localhost:3000
+[2025-05-07 21:32:09] [32minfo[39m: ✅ Servidor iniciado en http://localhost:3000
+[2025-05-07 21:39:16] [31merror[39m: ❌ Error global: Validación de reCAPTCHA fallida
+[2025-05-07 21:40:23] [32minfo[39m: ✅ Servidor iniciado en http://localhost:3000
+[2025-05-07 21:40:36] [31merror[39m: ❌ Error global: Validación de reCAPTCHA fallida

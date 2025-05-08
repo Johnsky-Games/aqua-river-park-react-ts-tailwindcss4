@@ -1,12 +1,19 @@
+// src/shared/recaptcha.ts
 import axios from "axios";
 
-export async function verifyRecaptcha(token: string): Promise<boolean> {
+export interface RecaptchaResponse {
+  success:   boolean;
+  score:     number;
+  action:    string;
+  challenge_ts: string;
+  hostname:  string;
+  "error-codes"?: string[];
+}
+
+export async function verifyRecaptchaToken(token: string): Promise<RecaptchaResponse> {
   const secret = process.env.RECAPTCHA_SECRET_KEY!;
-  const resp = await axios.post(
-    "https://www.google.com/recaptcha/api/siteverify",
-    null,
-    { params: { secret, response: token } }
-  );
-  // Google devuelve { success, score, action, ... }
-  return resp.data.success && resp.data.score >= 0.5;
+  if (!secret) throw new Error("Falta la variable RECAPTCHA_SECRET_KEY");
+  const url = `https://www.google.com/recaptcha/api/siteverify?secret=${secret}&response=${token}`;
+  const { data } = await axios.post<RecaptchaResponse>(url);
+  return data;
 }

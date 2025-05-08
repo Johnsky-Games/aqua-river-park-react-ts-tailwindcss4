@@ -20,20 +20,23 @@ import { verifyRecaptcha } from "@/interfaces/middlewares/validate/recaptcha.mid
 
 const router = Router();
 
-// Registro y autenticación
+// Registro
 router.post(
   "/register",
-  verifyRecaptcha,                   // <-- verificar reCAPTCHA antes de validar inputs
-  validate(registerSchema),
-  authController.register
+  verifyRecaptcha,           // 1️⃣ chequea reCAPTCHA
+  validate(registerSchema),  // 2️⃣ valida payload
+  authController.register    // 3️⃣ corre el controlador
 );
+
+// Login
 router.post(
   "/login",
-  loginLimiter,
-  verifyRecaptcha,                   // <-- verificar reCAPTCHA también en login
-  validate(loginSchema),
-  authController.login
+  verifyRecaptcha,           // 1️⃣ chequea reCAPTCHA
+  loginLimiter,              // 2️⃣ rate‐limit
+  validate(loginSchema),     // 3️⃣ valida payload
+  authController.login       // 4️⃣ corre el controlador
 );
+
 router.post("/logout", authMiddleware, authController.logout);
 
 // Confirmación de cuenta

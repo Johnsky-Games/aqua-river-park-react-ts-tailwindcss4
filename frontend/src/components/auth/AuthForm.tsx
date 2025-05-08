@@ -61,8 +61,8 @@ export default function AuthForm({
     if (name === "password") {
       setPasswordStrength(getPasswordScore(value));
     }
-    setFormData((p) => ({ ...p, [name]: formatted }));
-    setErrors((p) => ({ ...p, [name]: "" }));
+    setFormData((prev) => ({ ...prev, [name]: formatted }));
+    setErrors((prev) => ({ ...prev, [name]: "" }));
   };
 
   const validate = () => {
@@ -94,56 +94,63 @@ export default function AuthForm({
     if (isSubmitting) return;
     setIsSubmitting(true);
 
+    // 1) Validar campos
     if (!validate()) {
       setIsSubmitting(false);
       return;
     }
 
+    // 2) Ejecutar reCAPTCHA
     if (!executeRecaptcha) {
       toast.error("reCAPTCHA no disponible");
       setIsSubmitting(false);
       return;
     }
-
+    let token: string;
     try {
-      // Ejecutar reCAPTCHA v3
-      const recaptchaToken = await executeRecaptcha("auth");
-      api.defaults.headers["X-ReCaptcha-Token"] = recaptchaToken;
+      token = await executeRecaptcha(isLogin ? "login" : "register");
+    } catch {
+      toast.error("Error al ejecutar reCAPTCHA");
+      setIsSubmitting(false);
+      return;
+    }
+    if (!token) {
+      toast.error("No se obtuvo token de reCAPTCHA");
+      setIsSubmitting(false);
+      return;
+    }
 
+    // 3) Envío al servidor con el header x-recaptcha-token
+    try {
       if (isLogin) {
-        // Login: cookies set by server → returns { success, user }
         const { data } = await api.post<{ success: boolean; user: User }>(
           "/login",
           {
             email: formData.email,
             password: formData.password,
             rememberMe,
-          }
+          },
+          { headers: { "x-recaptcha-token": token } }
         );
-        login({
-          id: data.user.id,
-          name: data.user.name,
-          role: data.user.role,
-        });
-        closeModal();
+        login({ id: data.user.id, name: data.user.name, role: data.user.role });
         toast.success("¡Login exitoso!");
+        closeModal();
       } else {
-        await api.post("/register", {
-          name: formData.fullName,
-          email: formData.email,
-          phone: formData.phone,
-          password: formData.password,
-        });
-        toast.success(
-          "Registro exitoso. Revisa tu correo para confirmar tu cuenta."
+        await api.post(
+          "/register",
+          {
+            name: formData.fullName,
+            email: formData.email,
+            phone: formData.phone,
+            password: formData.password,
+          },
+          { headers: { "x-recaptcha-token": token } }
         );
+        toast.success("Registro exitoso. Revisa tu correo para confirmar tu cuenta.");
         toggleView();
       }
     } catch (err) {
-      const error = err as AxiosError<{
-        message: string;
-        tokenExpired?: boolean;
-      }>;
+      const error = err as AxiosError<{ message: string; tokenExpired?: boolean }>;
       const msg = error.response?.data?.message;
       if (msg === "Debes confirmar tu cuenta") {
         setModalType("confirm");

@@ -9,7 +9,7 @@ import userRoutes from "@/interfaces/routes/user.routes";
 import healthRoutes from "@/interfaces/routes/health/health.routes";
 import metricsRoutes from "@/interfaces/routes/health/metrics.routes";
 
-import { metricsMiddleware } from "@/infrastructure/metrics/requestDurationHistogram";
+import { metricsMiddleware } from "@/infraestructure/metrics/requestDurationHistogram";
 import { sanitizeRequest } from "@/interfaces/middlewares/sanitize/sanitizeRequest";
 import notFound from "@/interfaces/middlewares/error/notFound.middleware";
 import errorHandler from "@/interfaces/middlewares/error/errorHandler.middleware";

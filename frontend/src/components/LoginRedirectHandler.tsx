@@ -1,3 +1,4 @@
+// src/components/LoginRedirectHandler.tsx
 import { useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuthStore } from "@/store/useAuthStore";
@@ -9,9 +10,8 @@ export function LoginRedirectHandler() {
 
   useEffect(() => {
     if (!user) return;
-    if (user.role === "admin" && ["/", "/login", "/register"].includes(pathname)) {
-      navigate("/admin/dashboard", { replace: true });
-    }
+
+    // Solo redirigimos clientes si intentan entrar a /login o /register
     if (user.role === "client" && ["/login", "/register"].includes(pathname)) {
       navigate("/", { replace: true });
     }

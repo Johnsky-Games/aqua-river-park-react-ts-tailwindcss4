@@ -1,6 +1,7 @@
 // src/components/auth/AuthForm.tsx
 import React, { useState } from "react";
 import { AxiosError } from "axios";
+import { useNavigate } from "react-router-dom";
 import api from "@/api/axios";
 import { toast } from "react-toastify";
 import { useAuthModal } from "@/store/useAuthModal";
@@ -44,9 +45,10 @@ export default function AuthForm({
   setModalType,
 }: Props) {
   const { view, closeModal, toggleView } = useAuthModal();
-  const login = useAuthStore((s) => s.login);
+  const loginStore = useAuthStore((s) => s.login);
   const isLogin = view === "login";
   const { executeRecaptcha } = useGoogleReCaptcha();
+  const navigate = useNavigate();
 
   const [formData, setFormData] = useState(initialForm);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -94,7 +96,7 @@ export default function AuthForm({
     if (isSubmitting) return;
     setIsSubmitting(true);
 
-    // 1) Validar campos
+    // 1) Validación de campos
     if (!validate()) {
       setIsSubmitting(false);
       return;
@@ -109,14 +111,9 @@ export default function AuthForm({
     let token: string;
     try {
       token = await executeRecaptcha(isLogin ? "login" : "register");
-    } catch {
+    } catch (err) {
+      console.error("Error al ejecutar reCAPTCHA:", err);
       toast.error("Error al ejecutar reCAPTCHA");
-      //añadimos un console.error para ver el error en la consola con todos los detalles como codigos, mensajes del error
-      console.error("Error al ejecutar reCAPTCHA", {
-        error: "Error al ejecutar reCAPTCHA",
-        isLogin,
-        formData,
-      });
       setIsSubmitting(false);
       return;
     }
@@ -126,7 +123,7 @@ export default function AuthForm({
       return;
     }
 
-    // 3) Envío al servidor con el header x-recaptcha-token
+    // 3) Llamada al backend
     try {
       if (isLogin) {
         const { data } = await api.post<{ success: boolean; user: User }>(
@@ -138,9 +135,22 @@ export default function AuthForm({
           },
           { headers: { "x-recaptcha-token": token } }
         );
-        login({ id: data.user.id, name: data.user.name, role: data.user.role });
+
+        // Guardar en store
+        loginStore({
+          id: data.user.id,
+          name: data.user.name,
+          role: data.user.role,
+        });
         toast.success("¡Login exitoso!");
         closeModal();
+
+        // → redirección según rol
+        if (data.user.role === "admin") {
+          navigate("/admin/dashboard", { replace: true });
+        } else {
+          navigate("/", { replace: true });
+        }
       } else {
         await api.post(
           "/register",
@@ -154,7 +164,7 @@ export default function AuthForm({
           { headers: { "x-recaptcha-token": token } }
         );
         toast.success("Registro exitoso. Revisa tu correo para confirmar tu cuenta.");
-        toggleView();
+        toggleView(); // pasar a login view
       }
     } catch (err) {
       const error = err as AxiosError<{ message: string; tokenExpired?: boolean }>;

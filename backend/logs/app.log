@@ -655,3 +655,20 @@
 [2025-05-08 11:44:12] [32minfo[39m: ✅ Login exitoso: jonathanboada1@gmail.com (rememberMe=no)
 [2025-05-08 11:44:26] [31merror[39m: ❌ Login: Credenciales incorrectas | Code: 1003 | Status: 401
 [2025-05-08 11:44:32] [32minfo[39m: ✅ Login exitoso: jonathanboada1@gmail.com (rememberMe=no)
+[2025-05-08 12:17:11] [32minfo[39m: ✅ Login exitoso: jonathanboada1@gmail.com (rememberMe=no)
+[2025-05-08 12:17:37] [32minfo[39m: ✅ Login exitoso: example@example.com (rememberMe=no)
+[2025-05-08 12:18:04] [31merror[39m: ❌ Login: Credenciales incorrectas | Code: 1003 | Status: 401
+[2025-05-08 12:18:10] [32minfo[39m: ✅ Login exitoso: jonathanboada1@gmail.com (rememberMe=no)
+[2025-05-08 14:39:01] [32minfo[39m: ✅ Login exitoso: example@example.com (rememberMe=no)
+[2025-05-08 14:39:19] [32minfo[39m: ✅ Login exitoso: example@example.com (rememberMe=no)
+[2025-05-08 14:39:33] [32minfo[39m: ✅ Login exitoso: example@example.com (rememberMe=no)
+[2025-05-08 14:41:58] [32minfo[39m: ✅ Login exitoso: jonathanboada1@gmail.com (rememberMe=no)
+[2025-05-08 14:42:15] [32minfo[39m: ✅ Login exitoso: jonathanboada1@gmail.com (rememberMe=no)
+[2025-05-08 14:43:59] [32minfo[39m: ✅ Servidor iniciado en http://localhost:3000
+[2025-05-08 14:44:03] [32minfo[39m: ✅ Login exitoso: example@example.com (rememberMe=no)
+[2025-05-08 14:44:21] [32minfo[39m: ✅ Login exitoso: example@example.com (rememberMe=no)
+[2025-05-08 17:12:06] [32minfo[39m: ✅ Login exitoso: example@example.com (rememberMe=no)
+[2025-05-08 17:12:29] [32minfo[39m: ✅ Login exitoso: jonathanboada1@gmail.com (rememberMe=no)
+[2025-05-08 18:05:37] [32minfo[39m: ✅ Servidor iniciado en http://localhost:3000
+[2025-05-08 18:05:54] [32minfo[39m: ✅ Login exitoso: jonathanboada1@gmail.com (rememberMe=no)
+[2025-05-08 18:06:29] [32minfo[39m: ✅ Login exitoso: jonathanboada1@gmail.com (rememberMe=no)

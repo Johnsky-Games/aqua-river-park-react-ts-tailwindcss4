@@ -594,3 +594,64 @@
 [2025-05-07 21:39:16] [31merror[39m: ❌ Error global: Validación de reCAPTCHA fallida
 [2025-05-07 21:40:23] [32minfo[39m: ✅ Servidor iniciado en http://localhost:3000
 [2025-05-07 21:40:36] [31merror[39m: ❌ Error global: Validación de reCAPTCHA fallida
+[2025-05-08 08:40:03] [32minfo[39m: ✅ Servidor iniciado en http://localhost:3000
+[2025-05-08 08:42:21] [31merror[39m: ❌ Error global: Validación de reCAPTCHA fallida
+[2025-05-08 08:42:35] [31merror[39m: ❌ Error global: Validación de reCAPTCHA fallida
+[2025-05-08 08:42:41] [31merror[39m: ❌ Error global: Validación de reCAPTCHA fallida
+[2025-05-08 08:45:20] [31merror[39m: ❌ Error global: Validación de reCAPTCHA fallida
+[2025-05-08 08:45:30] [31merror[39m: ❌ Error global: Validación de reCAPTCHA fallida
+[2025-05-08 08:47:45] [31merror[39m: ❌ Error global: Validación de reCAPTCHA fallida
+[2025-05-08 09:05:35] [31merror[39m: ❌ Error global: Validación de reCAPTCHA fallida
+[2025-05-08 09:05:54] [31merror[39m: ❌ Error global: Validación de reCAPTCHA fallida
+[2025-05-08 09:06:33] [31merror[39m: ❌ Error global: Validación de reCAPTCHA fallida
+[2025-05-08 09:06:58] [32minfo[39m: ✅ Servidor iniciado en http://localhost:3000
+[2025-05-08 09:07:22] [32minfo[39m: ✅ Servidor iniciado en http://localhost:3000
+[2025-05-08 09:12:47] [32minfo[39m: ✅ Servidor iniciado en http://localhost:3000
+[2025-05-08 09:16:44] [31merror[39m: ❌ Error global: Token de reCAPTCHA faltante
+[2025-05-08 09:16:50] [31merror[39m: ❌ Error global: Token de reCAPTCHA faltante
+[2025-05-08 09:17:21] [32minfo[39m: ✅ Servidor iniciado en http://localhost:3000
+[2025-05-08 09:17:26] [32minfo[39m: ✅ Login exitoso: jonathanboada1@gmail.com (rememberMe=no)
+[2025-05-08 09:17:44] [31merror[39m: ❌ Error global: Token de reCAPTCHA faltante
+[2025-05-08 09:17:49] [31merror[39m: ❌ Error global: Token de reCAPTCHA faltante
+[2025-05-08 09:18:36] [31merror[39m: ❌ Login: Credenciales incorrectas | Code: 1003 | Status: 401
+[2025-05-08 09:18:47] [32minfo[39m: ✅ Login exitoso: jonathanboada1@gmail.com (rememberMe=no)
+[2025-05-08 09:19:29] [32minfo[39m: ✅ Servidor iniciado en http://localhost:3000
+[2025-05-08 09:19:51] [32minfo[39m: ✅ Login exitoso: jonathanboada1@gmail.com (rememberMe=no)
+[2025-05-08 09:24:34] [31merror[39m: ❌ Error global: Token de reCAPTCHA faltante
+[2025-05-08 09:24:36] [31merror[39m: ❌ Error global: Token de reCAPTCHA faltante
+[2025-05-08 09:24:37] [31merror[39m: ❌ Error global: Token de reCAPTCHA faltante
+[2025-05-08 09:24:37] [31merror[39m: ❌ Error global: Token de reCAPTCHA faltante
+[2025-05-08 09:24:38] [31merror[39m: ❌ Error global: Token de reCAPTCHA faltante
+[2025-05-08 09:24:39] [31merror[39m: ❌ Error global: Token de reCAPTCHA faltante
+[2025-05-08 09:37:40] [32minfo[39m: ✅ Servidor iniciado en http://localhost:3000
+[2025-05-08 09:37:55] [32minfo[39m: ✅ Login exitoso: jonathanboada1@gmail.com (rememberMe=no)
+[2025-05-08 09:42:17] [32minfo[39m: ✅ Login exitoso: jonathanboada1@gmail.com (rememberMe=no)
+[2025-05-08 09:44:55] [31merror[39m: ❌ Error global: Validación de reCAPTCHA fallida
+[2025-05-08 09:46:05] [31merror[39m: ❌ Error global: Validación de reCAPTCHA fallida
+[2025-05-08 10:03:51] [32minfo[39m: ✅ Login exitoso: jonathanboada1@gmail.com (rememberMe=no)
+[2025-05-08 10:05:58] [31merror[39m: ❌ Error global: Validación de reCAPTCHA fallida
+[2025-05-08 10:06:24] [32minfo[39m: 📨 Correo enviado a juan@example.com: Confirma tu cuenta
+[2025-05-08 10:06:24] [32minfo[39m: ✅ Usuario registrado: juan@example.com
+[2025-05-08 10:23:05] [32minfo[39m: 📨 Correo enviado a example@example.com: Confirma tu cuenta
+[2025-05-08 10:23:05] [32minfo[39m: ✅ Usuario registrado: example@example.com
+[2025-05-08 10:30:09] [31merror[39m: ❌ Login: Credenciales incorrectas | Code: 1003 | Status: 401
+[2025-05-08 10:30:20] [31merror[39m: ❌ Login: Credenciales incorrectas | Code: 1003 | Status: 401
+[2025-05-08 10:30:28] [32minfo[39m: 📨 Correo enviado a example@example.com: Recupera tu contraseña - Aqua River Park
+[2025-05-08 10:30:54] [32minfo[39m: ✅ Login exitoso: example@example.com (rememberMe=no)
+[2025-05-08 11:35:57] [32minfo[39m: ✅ Login exitoso: jonathanboada1@gmail.com (rememberMe=no)
+[2025-05-08 11:36:29] [32minfo[39m: ✅ Login exitoso: jonathanboada1@gmail.com (rememberMe=no)
+[2025-05-08 11:40:00] [32minfo[39m: ✅ Login exitoso: jonathanboada1@gmail.com (rememberMe=no)
+[2025-05-08 11:40:21] [32minfo[39m: ✅ Login exitoso: example@example.com (rememberMe=no)
+[2025-05-08 11:41:07] [31merror[39m: ❌ Login: Credenciales incorrectas | Code: 1003 | Status: 401
+[2025-05-08 11:42:13] [32minfo[39m: ✅ Servidor iniciado en http://localhost:3000
+[2025-05-08 11:42:19] [32minfo[39m: ✅ Login exitoso: jonathanboada1@gmail.com (rememberMe=no)
+[2025-05-08 11:42:37] [31merror[39m: ❌ Login: Credenciales incorrectas | Code: 1003 | Status: 401
+[2025-05-08 11:42:45] [31merror[39m: ❌ Login: Credenciales incorrectas | Code: 1003 | Status: 401
+[2025-05-08 11:42:49] [31merror[39m: ❌ Login: Credenciales incorrectas | Code: 1003 | Status: 401
+[2025-05-08 11:42:51] [31merror[39m: ❌ Login: Intentos de inicio de sesión fallidos. Cuenta bloqueada hasta  jueves, 8 de mayo de 2025, 11:57 a. m. | Code: 2001 | Status: 2001
+[2025-05-08 11:43:02] [32minfo[39m: ✅ Servidor iniciado en http://localhost:3000
+[2025-05-08 11:43:07] [31merror[39m: ❌ Login: Intentos de inicio de sesión fallidos. Cuenta bloqueada hasta  jueves, 8 de mayo de 2025, 11:57 a. m. | Code: 2001 | Status: 2001
+[2025-05-08 11:43:45] [31merror[39m: ❌ Login: Credenciales incorrectas | Code: 1003 | Status: 401
+[2025-05-08 11:44:12] [32minfo[39m: ✅ Login exitoso: jonathanboada1@gmail.com (rememberMe=no)
+[2025-05-08 11:44:26] [31merror[39m: ❌ Login: Credenciales incorrectas | Code: 1003 | Status: 401
+[2025-05-08 11:44:32] [32minfo[39m: ✅ Login exitoso: jonathanboada1@gmail.com (rememberMe=no)

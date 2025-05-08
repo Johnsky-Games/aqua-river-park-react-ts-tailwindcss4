@@ -5,16 +5,13 @@ import App from "./App";
 import "./index.css";
 import { ThemeProvider } from "./context/ThemeProvider";
 import { ParallaxProvider } from "react-scroll-parallax";
-import { GoogleReCaptchaProvider } from "react-google-recaptcha-v3";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <ThemeProvider>
     <React.StrictMode>
-     <GoogleReCaptchaProvider reCaptchaKey={import.meta.env.VITE_RECAPTCHA_SITE_KEY}>
       <ParallaxProvider>
-        <App />
+        <App /> 
       </ParallaxProvider>
-    </GoogleReCaptchaProvider>
     </React.StrictMode>
   </ThemeProvider>
 );

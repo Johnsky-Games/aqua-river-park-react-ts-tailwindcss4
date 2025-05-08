@@ -10,6 +10,7 @@ import { LoginRedirectHandler } from "./components/LoginRedirectHandler";
 import { AutoTokenManager } from "./components/AutoTokenManager";
 import { UserInitializer } from "./components/UserInitializer";
 import { GlobalLoadingOverlay } from "./components/GlobalLoadingOverlay";
+import { GoogleReCaptchaProvider } from "react-google-recaptcha-v3";
 import "react-toastify/dist/ReactToastify.css";
 
 const App: React.FC = () => {
@@ -17,13 +18,9 @@ const App: React.FC = () => {
 
   return (
     <Router>
-      {/* Primero tratamos de hidratar el user existente via /me */}
+      {/* Inicializadores y handlers globales */}
       <UserInitializer />
-
-      {/* Luego arrancamos el refresco automático de token por cookie */}
       <AutoTokenManager />
-
-      {/* Manejadores globales */}
       <LoginRedirectHandler />
       <GlobalLoadingOverlay />
       <RouteModalHandler />
@@ -31,8 +28,15 @@ const App: React.FC = () => {
       {/* Rutas */}
       <AppRouter />
 
-      {/* Modal de Auth */}
-      {isOpen && <AuthModal />}
+      {/* Modal de Auth — solo aquí cargamos reCAPTCHA */}
+      {isOpen ? (
+        <GoogleReCaptchaProvider
+          reCaptchaKey={import.meta.env.VITE_RECAPTCHA_SITE_KEY}
+          useRecaptchaNet
+        >
+          <AuthModal />
+        </GoogleReCaptchaProvider>
+      ) : null}
 
       {/* Toasts */}
       <ToastContainer position="top-right" autoClose={3000} />

@@ -111,6 +111,12 @@ export default function AuthForm({
       token = await executeRecaptcha(isLogin ? "login" : "register");
     } catch {
       toast.error("Error al ejecutar reCAPTCHA");
+      //añadimos un console.error para ver el error en la consola con todos los detalles como codigos, mensajes del error
+      console.error("Error al ejecutar reCAPTCHA", {
+        error: "Error al ejecutar reCAPTCHA",
+        isLogin,
+        formData,
+      });
       setIsSubmitting(false);
       return;
     }
@@ -143,6 +149,7 @@ export default function AuthForm({
             email: formData.email,
             phone: formData.phone,
             password: formData.password,
+            confirmPassword: formData.confirmPassword,
           },
           { headers: { "x-recaptcha-token": token } }
         );
